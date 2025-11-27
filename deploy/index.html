@@ -3,14 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Deployment: Updated via GitHub Actions workflow -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <!-- Deployment: Updated via GitHub Actions workflow - v20250125 -->
     <title>Slay Station - Couch Bags & More | Shop Now</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=20250125">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <!-- Font Awesome for social media icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Leaflet.js for map picker -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -32,7 +35,6 @@
                 <li><a href="index.html#products">Bags</a></li>
                 <li><a href="wallets.html">Wallets</a></li>
                 <li><a href="accessories.html">Accessories</a></li>
-                <li><a href="index.html#reels">Reels</a></li>
                 <li><a href="index.html#about">About</a></li>
                 <li><a href="index.html#contact">Contact</a></li>
             </ul>
@@ -114,22 +116,6 @@
             </div>
             <div class="products-grid" id="productsGrid">
                 <!-- Products will be dynamically added here -->
-            </div>
-        </div>
-    </section>
-
-    <!-- Video Section -->
-    <section class="video-section">
-        <div class="container">
-            <h2 class="section-title">Watch Our Collection Come to Life! 🎬</h2>
-            <p class="section-subtitle">See our bags in action and get styling inspiration! ✨</p>
-            
-            <div class="video-grid" id="videoGrid">
-                <!-- Videos will be dynamically added if they exist -->
-            </div>
-            <div id="videoPlaceholder" style="text-align: center; padding: 3rem; color: #666;">
-                <p style="font-size: 1.2rem; margin-bottom: 1rem;">🎬 Videos coming soon!</p>
-                <p>Add your product videos to the videos folder to see them here!</p>
             </div>
         </div>
     </section>
@@ -581,14 +567,30 @@
         ↑
     </button>
 
-    <script src="auth.js"></script>
-    <script src="admin.js"></script>
-    <script src="notifications.js"></script>
-    <script src="delivery-fee-calculator.js"></script>
+    <script src="auth.js?v=20250125"></script>
+    <script src="admin.js?v=20250125"></script>
+    <script src="notifications.js?v=20250125"></script>
+    <script src="delivery-fee-calculator.js?v=20250125"></script>
     <!-- M-Pesa API integration - credentials configured -->
-    <script src="mpesa-api.js"></script>
-    <script src="script.js"></script>
+    <script src="mpesa-api.js?v=20250125"></script>
+    <script src="script.js?v=20250125"></script>
     <script>
+        // Cache busting for iOS Safari
+        const APP_VERSION = '20250125';
+        const storedVersion = localStorage.getItem('appVersion');
+        if (storedVersion && storedVersion !== APP_VERSION) {
+            // Clear all caches and reload
+            if ('caches' in window) {
+                caches.keys().then(names => {
+                    names.forEach(name => caches.delete(name));
+                });
+            }
+            localStorage.clear();
+            sessionStorage.clear();
+            location.reload(true);
+        }
+        localStorage.setItem('appVersion', APP_VERSION);
+        
         // Mobile menu toggle
         document.addEventListener('DOMContentLoaded', function() {
             const mobileMenuToggle = document.getElementById('mobileMenuToggle');
