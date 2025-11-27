@@ -3,11 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Deployment: Updated via GitHub Actions workflow -->
     <title>Slay Station - Couch Bags & More | Shop Now</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for social media icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Leaflet.js for map picker -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -29,7 +32,7 @@
                 <li><a href="index.html#products">Bags</a></li>
                 <li><a href="wallets.html">Wallets</a></li>
                 <li><a href="accessories.html">Accessories</a></li>
-                <li><a href="index.html#slayworld">SlayWorld</a></li>
+                <li><a href="index.html#reels">Reels</a></li>
                 <li><a href="index.html#about">About</a></li>
                 <li><a href="index.html#contact">Contact</a></li>
             </ul>
@@ -111,39 +114,6 @@
             </div>
             <div class="products-grid" id="productsGrid">
                 <!-- Products will be dynamically added here -->
-            </div>
-        </div>
-    </section>
-
-
-    <!-- SlayWorld Section -->
-    <section id="slayworld" class="slayworld-section">
-        <div class="container">
-            <h2 class="section-title">✨ SlayWorld ✨</h2>
-            <p class="section-subtitle">Connect with friends, share your favorites, and discover what's trending! 💖</p>
-            
-            <div class="slayworld-tabs">
-                <button class="slayworld-tab active" onclick="switchSlayWorldTab('shared', this)">📤 Shared with Me</button>
-                <button class="slayworld-tab" onclick="switchSlayWorldTab('trending', this)">🔥 Trending</button>
-                <button class="slayworld-tab" onclick="switchSlayWorldTab('friends', this)">👥 My Friends</button>
-            </div>
-            
-            <div id="sharedTab" class="slayworld-tab-content active">
-                <div id="sharedContent" class="slayworld-content">
-                    <!-- Shared items will be displayed here -->
-                </div>
-            </div>
-            
-            <div id="trendingTab" class="slayworld-tab-content">
-                <div id="trendingContent" class="slayworld-content">
-                    <!-- Trending items will be displayed here -->
-                </div>
-            </div>
-            
-            <div id="friendsTab" class="slayworld-tab-content">
-                <div id="friendsContent" class="slayworld-content">
-                    <!-- Friends list will be displayed here -->
-                </div>
             </div>
         </div>
     </section>
@@ -596,9 +566,12 @@
         <div class="container">
             <p>&copy; 2025 Slay Station. All rights reserved. ✨</p>
             <div class="social-links">
-                <a href="#">Instagram</a>
-                <a href="#">Facebook</a>
-                <a href="#">TikTok</a>
+                <a href="https://wa.me/254719563607" target="_blank" rel="noopener noreferrer" class="social-icon whatsapp-icon" title="WhatsApp">
+                    <i class="fab fa-whatsapp"></i>
+                </a>
+                <a href="https://www.instagram.com/slaystation" target="_blank" rel="noopener noreferrer" class="social-icon instagram-icon" title="Instagram">
+                    <i class="fab fa-instagram"></i>
+                </a>
             </div>
         </div>
     </footer>

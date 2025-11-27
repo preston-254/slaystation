@@ -1669,17 +1669,55 @@ html {
 
 .social-links {
     display: flex;
-    gap: 2rem;
+    gap: 1.5rem;
+    align-items: center;
 }
 
 .social-links a {
     color: white;
     text-decoration: none;
-    transition: color 0.3s;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.social-links a:hover {
-    color: var(--primary-pink);
+.social-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    text-decoration: none;
+}
+
+.social-icon i {
+    font-size: 1.8rem;
+    color: white;
+}
+
+.whatsapp-icon {
+    background: #25D366;
+    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+}
+
+.instagram-icon {
+    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+    box-shadow: 0 4px 15px rgba(188, 24, 136, 0.3);
+}
+
+.social-icon:hover {
+    transform: scale(1.1);
+}
+
+.whatsapp-icon:hover {
+    box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5);
+}
+
+.instagram-icon:hover {
+    box-shadow: 0 6px 20px rgba(188, 24, 136, 0.5);
 }
 
 /* Responsive Design */
@@ -1853,6 +1891,16 @@ html {
     .social-links {
         justify-content: center;
         margin-top: 1rem;
+        gap: 1rem;
+    }
+    
+    .social-icon {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .social-icon i {
+        font-size: 1.5rem;
     }
 
     .search-filter-bar {
@@ -2707,250 +2755,6 @@ html {
     gap: 1rem;
 }
 
-.friend-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem;
-    background: linear-gradient(135deg, rgba(255, 240, 245, 0.5), rgba(248, 232, 245, 0.5));
-    border: 2px solid rgba(255, 107, 157, 0.2);
-    border-radius: 15px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.friend-item:hover {
-    transform: translateX(5px);
-    border-color: var(--primary-pink);
-    box-shadow: 0 4px 15px rgba(255, 107, 157, 0.2);
-}
-
-.friend-avatar {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary-pink), var(--purple));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    flex-shrink: 0;
-    overflow: hidden;
-}
-
-.friend-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.friend-info {
-    flex: 1;
-}
-
-.friend-name {
-    font-weight: 600;
-    color: var(--dark);
-    margin-bottom: 0.2rem;
-}
-
-.friend-email {
-    font-size: 0.85rem;
-    color: #666;
-}
-
-.friend-select-icon {
-    font-size: 1.5rem;
-    color: var(--primary-pink);
-}
-
-/* SlayWorld Section */
-.slayworld-section {
-    padding: 80px 20px;
-    background: linear-gradient(135deg, rgba(255, 240, 245, 0.3), rgba(248, 232, 245, 0.3));
-}
-
-.slayworld-tabs {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    border-bottom: 3px solid rgba(255, 107, 157, 0.2);
-    padding-bottom: 0;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-.slayworld-tab {
-    padding: 1rem 2rem;
-    background: transparent;
-    border: none;
-    border-bottom: 3px solid transparent;
-    font-family: 'Poppins', sans-serif;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #666;
-    cursor: pointer;
-    transition: all 0.3s;
-    position: relative;
-    top: 3px;
-}
-
-.slayworld-tab:hover {
-    color: var(--primary-pink);
-}
-
-.slayworld-tab.active {
-    color: var(--primary-pink);
-    border-bottom-color: var(--primary-pink);
-}
-
-.slayworld-tab-content {
-    display: none;
-}
-
-.slayworld-tab-content.active {
-    display: block;
-}
-
-.slayworld-content {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 2rem;
-}
-
-.shared-item-card,
-.trending-item-card {
-    background: white;
-    border-radius: 20px;
-    padding: 1.5rem;
-    box-shadow: 0 5px 20px rgba(255, 107, 157, 0.15);
-    border: 2px solid rgba(255, 107, 157, 0.1);
-    transition: all 0.3s ease;
-}
-
-.shared-item-card:hover,
-.trending-item-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 30px rgba(255, 107, 157, 0.25);
-    border-color: rgba(255, 107, 157, 0.3);
-}
-
-.shared-item-header {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid rgba(255, 107, 157, 0.1);
-}
-
-.shared-item-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary-pink), var(--purple));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    overflow: hidden;
-}
-
-.shared-item-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.shared-item-from {
-    flex: 1;
-}
-
-.shared-item-from-name {
-    font-weight: 600;
-    color: var(--dark);
-}
-
-.shared-item-from-date {
-    font-size: 0.85rem;
-    color: #666;
-}
-
-.shared-item-product {
-    margin-top: 1rem;
-}
-
-.shared-item-product img {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    border-radius: 15px;
-    margin-bottom: 1rem;
-}
-
-.shared-item-product-name {
-    font-weight: 600;
-    color: var(--dark);
-    margin-bottom: 0.5rem;
-}
-
-.shared-item-product-price {
-    color: var(--primary-pink);
-    font-weight: 700;
-    font-size: 1.2rem;
-    margin-bottom: 1rem;
-}
-
-.shared-item-actions {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.shared-item-actions button {
-    flex: 1;
-    padding: 0.75rem;
-    border: none;
-    border-radius: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-/* Add Friend Section */
-.add-friend-section {
-    background: white;
-    padding: 2rem;
-    border-radius: 20px;
-    box-shadow: 0 5px 20px rgba(255, 107, 157, 0.15);
-    border: 2px solid rgba(255, 107, 157, 0.1);
-}
-
-.add-friend-btn {
-    padding: 1rem 2rem;
-    background: linear-gradient(135deg, var(--primary-pink), var(--purple));
-    color: white;
-    border: none;
-    border-radius: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    white-space: nowrap;
-}
-
-.add-friend-btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 20px rgba(255, 107, 157, 0.4);
-}
-
-.shared-item-view-btn {
-    background: linear-gradient(135deg, var(--primary-pink), var(--purple));
-    color: white;
-}
-
-.shared-item-view-btn:hover {
-    transform: scale(1.05);
-}
-
 @media (max-width: 768px) {
     .reels-container {
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -2963,20 +2767,6 @@ html {
 
     .reel-modal-info {
         max-height: 30vh;
-    }
-
-    .slayworld-tabs {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .slayworld-tab {
-        width: 100%;
-        text-align: center;
-    }
-
-    .slayworld-content {
-        grid-template-columns: 1fr;
     }
 }
 
@@ -3401,11 +3191,6 @@ html {
 
 .share-instagram {
     background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
-    color: white;
-}
-
-.share-facebook {
-    background: #1877F2;
     color: white;
 }
 

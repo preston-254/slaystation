@@ -1,28 +1,84 @@
-name: Deploy to Firebase Hosting
+name: 🚀 Deploy to Firebase Hosting
 
 on:
   push:
     branches:
       - main
+    paths:
+      - 'deploy/**'
+      - '.github/workflows/**'
+      - 'firebase.json'
+      - '.firebaserc'
+  workflow_dispatch: # Allow manual triggers
 
 jobs:
   deploy:
+    name: Deploy to Firebase
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
-      - name: Checkout repo
+      - name: 📥 Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
-      - name: Set up Node.js
+      - name: 📦 Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: '18'
+          cache: 'npm'
 
-      - name: Install Firebase CLI
-        run: npm install -g firebase-tools
+      - name: 🔧 Install Firebase CLI
+        run: npm install -g firebase-tools@latest
 
-      - name: Deploy to Firebase Hosting
+      - name: ✅ Verify deploy folder exists
+        run: |
+          if [ ! -d "deploy" ]; then
+            echo "❌ Error: deploy folder not found!"
+            exit 1
+          fi
+          echo "✅ Deploy folder found"
+          ls -la deploy/ | head -20
+
+      - name: 🔍 Check Firebase configuration
+        run: |
+          if [ ! -f "firebase.json" ]; then
+            echo "❌ Error: firebase.json not found!"
+            exit 1
+          fi
+          echo "✅ Firebase configuration found"
+          cat firebase.json
+
+      - name: 🚀 Deploy to Firebase Hosting
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-        run: firebase deploy --only hosting --project slay-station-28453 --non-interactive
+        run: |
+          echo "🚀 Starting deployment..."
+          firebase deploy --only hosting \
+            --project slay-station-28453 \
+            --non-interactive \
+            --message "Deploy from GitHub Actions - ${{ github.sha }}"
+          
+          echo "✅ Deployment completed successfully!"
+
+      - name: 📊 Deployment Summary
+        if: success()
+        run: |
+          echo "## 🎉 Deployment Successful!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Website:** https://slay-station-28453.firebaseapp.com/" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Triggered by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Time:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_STEP_SUMMARY
+
+      - name: ❌ Deployment Failed
+        if: failure()
+        run: |
+          echo "## ❌ Deployment Failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Please check the logs above for details." >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
 

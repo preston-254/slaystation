@@ -1,0 +1,61 @@
+name: 🧹 Code Quality Check
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  check:
+    name: Check Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🔍 Check for large files
+        run: |
+          echo "Checking for large files (>10MB)..."
+          find . -type f -size +10M -not -path "./.git/*" | while read file; do
+            echo "⚠️ Large file found: $file"
+          done
+
+      - name: 📊 Check deploy folder structure
+        run: |
+          echo "📁 Deploy folder contents:"
+          ls -la deploy/ | head -30
+          
+          echo ""
+          echo "📊 File count:"
+          find deploy/ -type f | wc -l
+          
+          echo ""
+          echo "📦 Total size:"
+          du -sh deploy/
+
+      - name: ✅ Verify required files
+        run: |
+          required_files=(
+            "deploy/index.html"
+            "deploy/styles.css"
+            "deploy/script.js"
+            "firebase.json"
+          )
+          
+          missing_files=()
+          for file in "${required_files[@]}"; do
+            if [ ! -f "$file" ]; then
+              missing_files+=("$file")
+            fi
+          done
+          
+          if [ ${#missing_files[@]} -gt 0 ]; then
+            echo "❌ Missing required files:"
+            printf '%s\n' "${missing_files[@]}"
+            exit 1
+          else
+            echo "✅ All required files present"
+          fi
+

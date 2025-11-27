@@ -730,11 +730,6 @@ function renderProducts(filteredProducts = null) {
                         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" fill="currentColor"/>
                     </svg>
                 </button>
-                <button class="share-btn share-facebook" onclick="shareProduct('${product.name}', '${product.image}', 'facebook')" title="Share on Facebook">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" fill="currentColor"/>
-                    </svg>
-                </button>
             </div>
             <button class="add-to-cart-btn" onclick="addToCart(${product.id})">
                 Add to Cart 🛍️
@@ -831,10 +826,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Load SlayWorld
-    if (typeof loadSlayWorld === 'function') {
-        loadSlayWorld();
-    }
 });
 
 
@@ -2955,282 +2946,8 @@ function subscribeNewsletter(e) {
     }
 }
 
-// SlayWorld Functions
-function switchSlayWorldTab(tab, element) {
-    document.querySelectorAll('.slayworld-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.slayworld-tab-content').forEach(c => c.classList.remove('active'));
-    
-    if (element) {
-        element.classList.add('active');
-    }
-    const tabElement = document.getElementById(tab + 'Tab');
-    if (tabElement) {
-        tabElement.classList.add('active');
-    }
-    
-    // Load content for the tab
-    if (tab === 'shared') {
-        loadSharedContent();
-    } else if (tab === 'trending') {
-        loadTrendingContent();
-    } else if (tab === 'friends') {
-        loadFriendsContent();
-    }
-}
-
-// Load SlayWorld
-function loadSlayWorld() {
-    loadSharedContent();
-}
-
-// Load shared content
-function loadSharedContent() {
-    const user = userAuth ? userAuth.getCurrentUser() : null;
-    const sharedContent = document.getElementById('sharedContent');
-    if (!sharedContent) return;
-    
-    if (!user) {
-        sharedContent.innerHTML = `
-            <div style="text-align: center; padding: 3rem; background: white; border-radius: 20px;">
-                <h3 style="color: var(--dark); margin-bottom: 1rem;">Please Login to View Shared Items</h3>
-                <p style="color: #666; margin-bottom: 1.5rem;">Login to see products and reels shared by your friends! ✨</p>
-                <a href="login.html" style="display: inline-block; padding: 1rem 2rem; background: linear-gradient(135deg, var(--primary-pink), var(--purple)); color: white; border-radius: 15px; text-decoration: none; font-weight: 600;">Login Now</a>
-            </div>
-        `;
-        return;
-    }
-    
-    const notifications = user.notifications || [];
-    const sharedItems = notifications.filter(n => n.type === 'product_shared' || n.type === 'reel_shared');
-    
-    if (sharedItems.length === 0) {
-        sharedContent.innerHTML = `
-            <div style="text-align: center; padding: 3rem; background: white; border-radius: 20px; grid-column: 1 / -1;">
-                <h3 style="color: var(--dark); margin-bottom: 1rem;">No Shared Items Yet</h3>
-                <p style="color: #666;">Your friends haven't shared anything with you yet. Share products and reels with them to get started! ✨</p>
-            </div>
-        `;
-        return;
-    }
-    
-    // Sort by date (newest first)
-    sharedItems.sort((a, b) => new Date(b.date) - new Date(a.date));
-    
-    sharedContent.innerHTML = sharedItems.map(item => {
-        if (item.type === 'product_shared') {
-            const product = products.find(p => p.id === item.productId);
-            if (!product) return '';
-            
-            const date = new Date(item.date).toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'short', 
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            
-            return `
-                <div class="shared-item-card">
-                    <div class="shared-item-header">
-                        <div class="shared-item-avatar">${item.fromUserProfilePicture ? `<img src="${item.fromUserProfilePicture}" alt="${item.fromUserName}">` : '👤'}</div>
-                        <div class="shared-item-from">
-                            <div class="shared-item-from-name">${item.fromUserName}</div>
-                            <div class="shared-item-from-date">${date}</div>
-                        </div>
-                    </div>
-                    <div class="shared-item-product">
-                        <img src="${product.image}" alt="${product.name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22200%22%3E%3Crect fill=%22%23FF6B9D%22 width=%22300%22 height=%22200%22/%3E%3Ctext fill=%22white%22 font-family=%22Arial%22 font-size=%2220%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3E${product.name}%3C/text%3E%3C/svg%3E'">
-                        <div class="shared-item-product-name">${product.name}</div>
-                        <div class="shared-item-product-price">KSH ${product.price.toLocaleString()}</div>
-                        <div class="shared-item-actions">
-                            <button class="shared-item-view-btn" onclick="window.location.href='index.html#products'">🛍️ View Product</button>
-                            <button class="shared-item-view-btn" onclick="addToCart(${product.id})">➕ Add to Cart</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        } else if (item.type === 'reel_shared') {
-            const date = new Date(item.date).toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'short', 
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            
-            const reelIndex = reelVideos.indexOf(item.videoSrc);
-            
-            return `
-                <div class="shared-item-card">
-                    <div class="shared-item-header">
-                        <div class="shared-item-avatar">${item.fromUserProfilePicture ? `<img src="${item.fromUserProfilePicture}" alt="${item.fromUserName}">` : '👤'}</div>
-                        <div class="shared-item-from">
-                            <div class="shared-item-from-name">${item.fromUserName}</div>
-                            <div class="shared-item-from-date">${date}</div>
-                        </div>
-                    </div>
-                    <div class="shared-item-product">
-                        <video src="${item.videoSrc}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 15px; margin-bottom: 1rem;" muted loop></video>
-                        <div class="shared-item-product-name">Shared Reel</div>
-                        <div class="shared-item-actions">
-                            <button class="shared-item-view-btn" onclick="openReelModal(${reelIndex >= 0 ? reelIndex : 0})">▶️ Watch Reel</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-        return '';
-    }).filter(html => html).join('');
-}
-
-// Load trending content
-function loadTrendingContent() {
-    const trendingContent = document.getElementById('trendingContent');
-    if (!trendingContent) return;
-    
-    // Get most shared products
-    const allUsers = userAuth ? userAuth.getUsers() : [];
-    const shareCounts = {};
-    
-    allUsers.forEach(user => {
-        const notifications = user.notifications || [];
-        notifications.forEach(notif => {
-            if (notif.type === 'product_shared' && notif.productId) {
-                shareCounts[notif.productId] = (shareCounts[notif.productId] || 0) + 1;
-            }
-        });
-    });
-    
-    const trendingProducts = Object.entries(shareCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 6)
-        .map(([productId, count]) => {
-            const product = products.find(p => p.id === parseInt(productId));
-            return { product, shareCount: count };
-        })
-        .filter(item => item.product);
-    
-    if (trendingProducts.length === 0) {
-        trendingContent.innerHTML = `
-            <div style="text-align: center; padding: 3rem; background: white; border-radius: 20px; grid-column: 1 / -1;">
-                <h3 style="color: var(--dark); margin-bottom: 1rem;">No Trending Products Yet</h3>
-                <p style="color: #666;">Start sharing products with your friends to see what's trending! 🔥</p>
-            </div>
-        `;
-        return;
-    }
-    
-    trendingContent.innerHTML = trendingProducts.map(({ product, shareCount }) => `
-        <div class="trending-item-card">
-            <img src="${product.image}" alt="${product.name}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 15px; margin-bottom: 1rem;" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22200%22%3E%3Crect fill=%22%23FF6B9D%22 width=%22300%22 height=%22200%22/%3E%3Ctext fill=%22white%22 font-family=%22Arial%22 font-size=%2220%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3E${product.name}%3C/text%3E%3C/svg%3E'">
-            <div class="shared-item-product-name">${product.name}</div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <div class="shared-item-product-price">KSH ${product.price.toLocaleString()}</div>
-                <div style="background: linear-gradient(135deg, var(--coral), var(--primary-pink)); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">🔥 ${shareCount} shares</div>
-            </div>
-            <div class="shared-item-actions">
-                <button class="shared-item-view-btn" onclick="window.location.href='index.html#products'">🛍️ View</button>
-                <button class="shared-item-view-btn" onclick="addToCart(${product.id})">➕ Add to Cart</button>
-            </div>
-        </div>
-    `).join('');
-}
-
-// Load friends content
-function loadFriendsContent() {
-    const user = userAuth ? userAuth.getCurrentUser() : null;
-    const friendsContent = document.getElementById('friendsContent');
-    if (!friendsContent) return;
-    
-    if (!user) {
-        friendsContent.innerHTML = `
-            <div style="text-align: center; padding: 3rem; background: white; border-radius: 20px;">
-                <h3 style="color: var(--dark); margin-bottom: 1rem;">Please Login to View Friends</h3>
-                <p style="color: #666; margin-bottom: 1.5rem;">Login to see your SlayWorld friends! 👥</p>
-                <a href="login.html" style="display: inline-block; padding: 1rem 2rem; background: linear-gradient(135deg, var(--primary-pink), var(--purple)); color: white; border-radius: 15px; text-decoration: none; font-weight: 600;">Login Now</a>
-            </div>
-        `;
-        return;
-    }
-    
-    const allUsers = userAuth ? userAuth.getUsers() : [];
-    const friends = allUsers.filter(u => u.id !== user.id);
-    
-    friendsContent.innerHTML = `
-        <div style="grid-column: 1 / -1; margin-bottom: 2rem;">
-            <div class="add-friend-section">
-                <h3 style="color: var(--dark); margin-bottom: 1rem;">🔍 Add Friend by Email</h3>
-                <div style="display: flex; gap: 1rem;">
-                    <input type="email" id="friendEmailInput" placeholder="Enter friend's email address" 
-                        style="flex: 1; padding: 1rem; border: 2px solid rgba(255, 107, 157, 0.2); border-radius: 15px; font-family: 'Poppins', sans-serif;">
-                    <button class="add-friend-btn" onclick="addFriendByEmail()">➕ Add Friend</button>
-                </div>
-                <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Your friend must have an account on Slay Station</p>
-            </div>
-        </div>
-        ${friends.length === 0 ? `
-            <div style="text-align: center; padding: 3rem; background: white; border-radius: 20px; grid-column: 1 / -1;">
-                <h3 style="color: var(--dark); margin-bottom: 1rem;">No Friends Yet</h3>
-                <p style="color: #666;">Add friends by email or share Slay Station with your friends so they can join your SlayWorld! ✨</p>
-            </div>
-        ` : friends.map(friend => `
-            <div class="friend-item" style="cursor: default;">
-                <div class="friend-avatar">${friend.profilePicture ? `<img src="${friend.profilePicture}" alt="${friend.name}">` : '👤'}</div>
-                <div class="friend-info">
-                    <div class="friend-name">${friend.name}</div>
-                    <div class="friend-email">${friend.email}</div>
-                    <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--primary-pink);">⭐ ${friend.points || 0} Points</div>
-                </div>
-            </div>
-        `).join('')}
-    `;
-}
-
-// Add friend by email
-function addFriendByEmail() {
-    const user = userAuth ? userAuth.getCurrentUser() : null;
-    if (!user) {
-        alert('Please login to add friends! 💕');
-        window.location.href = 'login.html';
-        return;
-    }
-    
-    const emailInput = document.getElementById('friendEmailInput');
-    if (!emailInput) return;
-    
-    const friendEmail = emailInput.value.trim().toLowerCase();
-    if (!friendEmail) {
-        alert('Please enter a friend\'s email address!');
-        emailInput.focus();
-        return;
-    }
-    
-    if (friendEmail === user.email.toLowerCase()) {
-        alert('You cannot add yourself as a friend! 😊');
-        emailInput.value = '';
-        return;
-    }
-    
-    const allUsers = userAuth.getUsers();
-    const friend = allUsers.find(u => u.email.toLowerCase() === friendEmail);
-    
-    if (!friend) {
-        alert('No user found with that email address. Make sure your friend has signed up on Slay Station! 💕');
-        emailInput.value = '';
-        return;
-    }
-    
-    alert(`Friend found! ${friend.name} is now in your SlayWorld! ✨`);
-    emailInput.value = '';
-    
-    // Refresh friends list
-    loadFriendsContent();
-}
-
 // Make functions globally available
 if (typeof window !== 'undefined') {
-    window.switchSlayWorldTab = switchSlayWorldTab;
-    window.addFriendByEmail = addFriendByEmail;
     window.toggleReelLike = toggleReelLike;
     window.toggleReelModalLike = toggleReelModalLike;
 }
@@ -3288,11 +3005,6 @@ function showQuickView(productId) {
                                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" fill="currentColor"/>
                             </svg>
                         </button>
-                        <button class="share-btn share-facebook" onclick="shareProduct('${product.name}', '${product.image}', 'facebook')" title="Share on Facebook">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" fill="currentColor"/>
-                            </svg>
-                        </button>
                     </div>
                 </div>
             </div>
@@ -3330,12 +3042,6 @@ function shareProduct(productName, productImage, platform) {
             return;
         case 'whatsapp':
             shareUrl = `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`;
-            break;
-        case 'facebook':
-            shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
-            break;
-        case 'twitter':
-            shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
             break;
     }
     

@@ -1,0 +1,18 @@
+# Deployment Information
+
+This folder contains the production files deployed to Firebase Hosting.
+
+**Deployment Date:** $(date)
+**Live URL:** https://slay-station-28453.firebaseapp.com/
+**Deployment Method:** GitHub Actions → Firebase Hosting
+
+## Files in this folder are automatically deployed when:
+- Changes are pushed to the `main` branch
+- Files in this `deploy/` folder are modified
+
+## To deploy:
+1. Make changes to files in this folder
+2. Commit: `git add deploy/ && git commit -m "Update website"`
+3. Push: `git push origin main`
+4. Wait 1-2 minutes for automatic deployment
+
