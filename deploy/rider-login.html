@@ -10,6 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <!-- Google Sign-In API -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
         .rider-login-container {
             min-height: 100vh;
@@ -257,6 +259,20 @@
             color: white !important;
         }
         
+        /* Forgot Password Link Hover */
+        a[onclick*="openForgotPasswordModal"]:hover {
+            background: var(--primary-pink) !important;
+            color: white !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3);
+        }
+        
+        /* Password Toggle Button Hover */
+        button[onclick*="togglePasswordVisibility"]:hover,
+        button[onclick*="toggleNewPasswordVisibility"]:hover {
+            color: var(--primary-pink) !important;
+        }
+        
         .forgot-password-content input {
             width: 100%;
             padding: 1rem;
@@ -299,14 +315,21 @@
                 <span>Sign in with Google</span>
             </button>
             
+            <!-- Forgot Password Link (Always Visible) -->
+            <div style="text-align: center; margin: 1.5rem 0;">
+                <a href="#" onclick="event.preventDefault(); openForgotPasswordModal();" style="color: var(--primary-pink); text-decoration: none; font-weight: 600; font-size: 0.95rem; display: inline-block; padding: 0.75rem 1.5rem; border: 2px solid var(--primary-pink); border-radius: 10px; transition: all 0.3s;">
+                    🔑 Forgot Password?
+                </a>
+            </div>
+            
             <div class="divider">OR</div>
             
             <!-- Fallback Email/Password Form -->
             <form id="riderLoginForm" onsubmit="handleRiderLogin(event)" style="display: none;">
                 <input type="email" id="riderEmail" placeholder="Enter your Gmail/Email" required autocomplete="email">
                 <div style="position: relative; margin-bottom: 1rem;">
-                    <input type="password" id="riderPassword" placeholder="Enter your password" required autocomplete="current-password" minlength="6" style="padding-right: 140px;">
-                    <a href="#" onclick="event.preventDefault(); openForgotPasswordModal();" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--primary-pink); text-decoration: none; font-size: 0.85rem; font-weight: 600; white-space: nowrap; z-index: 10;">Forgot Password?</a>
+                    <input type="password" id="riderPassword" placeholder="Enter your password" required autocomplete="current-password" minlength="6" style="padding-right: 3rem; width: 100%; box-sizing: border-box;">
+                    <button type="button" id="toggleRiderPassword" onclick="togglePasswordVisibility('riderPassword', 'toggleRiderPassword')" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: #666; cursor: pointer; padding: 0.5rem; font-size: 1.2rem; z-index: 10; transition: color 0.3s;" title="Show/Hide Password">👁️</button>
                 </div>
                 <button type="submit" class="rider-login-btn">Login as Rider 🏍️</button>
             </form>
@@ -319,14 +342,32 @@
                         <button class="close-forgot-modal" onclick="closeForgotPasswordModal()">✕</button>
                     </div>
                     <form id="forgotPasswordForm" onsubmit="handleForgotPassword(event)">
-                        <p style="color: #666; margin-bottom: 1.5rem; font-size: 0.9rem;">Enter your email address and we'll help you reset your password.</p>
+                        <p style="color: #666; margin-bottom: 1.5rem; font-size: 0.9rem;">Enter your email address and we'll send you a password reset link.</p>
                         <input type="email" id="forgotEmail" placeholder="Enter your email address" required autocomplete="email">
-                        <button type="submit" class="rider-login-btn">Reset Password 🔑</button>
+                        <button type="submit" class="rider-login-btn">Send Reset Link 📧</button>
                     </form>
+                    <div id="emailSentSection" style="display: none; margin-top: 1.5rem;">
+                        <div style="background: #e8f5e9; border: 2px solid #4caf50; border-radius: 10px; padding: 1.5rem; text-align: center;">
+                            <p style="color: #2e7d32; font-weight: 600; margin-bottom: 1rem; font-size: 1.1rem;">📧 Email Sent!</p>
+                            <p style="color: #666; margin-bottom: 1rem; font-size: 0.9rem;">We've sent a password reset link to:</p>
+                            <p style="color: var(--primary-pink); font-weight: 600; margin-bottom: 1.5rem; font-size: 1rem;" id="sentEmailAddress"></p>
+                            <div style="background: white; border: 2px solid #e0e0e0; border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
+                                <p style="color: #666; font-size: 0.85rem; margin-bottom: 0.5rem;">Reset Link:</p>
+                                <a href="#" id="resetLink" style="color: var(--primary-pink); text-decoration: none; font-weight: 600; word-break: break-all; font-size: 0.9rem;" onclick="event.preventDefault(); window.open(this.href, '_blank');">Click here to reset password</a>
+                            </div>
+                            <p style="color: #666; font-size: 0.85rem; margin: 0;">⚠️ Note: In production, this link would be sent via email. For now, copy the link above.</p>
+                        </div>
+                    </div>
                     <div id="resetPasswordSection" style="display: none; margin-top: 1.5rem;">
                         <p style="color: #666; margin-bottom: 1rem; font-size: 0.9rem;">Enter your new password:</p>
-                        <input type="password" id="newPassword" placeholder="New password (min 6 characters)" required minlength="6" style="width: 100%; padding: 1rem; border: 2px solid var(--light-bg); border-radius: 10px; font-family: 'Poppins', sans-serif; font-size: 1rem; margin-bottom: 1rem;">
-                        <input type="password" id="confirmPassword" placeholder="Confirm new password" required minlength="6" style="width: 100%; padding: 1rem; border: 2px solid var(--light-bg); border-radius: 10px; font-family: 'Poppins', sans-serif; font-size: 1rem; margin-bottom: 1rem;">
+                        <div style="position: relative; margin-bottom: 1rem;">
+                            <input type="password" id="newPassword" placeholder="New password (min 6 characters)" required minlength="6" style="width: 100%; padding: 1rem; padding-right: 3rem; border: 2px solid var(--light-bg); border-radius: 10px; font-family: 'Poppins', sans-serif; font-size: 1rem; box-sizing: border-box;">
+                            <button type="button" onclick="toggleNewPasswordVisibility('newPassword', 'toggleNewPassword')" id="toggleNewPassword" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: #666; cursor: pointer; padding: 0.5rem; font-size: 1.2rem; z-index: 10; transition: color 0.3s;" title="Show/Hide Password">👁️</button>
+                        </div>
+                        <div style="position: relative; margin-bottom: 1rem;">
+                            <input type="password" id="confirmPassword" placeholder="Confirm new password" required minlength="6" style="width: 100%; padding: 1rem; padding-right: 3rem; border: 2px solid var(--light-bg); border-radius: 10px; font-family: 'Poppins', sans-serif; font-size: 1rem; box-sizing: border-box;">
+                            <button type="button" onclick="toggleNewPasswordVisibility('confirmPassword', 'toggleConfirmPassword')" id="toggleConfirmPassword" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: #666; cursor: pointer; padding: 0.5rem; font-size: 1.2rem; z-index: 10; transition: color 0.3s;" title="Show/Hide Password">👁️</button>
+                        </div>
                         <button type="button" class="rider-login-btn" onclick="confirmPasswordReset()">Update Password ✨</button>
                     </div>
                     <button type="button" class="back-to-login-btn" onclick="closeForgotPasswordModal()" style="width: 100%; padding: 0.75rem; background: transparent; color: var(--primary-pink); border: 2px solid var(--primary-pink); border-radius: 10px; font-weight: 600; font-size: 0.9rem; cursor: pointer; margin-top: 1rem;">Back to Login</button>
@@ -686,8 +727,13 @@
                 // Reset form
                 const form = document.getElementById('forgotPasswordForm');
                 const resetSection = document.getElementById('resetPasswordSection');
-                if (form) form.reset();
+                const emailSentSection = document.getElementById('emailSentSection');
+                if (form) {
+                    form.reset();
+                    form.style.display = 'block';
+                }
                 if (resetSection) resetSection.style.display = 'none';
+                if (emailSentSection) emailSentSection.style.display = 'none';
                 resetEmail = '';
             }
         }
@@ -721,15 +767,111 @@
                 return;
             }
             
-            // Store email for password reset
-            resetEmail = email;
+            // Generate reset token
+            const resetToken = generateResetToken();
+            const resetExpiry = Date.now() + (24 * 60 * 60 * 1000); // 24 hours from now
             
-            // Show password reset section
-            const resetSection = document.getElementById('resetPasswordSection');
-            if (resetSection) {
-                resetSection.style.display = 'block';
+            // Store reset token in localStorage (in production, this would be stored on server)
+            const resetTokens = JSON.parse(localStorage.getItem('slayStationResetTokens') || '{}');
+            resetTokens[email] = {
+                token: resetToken,
+                expiry: resetExpiry,
+                createdAt: Date.now()
+            };
+            localStorage.setItem('slayStationResetTokens', JSON.stringify(resetTokens));
+            
+            // Generate reset link
+            const resetLink = `${window.location.origin}${window.location.pathname.replace('rider-login.html', 'reset-password.html')}?token=${resetToken}&email=${encodeURIComponent(email)}`;
+            
+            // Option 1: Send via EmailJS (No backend needed!)
+            const EMAILJS_PUBLIC_KEY = 'S28nx8TWnsKEpl8vV';
+            const EMAILJS_SERVICE_ID = 'service_xc8nrxm';
+            const EMAILJS_TEMPLATE_ID = 'template_gaq4yle';
+            
+            // Option 2: Send via Backend API (if you prefer)
+            const EMAIL_SERVICE_URL = 'https://your-email-service.onrender.com/api/send-reset-email'; // Your backend URL
+            
+            // Try EmailJS first (easier, no backend needed)
+            if (typeof emailjs !== 'undefined') {
+                try {
+                    emailjs.init(EMAILJS_PUBLIC_KEY);
+                    
+                    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+                        to_email: email,
+                        reset_link: resetLink,
+                        user_email: email
+                    });
+                    
+                    showSuccess('Password reset email sent! Please check your inbox.');
+                    
+                    // Hide form and show success
+                    const form = document.getElementById('forgotPasswordForm');
+                    const emailSentSection = document.getElementById('emailSentSection');
+                    if (form) form.style.display = 'none';
+                    if (emailSentSection) {
+                        emailSentSection.style.display = 'block';
+                        document.getElementById('sentEmailAddress').textContent = email;
+                        document.getElementById('resetLink').href = resetLink;
+                        document.getElementById('resetLink').textContent = resetLink;
+                    }
+                    return;
+                } catch (emailjsError) {
+                    console.warn('EmailJS error, trying backend fallback:', emailjsError);
+                }
             }
-            showSuccess('Email verified! Please enter your new password.');
+            
+            // Fallback: Try backend API
+            if (EMAIL_SERVICE_URL !== 'https://your-email-service.onrender.com/api/send-reset-email') {
+                try {
+                    const response = await fetch(EMAIL_SERVICE_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            email: email,
+                            resetLink: resetLink
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showSuccess('Password reset email sent! Please check your inbox.');
+                        const form = document.getElementById('forgotPasswordForm');
+                        const emailSentSection = document.getElementById('emailSentSection');
+                        if (form) form.style.display = 'none';
+                        if (emailSentSection) {
+                            emailSentSection.style.display = 'block';
+                            document.getElementById('sentEmailAddress').textContent = email;
+                            document.getElementById('resetLink').href = resetLink;
+                            document.getElementById('resetLink').textContent = resetLink;
+                        }
+                        return;
+                    }
+                } catch (backendError) {
+                    console.warn('Backend email service error:', backendError);
+                }
+            }
+            
+            // Final fallback: Show link on screen
+            showSuccess('Password reset link generated! Check the link below.');
+            const form = document.getElementById('forgotPasswordForm');
+            const emailSentSection = document.getElementById('emailSentSection');
+            if (form) form.style.display = 'none';
+            if (emailSentSection) {
+                emailSentSection.style.display = 'block';
+                document.getElementById('sentEmailAddress').textContent = email;
+                document.getElementById('resetLink').href = resetLink;
+                document.getElementById('resetLink').textContent = resetLink;
+            }
+        }
+        
+        function generateResetToken() {
+            // Generate a secure random token
+            const array = new Uint8Array(32);
+            crypto.getRandomValues(array);
+            return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
         }
         
         function confirmPasswordReset() {
@@ -795,6 +937,42 @@
                 }
             }
         });
+        
+        // Toggle Password Visibility
+        function togglePasswordVisibility(inputId, buttonId) {
+            const passwordInput = document.getElementById(inputId);
+            const toggleButton = document.getElementById(buttonId);
+            
+            if (passwordInput && toggleButton) {
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    toggleButton.textContent = '🙈';
+                    toggleButton.title = 'Hide Password';
+                } else {
+                    passwordInput.type = 'password';
+                    toggleButton.textContent = '👁️';
+                    toggleButton.title = 'Show Password';
+                }
+            }
+        }
+        
+        // Also toggle for new password fields in forgot password modal
+        function toggleNewPasswordVisibility(inputId, buttonId) {
+            const passwordInput = document.getElementById(inputId);
+            const toggleButton = document.getElementById(buttonId);
+            
+            if (passwordInput && toggleButton) {
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    toggleButton.textContent = '🙈';
+                    toggleButton.title = 'Hide Password';
+                } else {
+                    passwordInput.type = 'password';
+                    toggleButton.textContent = '👁️';
+                    toggleButton.title = 'Show Password';
+                }
+            }
+        }
     </script>
 </body>
 </html>

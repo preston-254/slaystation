@@ -8,6 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
         .auth-container {
             min-height: 100vh;
@@ -115,6 +117,98 @@
                 transform: translateY(0);
             }
         }
+        
+        /* Forgot Password Modal */
+        .forgot-password-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .forgot-password-content {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 450px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .forgot-password-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .forgot-password-header h2 {
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, var(--primary-pink), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0;
+        }
+        
+        .close-forgot-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #666;
+            cursor: pointer;
+            padding: 0.5rem;
+            line-height: 1;
+            transition: color 0.3s;
+        }
+        
+        .close-forgot-modal:hover {
+            color: var(--primary-pink);
+        }
+        
+        .back-to-login-btn:hover {
+            background: var(--primary-pink) !important;
+            color: white !important;
+        }
+        
+        a[onclick*="openForgotPasswordModal"]:hover {
+            background: var(--primary-pink) !important;
+            color: white !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3);
+        }
+        
+        /* Password Toggle Button Hover */
+        button[onclick*="togglePasswordVisibility"]:hover,
+        button[onclick*="toggleNewPasswordVisibility"]:hover {
+            color: var(--primary-pink) !important;
+        }
     </style>
 </head>
 <body>
@@ -139,9 +233,41 @@
             
             <form id="loginForm" onsubmit="handleLogin(event)">
                 <input type="email" id="loginEmail" placeholder="Email" required>
-                <input type="password" id="loginPassword" placeholder="Password" required>
+                <div style="position: relative; margin-bottom: 1rem;">
+                    <input type="password" id="loginPassword" placeholder="Password" required style="width: 100%; padding-right: 3rem; box-sizing: border-box;">
+                    <button type="button" id="togglePassword" onclick="togglePasswordVisibility('loginPassword', 'togglePassword')" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: #666; cursor: pointer; padding: 0.5rem; font-size: 1.2rem; z-index: 10; transition: color 0.3s;" title="Show/Hide Password">👁️</button>
+                </div>
                 <button type="submit" class="auth-btn">Login ✨</button>
             </form>
+            
+            <!-- Forgot Password Link (Always Visible) -->
+            <div style="text-align: center; margin: 1rem 0;">
+                <a href="#" onclick="event.preventDefault(); openForgotPasswordModal();" style="color: var(--primary-pink); text-decoration: none; font-weight: 600; font-size: 0.9rem; display: inline-block; padding: 0.5rem 1rem; border: 2px solid var(--primary-pink); border-radius: 10px; transition: all 0.3s;">
+                    🔑 Forgot Password?
+                </a>
+            </div>
+            
+            <!-- Forgot Password Modal -->
+            <div id="forgotPasswordModal" class="forgot-password-modal" style="display: none;">
+                <div class="forgot-password-content">
+                    <div class="forgot-password-header">
+                        <h2>🔐 Reset Password</h2>
+                        <button class="close-forgot-modal" onclick="closeForgotPasswordModal()">✕</button>
+                    </div>
+                    <form id="forgotPasswordForm" onsubmit="handleForgotPassword(event)">
+                        <p style="color: #666; margin-bottom: 1.5rem; font-size: 0.9rem;">Enter your email address and we'll help you reset your password.</p>
+                        <input type="email" id="forgotEmail" placeholder="Enter your email address" required autocomplete="email">
+                        <button type="submit" class="auth-btn">Reset Password 🔑</button>
+                    </form>
+                    <div id="resetPasswordSection" style="display: none; margin-top: 1.5rem;">
+                        <p style="color: #666; margin-bottom: 1rem; font-size: 0.9rem;">Enter your new password:</p>
+                        <input type="password" id="newPassword" placeholder="New password (min 6 characters)" required minlength="6" style="width: 100%; padding: 1rem; border: 2px solid var(--light-bg); border-radius: 10px; font-family: 'Poppins', sans-serif; font-size: 1rem; margin-bottom: 1rem; box-sizing: border-box;">
+                        <input type="password" id="confirmPassword" placeholder="Confirm new password" required minlength="6" style="width: 100%; padding: 1rem; border: 2px solid var(--light-bg); border-radius: 10px; font-family: 'Poppins', sans-serif; font-size: 1rem; margin-bottom: 1rem; box-sizing: border-box;">
+                        <button type="button" class="auth-btn" onclick="confirmPasswordReset()">Update Password ✨</button>
+                    </div>
+                    <button type="button" class="back-to-login-btn" onclick="closeForgotPasswordModal()" style="width: 100%; padding: 0.75rem; background: transparent; color: var(--primary-pink); border: 2px solid var(--primary-pink); border-radius: 10px; font-weight: 600; font-size: 0.9rem; cursor: pointer; margin-top: 1rem;">Back to Login</button>
+                </div>
+            </div>
             
             <div class="auth-links">
                 <p>Don't have an account? <a href="signup.html">Sign Up</a></p>
@@ -291,6 +417,259 @@
             setTimeout(() => {
                 confettiContainer.remove();
             }, 3000);
+        }
+        
+        // Forgot Password Functions
+        let resetEmail = '';
+        
+        function openForgotPasswordModal() {
+            const modal = document.getElementById('forgotPasswordModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        function closeForgotPasswordModal() {
+            const modal = document.getElementById('forgotPasswordModal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+                const form = document.getElementById('forgotPasswordForm');
+                const resetSection = document.getElementById('resetPasswordSection');
+                if (form) form.reset();
+                if (resetSection) resetSection.style.display = 'none';
+                resetEmail = '';
+            }
+        }
+        
+        function handleForgotPassword(e) {
+            e.preventDefault();
+            
+            const emailInput = document.getElementById('forgotEmail');
+            const email = emailInput.value.trim().toLowerCase();
+            
+            if (!email || !email.includes('@')) {
+                showError('Please enter a valid email address');
+                if (emailInput) emailInput.focus();
+                return;
+            }
+            
+            // Check if user exists
+            const users = JSON.parse(localStorage.getItem('slayStationUsers') || '[]');
+            const user = users.find(u => u.email.toLowerCase() === email);
+            
+            if (!user) {
+                showError('Account not found. Please sign up first.');
+                if (emailInput) emailInput.focus();
+                return;
+            }
+            
+            // Generate reset token
+            const resetToken = generateResetToken();
+            const resetExpiry = Date.now() + (24 * 60 * 60 * 1000); // 24 hours from now
+            
+            // Store reset token in localStorage (in production, this would be stored on server)
+            const resetTokens = JSON.parse(localStorage.getItem('slayStationResetTokens') || '{}');
+            resetTokens[email] = {
+                token: resetToken,
+                expiry: resetExpiry,
+                createdAt: Date.now()
+            };
+            localStorage.setItem('slayStationResetTokens', JSON.stringify(resetTokens));
+            
+            // Generate reset link
+            const resetLink = `${window.location.origin}${window.location.pathname.replace('login.html', 'reset-password.html')}?token=${resetToken}&email=${encodeURIComponent(email)}`;
+            
+            // Option 1: Send via EmailJS (No backend needed!)
+            const EMAILJS_PUBLIC_KEY = 'S28nx8TWnsKEpl8vV';
+            const EMAILJS_SERVICE_ID = 'service_xc8nrxm';
+            const EMAILJS_TEMPLATE_ID = 'template_gaq4yle';
+            
+            // Option 2: Send via Backend API (if you prefer)
+            const EMAIL_SERVICE_URL = 'https://your-email-service.onrender.com/api/send-reset-email'; // Your backend URL
+            
+            // Try EmailJS first (easier, no backend needed)
+            if (typeof emailjs !== 'undefined') {
+                try {
+                    emailjs.init(EMAILJS_PUBLIC_KEY);
+                    
+                    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+                        to_email: email,
+                        reset_link: resetLink,
+                        user_email: email
+                    });
+                    
+                    showSuccess('Password reset email sent! Please check your inbox.');
+                    
+                    // Hide form and show success
+                    const form = document.getElementById('forgotPasswordForm');
+                    const emailSentSection = document.getElementById('emailSentSection');
+                    if (form) form.style.display = 'none';
+                    if (emailSentSection) {
+                        emailSentSection.style.display = 'block';
+                        document.getElementById('sentEmailAddress').textContent = email;
+                        document.getElementById('resetLink').href = resetLink;
+                        document.getElementById('resetLink').textContent = resetLink;
+                    }
+                    return;
+                } catch (emailjsError) {
+                    console.warn('EmailJS error, trying backend fallback:', emailjsError);
+                }
+            }
+            
+            // Fallback: Try backend API
+            if (EMAIL_SERVICE_URL !== 'https://your-email-service.onrender.com/api/send-reset-email') {
+                try {
+                    const response = await fetch(EMAIL_SERVICE_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            email: email,
+                            resetLink: resetLink
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showSuccess('Password reset email sent! Please check your inbox.');
+                        const form = document.getElementById('forgotPasswordForm');
+                        const emailSentSection = document.getElementById('emailSentSection');
+                        if (form) form.style.display = 'none';
+                        if (emailSentSection) {
+                            emailSentSection.style.display = 'block';
+                            document.getElementById('sentEmailAddress').textContent = email;
+                            document.getElementById('resetLink').href = resetLink;
+                            document.getElementById('resetLink').textContent = resetLink;
+                        }
+                        return;
+                    }
+                } catch (backendError) {
+                    console.warn('Backend email service error:', backendError);
+                }
+            }
+            
+            // Final fallback: Show link on screen
+            showSuccess('Password reset link generated! Check the link below.');
+            const form = document.getElementById('forgotPasswordForm');
+            const emailSentSection = document.getElementById('emailSentSection');
+            if (form) form.style.display = 'none';
+            if (emailSentSection) {
+                emailSentSection.style.display = 'block';
+                document.getElementById('sentEmailAddress').textContent = email;
+                document.getElementById('resetLink').href = resetLink;
+                document.getElementById('resetLink').textContent = resetLink;
+            }
+        }
+        
+        function generateResetToken() {
+            // Generate a secure random token
+            const array = new Uint8Array(32);
+            crypto.getRandomValues(array);
+            return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+        }
+        
+        function confirmPasswordReset() {
+            const newPasswordInput = document.getElementById('newPassword');
+            const confirmPasswordInput = document.getElementById('confirmPassword');
+            
+            if (!newPasswordInput || !confirmPasswordInput) return;
+            
+            const newPassword = newPasswordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+            
+            if (!newPassword || newPassword.length < 6) {
+                showError('Password must be at least 6 characters long');
+                newPasswordInput.focus();
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                showError('Passwords do not match. Please try again.');
+                confirmPasswordInput.focus();
+                return;
+            }
+            
+            // Update password in localStorage
+            const users = JSON.parse(localStorage.getItem('slayStationUsers') || '[]');
+            const userIndex = users.findIndex(u => u.email.toLowerCase() === resetEmail);
+            
+            if (userIndex !== -1) {
+                users[userIndex].password = newPassword;
+                localStorage.setItem('slayStationUsers', JSON.stringify(users));
+                
+                showSuccess('Password reset successfully! You can now login with your new password.');
+                
+                // Close modal after a delay
+                setTimeout(() => {
+                    closeForgotPasswordModal();
+                    // Pre-fill email in login form
+                    const emailInput = document.getElementById('loginEmail');
+                    if (emailInput) {
+                        emailInput.value = resetEmail;
+                        emailInput.focus();
+                    }
+                }, 2000);
+            } else {
+                showError('Error updating password. Please try again.');
+            }
+        }
+        
+        // Close modal when clicking outside
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('forgotPasswordModal');
+            if (modal && e.target === modal) {
+                closeForgotPasswordModal();
+            }
+        });
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('forgotPasswordModal');
+                if (modal && modal.style.display === 'flex') {
+                    closeForgotPasswordModal();
+                }
+            }
+        });
+        
+        // Toggle Password Visibility
+        function togglePasswordVisibility(inputId, buttonId) {
+            const passwordInput = document.getElementById(inputId);
+            const toggleButton = document.getElementById(buttonId);
+            
+            if (passwordInput && toggleButton) {
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    toggleButton.textContent = '🙈';
+                    toggleButton.title = 'Hide Password';
+                } else {
+                    passwordInput.type = 'password';
+                    toggleButton.textContent = '👁️';
+                    toggleButton.title = 'Show Password';
+                }
+            }
+        }
+        
+        // Also toggle for new password fields in forgot password modal
+        function toggleNewPasswordVisibility(inputId, buttonId) {
+            const passwordInput = document.getElementById(inputId);
+            const toggleButton = document.getElementById(buttonId);
+            
+            if (passwordInput && toggleButton) {
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    toggleButton.textContent = '🙈';
+                    toggleButton.title = 'Hide Password';
+                } else {
+                    passwordInput.type = 'password';
+                    toggleButton.textContent = '👁️';
+                    toggleButton.title = 'Show Password';
+                }
+            }
         }
     </script>
 </body>
