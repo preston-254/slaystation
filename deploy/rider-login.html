@@ -8,6 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Google Sign-In API -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         .rider-login-container {
             min-height: 100vh;
@@ -94,13 +96,19 @@
     <div class="rider-login-container">
         <div class="rider-login-box">
             <h1>🚴 Rider Login</h1>
-            <p>Sign in with your Gmail/Email to access deliveries</p>
+            <p>Sign in with Google to access deliveries</p>
             
             <div style="background: linear-gradient(135deg, #E3F2FD, #BBDEFB); padding: 1rem; border-radius: 10px; margin-bottom: 1.5rem; border: 2px solid #2196F3;">
                 <p style="margin: 0; color: #1976D2; font-weight: 600; font-size: 0.9rem;">🔒 Restricted Access - Authorized Riders Only</p>
             </div>
             
-            <form id="riderLoginForm" onsubmit="handleRiderLogin(event)">
+            <!-- Google Sign-In Button -->
+            <div id="googleSignInButton" style="margin-bottom: 1.5rem;"></div>
+            
+            <div style="text-align: center; margin: 1.5rem 0; color: #666; font-size: 0.9rem;">OR</div>
+            
+            <!-- Fallback Email/Password Form -->
+            <form id="riderLoginForm" onsubmit="handleRiderLogin(event)" style="display: none;">
                 <input type="email" id="riderEmail" placeholder="Enter your Gmail/Email" required autocomplete="email">
                 <input type="password" id="riderPassword" placeholder="Enter your password" required autocomplete="current-password" minlength="6">
                 <button type="submit" class="rider-login-btn">Login as Rider 🏍️</button>
@@ -118,12 +126,115 @@
     <script src="auth.js"></script>
     <script src="rider.js"></script>
     <script>
-        // Wait for scripts to load
+        // Allowed rider emails - only these can login via Google
+        const ALLOWED_RIDER_EMAILS = [
+            'preston.mwendwa@riarauniversity.ac.ke',
+            'kangethekelvin56@gmail.com',
+            'prestonmugo83@gmail.com'
+        ];
+        
+        // Wait for scripts and Google Sign-In to load
         document.addEventListener('DOMContentLoaded', function() {
             if (typeof window.login === 'undefined' || typeof window.authenticateRider === 'undefined') {
                 console.error('Auth or rider functions not loaded. Please refresh the page.');
             }
+            
+            // Initialize Google Sign-In
+            window.onload = function() {
+                google.accounts.id.initialize({
+                    client_id: 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com', // Replace with your actual Google Client ID
+                    callback: handleGoogleSignIn,
+                    auto_select: false,
+                    cancel_on_tap_outside: true
+                });
+                
+                google.accounts.id.renderButton(
+                    document.getElementById('googleSignInButton'),
+                    {
+                        theme: 'outline',
+                        size: 'large',
+                        width: '100%',
+                        text: 'signin_with',
+                        locale: 'en'
+                    }
+                );
+                
+                // Also show One Tap prompt (optional)
+                google.accounts.id.prompt((notification) => {
+                    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                        // One Tap not available or skipped
+                    }
+                });
+            };
         });
+        
+        // Handle Google Sign-In callback
+        function handleGoogleSignIn(response) {
+            try {
+                // Decode the JWT token
+                const payload = JSON.parse(atob(response.credential.split('.')[1]));
+                const email = payload.email.toLowerCase();
+                const name = payload.name || payload.given_name || 'Rider';
+                
+                // Check if email is in allowed list
+                if (!ALLOWED_RIDER_EMAILS.includes(email)) {
+                    showError('Access Denied: This email is not authorized for rider access. Please contact admin. 🔒');
+                    google.accounts.id.disableAutoSelect();
+                    return;
+                }
+                
+                // Check if user exists in our system
+                const users = JSON.parse(localStorage.getItem('slayStationUsers') || '[]');
+                let user = users.find(u => u.email.toLowerCase() === email);
+                
+                if (!user) {
+                    // Create new rider account automatically
+                    const newUser = {
+                        id: Date.now(),
+                        email: email,
+                        password: null, // No password for Google login
+                        name: name,
+                        phone: '',
+                        points: 0,
+                        orders: [],
+                        createdAt: new Date().toISOString(),
+                        level: 'Bronze',
+                        loginMethod: 'google',
+                        googleId: payload.sub
+                    };
+                    
+                    users.push(newUser);
+                    localStorage.setItem('slayStationUsers', JSON.stringify(users));
+                    user = newUser;
+                } else {
+                    // Update user with Google info if needed
+                    if (!user.loginMethod) {
+                        user.loginMethod = 'google';
+                        user.googleId = payload.sub;
+                        const userIndex = users.findIndex(u => u.id === user.id);
+                        if (userIndex !== -1) {
+                            users[userIndex] = user;
+                            localStorage.setItem('slayStationUsers', JSON.stringify(users));
+                        }
+                    }
+                }
+                
+                // Set current user session
+                localStorage.setItem('slayStationCurrentUser', JSON.stringify(user));
+                localStorage.setItem('riderEmail', email);
+                
+                showSuccess('Welcome back! Redirecting to rider dashboard...');
+                
+                // Redirect to rider dashboard
+                setTimeout(() => {
+                    window.location.href = 'rider-dashboard.html';
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Google Sign-In error:', error);
+                showError('An error occurred during Google Sign-In. Please try again.');
+            }
+        }
         
         function handleRiderLogin(e) {
             e.preventDefault();

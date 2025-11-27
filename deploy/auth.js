@@ -8,104 +8,164 @@ class UserAuth {
 
     // Sign up new user
     signup(email, password, name, phone) {
-        const users = this.getUsers();
-        
-        // Check if user already exists
-        if (users.find(u => u.email === email)) {
-            return { success: false, message: 'Email already registered! 💕' };
-        }
+        try {
+            const users = this.getUsers();
+            
+            // Normalize email
+            const normalizedEmail = email.toLowerCase().trim();
+            
+            // Check if user already exists
+            const existingUser = users.find(u => u.email.toLowerCase().trim() === normalizedEmail);
+            if (existingUser) {
+                return { success: false, message: 'Email already registered! Please login instead. 💕' };
+            }
 
-        // Create new user
-        const newUser = {
-            id: Date.now(),
-            email: email.toLowerCase().trim(), // Normalize email
-            password: password, // In production, hash this!
-            name: name,
-            phone: phone,
-            points: 100, // Welcome bonus points!
-            orders: [],
-            createdAt: new Date().toISOString(),
-            level: 'Bronze'
-        };
+            // Create new user
+            const newUser = {
+                id: Date.now(),
+                email: normalizedEmail,
+                password: password, // In production, hash this!
+                name: name.trim(),
+                phone: phone.trim(),
+                points: 100, // Welcome bonus points!
+                orders: [],
+                createdAt: new Date().toISOString(),
+                level: 'Bronze',
+                pointsHistory: [{
+                    amount: 100,
+                    reason: 'Welcome bonus',
+                    date: new Date().toISOString()
+                }]
+            };
 
-        users.push(newUser);
-        localStorage.setItem('slayStationUsers', JSON.stringify(users));
-        
-        // Auto login and save user session
-        const loginResult = this.login(newUser.email, password);
-        
-        // Ensure user is saved to session
-        if (loginResult.success && loginResult.user) {
-            this.currentUser = loginResult.user;
-            localStorage.setItem('slayStationCurrentUser', JSON.stringify(loginResult.user));
+            users.push(newUser);
+            
+            // Save users array - ensure it's saved properly
+            try {
+                localStorage.setItem('slayStationUsers', JSON.stringify(users));
+                // Verify save
+                const verifyUsers = JSON.parse(localStorage.getItem('slayStationUsers') || '[]');
+                if (verifyUsers.length !== users.length) {
+                    console.error('User save verification failed');
+                    return { success: false, message: 'Failed to save account. Please try again.' };
+                }
+            } catch (storageError) {
+                console.error('Storage error:', storageError);
+                return { success: false, message: 'Storage error. Please check browser settings.' };
+            }
+            
+            // Auto login and save user session
+            const loginResult = this.login(newUser.email, password);
+            
+            // Ensure user is saved to session
+            if (loginResult.success && loginResult.user) {
+                this.currentUser = loginResult.user;
+                try {
+                    localStorage.setItem('slayStationCurrentUser', JSON.stringify(loginResult.user));
+                    // Verify session save
+                    const verifySession = localStorage.getItem('slayStationCurrentUser');
+                    if (!verifySession) {
+                        console.error('Session save failed');
+                    }
+                } catch (sessionError) {
+                    console.error('Session save error:', sessionError);
+                }
+            }
+            
+            return { 
+                success: true, 
+                message: `Welcome ${name}! You've earned 100 welcome points! 🎉✨`,
+                user: newUser,
+                redirect: loginResult.redirect || null
+            };
+        } catch (error) {
+            console.error('Signup error:', error);
+            return { success: false, message: 'An error occurred. Please try again.' };
         }
-        
-        return { 
-            success: true, 
-            message: `Welcome ${name}! You've earned 100 welcome points! 🎉✨`,
-            user: newUser,
-            redirect: loginResult.redirect || null
-        };
     }
 
     // Login user
     login(email, password, isRiderLogin = false) {
-        const users = this.getUsers();
-        // Case-insensitive email matching
-        const emailLower = email.toLowerCase().trim();
-        const user = users.find(u => u.email.toLowerCase().trim() === emailLower && u.password === password);
-        
-        if (!user) {
-            return { success: false, message: 'Invalid email or password! 💕' };
-        }
+        try {
+            const users = this.getUsers();
+            
+            // Case-insensitive email matching
+            const emailLower = email.toLowerCase().trim();
+            const user = users.find(u => {
+                const userEmail = u.email.toLowerCase().trim();
+                return userEmail === emailLower && u.password === password;
+            });
+            
+            if (!user) {
+                // Check if email exists but password is wrong
+                const emailExists = users.find(u => u.email.toLowerCase().trim() === emailLower);
+                if (emailExists) {
+                    return { success: false, message: 'Incorrect password! Please try again. 💕' };
+                }
+                return { success: false, message: 'Account not found! Please sign up first. 💕' };
+            }
 
-        this.currentUser = user;
-        // Ensure user data is properly saved
-        localStorage.setItem('slayStationCurrentUser', JSON.stringify(user));
+            // Update user data from storage to get latest info
+            const updatedUser = users.find(u => u.id === user.id) || user;
+            
+            this.currentUser = updatedUser;
+            
+            // Ensure user data is properly saved to session
+            try {
+                localStorage.setItem('slayStationCurrentUser', JSON.stringify(updatedUser));
+                
+                // Verify the save worked
+                const savedUser = localStorage.getItem('slayStationCurrentUser');
+                if (!savedUser) {
+                    console.error('Failed to save user session!');
+                    return { success: false, message: 'Failed to save session. Please try again.' };
+                }
+            } catch (storageError) {
+                console.error('Session storage error:', storageError);
+                return { success: false, message: 'Storage error. Please check browser settings.' };
+            }
+            
+            // Check if user is admin or rider and redirect
+            const ADMIN_EMAIL = 'preston.mwendwa@riarauniversity.ac.ke';
+            const RIDER_EMAILS = [
+                'preston.mwendwa@riarauniversity.ac.ke',
+                'kangethekelvin56@gmail.com',
+                'prestonmugo83@gmail.com'
+            ];
         
-        // Verify the save worked
-        const savedUser = localStorage.getItem('slayStationCurrentUser');
-        if (!savedUser) {
-            console.error('Failed to save user session!');
+            // Normalize email for comparison
+            const normalizedEmail = emailLower;
+            
+            // If logging in from rider-login page, prioritize rider access
+            if (isRiderLogin && RIDER_EMAILS.some(e => e.toLowerCase() === normalizedEmail)) {
+                // Store rider email for rider dashboard
+                localStorage.setItem('riderEmail', email.toLowerCase());
+                // Redirect to rider dashboard
+                setTimeout(() => {
+                    window.location.href = 'rider-dashboard.html';
+                }, 500);
+                return { success: true, message: `Welcome back, ${updatedUser.name}! Redirecting to rider dashboard... ✨`, user: updatedUser, redirect: 'rider' };
+            } else if (normalizedEmail === ADMIN_EMAIL.toLowerCase()) {
+                // Redirect to admin dashboard (only if not a rider login)
+                setTimeout(() => {
+                    window.location.href = 'admin.html';
+                }, 500);
+                return { success: true, message: `Welcome back, ${updatedUser.name}! Redirecting to admin dashboard... ✨`, user: updatedUser, redirect: 'admin' };
+            } else if (RIDER_EMAILS.some(e => e.toLowerCase() === normalizedEmail)) {
+                // Store rider email for rider dashboard
+                localStorage.setItem('riderEmail', email.toLowerCase());
+                // Redirect to rider dashboard
+                setTimeout(() => {
+                    window.location.href = 'rider-dashboard.html';
+                }, 500);
+                return { success: true, message: `Welcome back, ${updatedUser.name}! Redirecting to rider dashboard... ✨`, user: updatedUser, redirect: 'rider' };
+            }
+            
+            return { success: true, message: `Welcome back, ${updatedUser.name}! ✨`, user: updatedUser };
+        } catch (error) {
+            console.error('Login error:', error);
+            return { success: false, message: 'An error occurred during login. Please try again.' };
         }
-        
-        // Check if user is admin or rider and redirect
-        const ADMIN_EMAIL = 'preston.mwendwa@riarauniversity.ac.ke';
-        const RIDER_EMAILS = [
-            'preston.mwendwa@riarauniversity.ac.ke',
-            'kangethekelvin56@gmail.com',
-            'prestonmugo83@gmail.com'
-        ];
-        
-        // Normalize email for comparison
-        const normalizedEmail = emailLower;
-        
-        // If logging in from rider-login page, prioritize rider access
-        if (isRiderLogin && RIDER_EMAILS.some(e => e.toLowerCase() === normalizedEmail)) {
-            // Store rider email for rider dashboard
-            localStorage.setItem('riderEmail', email.toLowerCase());
-            // Redirect to rider dashboard
-            setTimeout(() => {
-                window.location.href = 'rider-dashboard.html';
-            }, 500);
-            return { success: true, message: `Welcome back, ${user.name}! Redirecting to rider dashboard... ✨`, user: user, redirect: 'rider' };
-        } else if (normalizedEmail === ADMIN_EMAIL.toLowerCase()) {
-            // Redirect to admin dashboard (only if not a rider login)
-            setTimeout(() => {
-                window.location.href = 'admin.html';
-            }, 500);
-            return { success: true, message: `Welcome back, ${user.name}! Redirecting to admin dashboard... ✨`, user: user, redirect: 'admin' };
-        } else if (RIDER_EMAILS.some(e => e.toLowerCase() === normalizedEmail)) {
-            // Store rider email for rider dashboard
-            localStorage.setItem('riderEmail', email.toLowerCase());
-            // Redirect to rider dashboard
-            setTimeout(() => {
-                window.location.href = 'rider-dashboard.html';
-            }, 500);
-            return { success: true, message: `Welcome back, ${user.name}! Redirecting to rider dashboard... ✨`, user: user, redirect: 'rider' };
-        }
-        
-        return { success: true, message: `Welcome back, ${user.name}! ✨`, user: user };
     }
 
     // Logout user
