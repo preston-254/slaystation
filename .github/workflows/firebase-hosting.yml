@@ -26,7 +26,7 @@ jobs:
       - name: 📦 Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: 🔧 Install Firebase CLI
         run: npm install -g firebase-tools@latest
@@ -83,11 +83,17 @@ jobs:
           ls -la deploy/ | head -10
           
           # Deploy with verbose output
+          echo "🔍 Running Firebase deploy command..."
           firebase deploy --only hosting \
             --project slay-station-28453 \
             --non-interactive \
             --debug \
-            --message "Deploy from GitHub Actions - ${{ github.sha }}"
+            --message "Deploy from GitHub Actions - ${{ github.sha }}" 2>&1 | tee deploy.log || {
+              echo "❌ Deployment failed!"
+              echo "📋 Last 50 lines of output:"
+              tail -50 deploy.log || cat deploy.log
+              exit 1
+            }
           
           echo "✅ Deployment completed successfully!"
 
