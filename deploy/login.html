@@ -443,7 +443,7 @@
             }
         }
         
-        function handleForgotPassword(e) {
+        async function handleForgotPassword(e) {
             e.preventDefault();
             
             const emailInput = document.getElementById('forgotEmail');
@@ -470,16 +470,20 @@
             const resetExpiry = Date.now() + (24 * 60 * 60 * 1000); // 24 hours from now
             
             // Store reset token in localStorage (in production, this would be stored on server)
+            // Use lowercase email as key for consistency
             const resetTokens = JSON.parse(localStorage.getItem('slayStationResetTokens') || '{}');
-            resetTokens[email] = {
+            resetTokens[email.toLowerCase()] = {
                 token: resetToken,
                 expiry: resetExpiry,
                 createdAt: Date.now()
             };
             localStorage.setItem('slayStationResetTokens', JSON.stringify(resetTokens));
+            console.log('Reset token stored for:', email.toLowerCase());
             
-            // Generate reset link
-            const resetLink = `${window.location.origin}${window.location.pathname.replace('login.html', 'reset-password.html')}?token=${resetToken}&email=${encodeURIComponent(email)}`;
+            // Generate reset link (always use deployed URL, not localhost)
+            const deployedUrl = 'https://slay-station-28453.firebaseapp.com';
+            const resetLink = `${deployedUrl}/reset-password.html?token=${encodeURIComponent(resetToken)}&email=${encodeURIComponent(email)}`;
+            console.log('Generated reset link:', resetLink);
             
             // Option 1: Send via EmailJS (No backend needed!)
             const EMAILJS_PUBLIC_KEY = 'S28nx8TWnsKEpl8vV';
