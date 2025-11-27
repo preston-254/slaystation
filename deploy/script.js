@@ -1,5 +1,5 @@
 // Product Data - Bags
-// Big couch bags (3800 KSH) vs regular bags (3500 KSH)
+// Big coach bags (3800 KSH) vs regular bags (3500 KSH)
 const products = [
     {
         id: 1,
@@ -7,13 +7,13 @@ const products = [
         description: "Perfect for lounging at home in style! Soft and comfortable - extra spacious!",
         price: 3800,
         image: "images/bags/IMG_1328.jpg",
-        category: "couch-bag",
+        category: "coach-bag",
         size: "big"
     },
     {
         id: 2,
-        name: "Fully boxed Teri Couch Bag",
-        description: "Add some sparkle to your couch time! Elegant and chic - large size!",
+        name: "Fully boxed Teri Coach Bag",
+        description: "Add some sparkle to your style! Elegant and chic - large size!",
         price: 3700,
         image: "images/bags/IMG_1329.jpg",
         category: "on sale",
@@ -21,11 +21,11 @@ const products = [
     },
     {
         id: 3,
-        name: "white satchel Couch Bag",
-        description: "Luxurious velvet couch bag for ultimate comfort - premium size!",
+        name: "white satchel Coach Bag",
+        description: "Luxurious velvet coach bag for ultimate style - premium size!",
         price: 3800,
         image: "images/bags/IMG_1330.jpg",
-        category: "couch-bag",
+        category: "coach-bag",
         size: "big"
     },
     {
@@ -61,7 +61,7 @@ const products = [
         description: "Cute and compact, perfect for on-the-go adventures.",
         price: 3800,
         image: "images/bags/IMG_1334.jpg",
-        category: "couch-bag",
+        category: "coach-bag",
         size: "regular"
     },
   
@@ -748,8 +748,8 @@ function filterProducts(filter) {
     
     let filtered = products;
     
-    if (filter === 'couch-bag') {
-        filtered = products.filter(p => p.category === 'couch-bag');
+    if (filter === 'coach-bag') {
+        filtered = products.filter(p => p.category === 'coach-bag');
     } else if (filter === 'tote-bag') {
         filtered = products.filter(p => p.category === 'tote-bag');
     } else if (filter === 'sale') {
@@ -2666,7 +2666,7 @@ const testimonials = [
     {
         name: "Sarah M.",
         rating: 5,
-        text: "I absolutely love my couch bag! It's so cozy and stylish. Perfect for my lazy Sunday vibes! 💖",
+        text: "I absolutely love my coach bag! It's so elegant and stylish. Perfect for any occasion! 💖",
         avatar: "👩‍🦰"
     },
     {

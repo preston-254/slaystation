@@ -18,7 +18,12 @@
             <div class="logo">
                 <h1>✨ Slay Station ✨</h1>
             </div>
-            <ul class="nav-menu">
+            <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-menu" id="navMenu">
                 <li><a href="index.html#home">Home</a></li>
                 <li><a href="index.html#products">Bags</a></li>
                 <li><a href="wallets.html">Wallets</a></li>
@@ -155,8 +160,36 @@
     <script src="auth.js"></script>
     <script src="accessories.js"></script>
     <script>
-        // Update auth UI on page load
+        // Mobile menu toggle
         document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            const navMenu = document.getElementById('navMenu');
+            
+            if (mobileMenuToggle && navMenu) {
+                mobileMenuToggle.addEventListener('click', function() {
+                    mobileMenuToggle.classList.toggle('active');
+                    navMenu.classList.toggle('active');
+                });
+                
+                // Close menu when clicking on a link
+                const navLinks = navMenu.querySelectorAll('a');
+                navLinks.forEach(link => {
+                    link.addEventListener('click', function() {
+                        mobileMenuToggle.classList.remove('active');
+                        navMenu.classList.remove('active');
+                    });
+                });
+                
+                // Close menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!mobileMenuToggle.contains(event.target) && !navMenu.contains(event.target)) {
+                        mobileMenuToggle.classList.remove('active');
+                        navMenu.classList.remove('active');
+                    }
+                });
+            }
+            
+            // Update auth UI on page load
             if (typeof updateAuthUI === 'function') {
                 updateAuthUI();
             }
