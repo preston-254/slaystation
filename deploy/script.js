@@ -7,7 +7,6 @@ const products = [
         description: "Perfect for lounging at home in style! Soft and comfortable - extra spacious!",
         price: 3800,
         image: "images/bags/IMG_1328.jpg",
-        video: "images/Reels/VID-20251123-WA0001.mp4", // Add video path here
         category: "couch-bag",
         size: "big"
     },
@@ -17,7 +16,6 @@ const products = [
         description: "Add some sparkle to your couch time! Elegant and chic - large size!",
         price: 3700,
         image: "images/bags/IMG_1329.jpg",
-        video: "images/Reels/VID-20251123-WA0002.mp4", // Add video path here
         category: "on sale",
         size: "big"
     },
@@ -584,345 +582,6 @@ products.forEach((product, index) => {
     // No automatic assignment - admins can set badge and originalPrice through admin panel
 });
 
-// Reels Data - List of all reel videos
-const reelVideos = [
-    'images/Reels/VID-20251123-WA0001.mp4',
-    'images/Reels/VID-20251123-WA0002.mp4',
-    'images/Reels/VID-20251123-WA0003.mp4',
-    'images/Reels/VID-20251123-WA0004.mp4',
-    'images/Reels/VID-20251123-WA0005.mp4',
-    'images/Reels/VID-20251123-WA0006.mp4',
-    'images/Reels/VID-20251123-WA0007.mp4',
-    'images/Reels/VID-20251123-WA0008.mp4',
-    'images/Reels/VID-20251123-WA0009.mp4',
-    'images/Reels/VID-20251123-WA0010.mp4',
-    'images/Reels/VID-20251123-WA0011.mp4',
-    'images/Reels/VID-20251123-WA0012.mp4',
-    'images/Reels/VID-20251123-WA0013.mp4',
-    'images/Reels/VID-20251123-WA0014.mp4',
-    'images/Reels/VID-20251123-WA0015.mp4',
-    'images/Reels/VID-20251123-WA0016.mp4',
-    'images/Reels/VID-20251123-WA0017.mp4',
-    'images/Reels/VID-20251123-WA0018.mp4',
-    'images/Reels/VID-20251123-WA0019.mp4',
-    'images/Reels/VID-20251123-WA0020.mp4',
-    'images/Reels/VID-20251123-WA0021.mp4',
-    'images/Reels/VID-20251123-WA0022.mp4',
-    'images/Reels/VID-20251123-WA0023.mp4',
-    'images/Reels/VID-20251123-WA0024.mp4',
-    'images/Reels/VID-20251123-WA0025.mp4',
-    'images/Reels/VID-20251123-WA0026.mp4',
-    'images/Reels/VID-20251123-WA0027.mp4',
-    'images/Reels/VID-20251123-WA0028.mp4',
-    'images/Reels/VID-20251123-WA0029.mp4',
-    'images/Reels/VID-20251123-WA0030.mp4',
-    'images/Reels/VID-20251123-WA0031.mp4',
-    'images/Reels/VID-20251123-WA0032.mp4',
-    'images/Reels/VID-20251123-WA0033.mp4',
-    'images/Reels/VID-20251123-WA0034.mp4',
-    'images/Reels/VID-20251123-WA0035.mp4',
-    'images/Reels/VID-20251123-WA0036.mp4',
-    'images/Reels/VID-20251123-WA0037.mp4',
-    'images/Reels/VID-20251123-WA0038.mp4',
-    'images/Reels/VID-20251123-WA0039.mp4',
-    'images/Reels/VID-20251123-WA0040.mp4',
-    'images/Reels/VID-20251123-WA0041.mp4',
-    'images/Reels/VID-20251123-WA0042.mp4',
-    'images/Reels/VID-20251123-WA0043.mp4',
-    'images/Reels/VID-20251123-WA0044.mp4'
-];
-
-let currentReelIndex = 0;
-let reelModal = null;
-
-// Get product from reel video
-function getProductFromReel(videoSrc) {
-    return products.find(p => p.video === videoSrc);
-}
-
-// Render reels
-async function renderReels() {
-    const reelsContainer = document.getElementById('reelsContainer');
-    if (!reelsContainer) return;
-    
-    reelsContainer.innerHTML = '';
-    
-    for (let i = 0; i < reelVideos.length; i++) {
-        const videoSrc = reelVideos[i];
-        const product = getProductFromReel(videoSrc);
-        
-        const reelCard = document.createElement('div');
-        reelCard.className = 'reel-card';
-        reelCard.dataset.index = i;
-        reelCard.dataset.videoSrc = videoSrc;
-        
-        const video = document.createElement('video');
-        video.className = 'reel-video';
-        video.src = videoSrc;
-        video.muted = true;
-        video.loop = true;
-        video.playsInline = true;
-        video.preload = 'metadata';
-        
-        // Play on hover
-        reelCard.addEventListener('mouseenter', () => {
-            video.play().catch(() => {});
-            reelCard.classList.add('playing');
-        });
-        
-        reelCard.addEventListener('mouseleave', () => {
-            video.pause();
-            video.currentTime = 0;
-            reelCard.classList.remove('playing');
-        });
-        
-        // Click to open in modal
-        reelCard.addEventListener('click', () => {
-            openReelModal(i);
-        });
-        
-        const playIcon = document.createElement('div');
-        playIcon.className = 'reel-play-icon';
-        playIcon.innerHTML = '▶';
-        
-        // Instagram-style action buttons on the right side
-        const reelActions = document.createElement('div');
-        reelActions.className = 'reel-side-actions';
-        const likes = product ? getProductLikes(product.id) : { count: 0 };
-        const isLiked = product ? isProductLiked(product.id) : false;
-        
-        reelActions.innerHTML = `
-            ${product ? `
-                <button class="reel-side-btn reel-like-btn ${isLiked ? 'liked' : ''}" onclick="event.stopPropagation(); toggleReelLike(${product.id}, ${i})" title="Like">
-                    ${isLiked ? '❤️' : '🤍'}
-                </button>
-                <div class="reel-likes-count">${likes.count || 0}</div>
-                <button class="reel-side-btn reel-share-btn" onclick="event.stopPropagation(); shareReel('${videoSrc}', ${product.id})" title="Share">
-                    📤
-                </button>
-                <button class="reel-side-btn reel-buy-side-btn" onclick="event.stopPropagation(); addToCartFromReel(${product.id})" title="Buy Now">
-                    🛍️
-                </button>
-            ` : `
-                <button class="reel-side-btn reel-share-btn" onclick="event.stopPropagation(); shareReel('${videoSrc}', null)" title="Share">
-                    📤
-                </button>
-            `}
-        `;
-        
-        const overlay = document.createElement('div');
-        overlay.className = 'reel-overlay';
-        overlay.innerHTML = `
-            <div class="reel-title">${product ? product.name : `Product Reel ${i + 1}`}</div>
-            ${product ? `<div class="reel-price">KSH ${product.price.toLocaleString()}</div>` : ''}
-        `;
-        
-        reelCard.appendChild(video);
-        reelCard.appendChild(playIcon);
-        reelCard.appendChild(overlay);
-        reelCard.appendChild(reelActions);
-        reelsContainer.appendChild(reelCard);
-    }
-}
-
-// Add to cart from reel
-function addToCartFromReel(productId) {
-    const product = products.find(p => p.id === productId);
-    if (!product) return;
-    
-    addToCart(productId);
-    showNotification(`Added ${product.name} to cart! 🛍️✨`);
-}
-
-// Open reel modal
-function openReelModal(index) {
-    currentReelIndex = index;
-    const videoSrc = reelVideos[index];
-    const product = getProductFromReel(videoSrc);
-    
-    // Create modal if it doesn't exist
-    if (!reelModal) {
-        reelModal = document.createElement('div');
-        reelModal.className = 'reel-modal';
-        reelModal.innerHTML = `
-            <div class="reel-modal-content">
-                <button class="reel-modal-close" onclick="closeReelModal()">✕</button>
-                <button class="reel-modal-nav reel-modal-prev" onclick="navigateReel(-1)">‹</button>
-                <button class="reel-modal-nav reel-modal-next" onclick="navigateReel(1)">›</button>
-                <div class="reel-modal-video-container">
-                    <video class="reel-modal-video" controls autoplay></video>
-                </div>
-                <div class="reel-modal-info" id="reelModalInfo">
-                    <!-- Product info will be populated here -->
-                </div>
-            </div>
-        `;
-        document.body.appendChild(reelModal);
-        
-        // Close on outside click
-        reelModal.addEventListener('click', (e) => {
-            if (e.target === reelModal) {
-                closeReelModal();
-            }
-        });
-        
-        // Keyboard navigation
-        document.addEventListener('keydown', handleReelKeyboard);
-    }
-    
-    loadReelInModal(currentReelIndex);
-    updateReelModalInfo(product, videoSrc);
-    reelModal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-}
-
-// Toggle reel like
-function toggleReelLike(productId, reelIndex) {
-    const likeData = likeProduct(productId);
-    const isLiked = isProductLiked(productId);
-    
-    // Update the like button in the reel card
-    const reelCards = document.querySelectorAll('.reel-card');
-    if (reelCards[reelIndex]) {
-        const likeBtn = reelCards[reelIndex].querySelector('.reel-like-btn');
-        const likesCount = reelCards[reelIndex].querySelector('.reel-likes-count');
-        
-        if (likeBtn) {
-            likeBtn.innerHTML = isLiked ? '❤️' : '🤍';
-            likeBtn.classList.toggle('liked', isLiked);
-        }
-        
-        if (likesCount) {
-            likesCount.textContent = likeData.count || 0;
-        }
-    }
-    
-    // Update modal if open
-    updateReelModalInfo(getProductFromReel(reelVideos[reelIndex]), reelVideos[reelIndex]);
-}
-
-// Update reel modal info
-function updateReelModalInfo(product, videoSrc) {
-    const infoDiv = document.getElementById('reelModalInfo');
-    if (!infoDiv) return;
-    
-    if (product) {
-        const likes = getProductLikes(product.id);
-        const isLiked = isProductLiked(product.id);
-        
-        infoDiv.innerHTML = `
-            <div class="reel-product-info">
-                <h3 class="reel-product-name">${product.name}</h3>
-                <p class="reel-product-description">${product.description}</p>
-                <div class="reel-product-price">KSH ${product.price.toLocaleString()}</div>
-                <div class="reel-modal-likes-section">
-                    <button class="reel-modal-like-btn ${isLiked ? 'liked' : ''}" onclick="toggleReelModalLike(${product.id})">
-                        ${isLiked ? '❤️' : '🤍'}
-                    </button>
-                    <span class="reel-modal-likes-count">${likes.count || 0} likes</span>
-                </div>
-                <div class="reel-modal-actions">
-                    <button class="reel-buy-btn" onclick="addToCartFromReel(${product.id})">🛍️ Buy Now</button>
-                    <button class="reel-send-friend-btn" onclick="sendToFriend(${product.id})">💌 Send to Friend</button>
-                    <button class="reel-share-btn" onclick="shareReel('${videoSrc}', ${product.id})">📤 Share Reel</button>
-                </div>
-            </div>
-        `;
-    } else {
-        infoDiv.innerHTML = `
-            <div class="reel-product-info">
-                <h3 class="reel-product-name">Product Reel</h3>
-                <div class="reel-modal-actions">
-                    <button class="reel-share-btn" onclick="shareReel('${videoSrc}', null)">📤 Share Reel</button>
-                </div>
-            </div>
-        `;
-    }
-}
-
-// Toggle like in modal
-function toggleReelModalLike(productId) {
-    const likeData = likeProduct(productId);
-    const isLiked = isProductLiked(productId);
-    const product = products.find(p => p.id === productId);
-    
-    if (product) {
-        // Find which reel this product belongs to
-        const reelIndex = reelVideos.findIndex(v => getProductFromReel(v)?.id === productId);
-        if (reelIndex >= 0) {
-            toggleReelLike(productId, reelIndex);
-        }
-        
-        // Update modal display
-        updateReelModalInfo(product, product.video);
-    }
-}
-
-// Close reel modal
-function closeReelModal() {
-    if (reelModal) {
-        const video = reelModal.querySelector('.reel-modal-video');
-        if (video) {
-            video.pause();
-            video.src = '';
-        }
-        reelModal.classList.remove('active');
-        document.body.style.overflow = '';
-    }
-}
-
-// Navigate between reels
-function navigateReel(direction) {
-    currentReelIndex += direction;
-    
-    if (currentReelIndex < 0) {
-        currentReelIndex = reelVideos.length - 1;
-    } else if (currentReelIndex >= reelVideos.length) {
-        currentReelIndex = 0;
-    }
-    
-    loadReelInModal(currentReelIndex);
-}
-
-// Load reel in modal
-function loadReelInModal(index) {
-    if (!reelModal) return;
-    
-    const videoContainer = reelModal.querySelector('.reel-modal-video-container');
-    let video = reelModal.querySelector('.reel-modal-video');
-    
-    if (!video && videoContainer) {
-        video = document.createElement('video');
-        video.className = 'reel-modal-video';
-        video.controls = true;
-        video.autoplay = true;
-        videoContainer.appendChild(video);
-    }
-    
-    if (video && reelVideos[index]) {
-        video.src = reelVideos[index];
-        video.load();
-        video.play().catch(() => {});
-    }
-    
-    // Update product info
-    const videoSrc = reelVideos[index];
-    const product = getProductFromReel(videoSrc);
-    updateReelModalInfo(product, videoSrc);
-}
-
-// Handle keyboard navigation
-function handleReelKeyboard(e) {
-    if (!reelModal || !reelModal.classList.contains('active')) return;
-    
-    if (e.key === 'Escape') {
-        closeReelModal();
-    } else if (e.key === 'ArrowLeft') {
-        navigateReel(-1);
-    } else if (e.key === 'ArrowRight') {
-        navigateReel(1);
-    }
-}
 
 // Send product to friend
 function sendToFriend(productId) {
@@ -949,30 +608,6 @@ function sendToFriend(productId) {
     showFriendSelectionModal(friends, product, 'product');
 }
 
-// Share reel with friends
-function shareReel(videoSrc, productId) {
-    const user = userAuth ? userAuth.getCurrentUser() : null;
-    if (!user) {
-        alert('Please login to share reels with friends! 💕');
-        window.location.href = 'login.html';
-        return;
-    }
-    
-    const product = productId ? products.find(p => p.id === productId) : null;
-    
-    // Get all users (friends)
-    const allUsers = userAuth ? userAuth.getUsers() : [];
-    const friends = allUsers.filter(u => u.id !== user.id);
-    
-    if (friends.length === 0) {
-        alert('No friends found! Share Slay Station with your friends so they can join! ✨');
-        return;
-    }
-    
-    // Create friend selection modal
-    showFriendSelectionModal(friends, { videoSrc, product }, 'reel');
-}
-
 // Show friend selection modal
 function showFriendSelectionModal(friends, item, type) {
     const modal = document.createElement('div');
@@ -980,14 +615,14 @@ function showFriendSelectionModal(friends, item, type) {
     modal.innerHTML = `
         <div class="friend-selection-content">
             <div class="friend-selection-header">
-                <h2>${type === 'product' ? '💌 Send to Friend' : '📤 Share Reel'}</h2>
+                <h2>💌 Send to Friend</h2>
                 <button class="close-friend-modal" onclick="this.closest('.friend-selection-modal').remove()">✕</button>
             </div>
             <div class="friend-selection-body">
-                <p style="margin-bottom: 1.5rem; color: #666;">Select a friend to ${type === 'product' ? 'send this product to' : 'share this reel with'}:</p>
+                <p style="margin-bottom: 1.5rem; color: #666;">Select a friend to send this product to:</p>
                 <div class="friends-list" id="friendsList">
                     ${friends.map(friend => `
-                        <div class="friend-item" onclick="selectFriend(${friend.id}, ${type === 'product' ? item.id : 'null'}, '${type === 'reel' ? item.videoSrc : ''}')">
+                        <div class="friend-item" onclick="selectFriend(${friend.id}, ${item.id})">
                             <div class="friend-avatar">${friend.profilePicture ? `<img src="${friend.profilePicture}" alt="${friend.name}">` : '👤'}</div>
                             <div class="friend-info">
                                 <div class="friend-name">${friend.name}</div>
@@ -1012,7 +647,7 @@ function showFriendSelectionModal(friends, item, type) {
 }
 
 // Select friend and send/share
-function selectFriend(friendId, productId, videoSrc) {
+function selectFriend(friendId, productId) {
     const user = userAuth ? userAuth.getCurrentUser() : null;
     if (!user) return;
     
@@ -1037,18 +672,6 @@ function selectFriend(friendId, productId, videoSrc) {
             read: false
         });
         }
-    } else if (videoSrc) {
-        const fromUser = userAuth.getUsers().find(u => u.id === user.id);
-        notifications.push({
-            type: 'reel_shared',
-            message: `${user.name} shared a reel with you!`,
-            videoSrc: videoSrc,
-            fromUserId: user.id,
-            fromUserName: user.name,
-            fromUserProfilePicture: fromUser ? fromUser.profilePicture : null,
-            date: new Date().toISOString(),
-            read: false
-        });
     }
     
     // Update friend's notifications
@@ -1059,71 +682,6 @@ function selectFriend(friendId, productId, videoSrc) {
     
     // Show success message
     alert(`Sent to ${friend.name} successfully! ✨`);
-}
-
-// Open product reel
-function openProductReel(videoSrc, productName) {
-    if (!reelModal) {
-        reelModal = document.createElement('div');
-        reelModal.className = 'reel-modal';
-        reelModal.innerHTML = `
-            <div class="reel-modal-content">
-                <button class="reel-modal-close" onclick="closeReelModal()">✕</button>
-                <video class="reel-modal-video" controls autoplay></video>
-            </div>
-        `;
-        document.body.appendChild(reelModal);
-        
-        reelModal.addEventListener('click', (e) => {
-            if (e.target === reelModal) {
-                closeReelModal();
-            }
-        });
-        
-        document.addEventListener('keydown', handleReelKeyboard);
-    }
-    
-    const video = reelModal.querySelector('.reel-modal-video');
-    if (video) {
-        video.src = videoSrc;
-        video.load();
-        video.play().catch(() => {});
-    }
-    
-    reelModal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-}
-
-// Setup product video hover
-function setupProductVideos() {
-    document.querySelectorAll('.product-video-thumbnail').forEach(video => {
-        const container = video.closest('.product-image');
-        if (!container) return;
-        
-        container.addEventListener('mouseenter', () => {
-            video.play().catch(() => {});
-        });
-        
-        container.addEventListener('mouseleave', () => {
-            video.pause();
-            video.currentTime = 0;
-        });
-        
-        container.addEventListener('click', () => {
-            const videoSrc = video.querySelector('source')?.src || video.src;
-            const productCard = container.closest('.product-card');
-            const productName = productCard?.querySelector('.product-name')?.textContent || 'Product';
-            openProductReel(videoSrc, productName);
-        });
-    });
-}
-
-// Make functions globally available
-if (typeof window !== 'undefined') {
-    window.openReelModal = openReelModal;
-    window.closeReelModal = closeReelModal;
-    window.navigateReel = navigateReel;
-    window.openProductReel = openProductReel;
 }
 
 // Filter and search variables
@@ -1154,20 +712,8 @@ function renderProducts(filteredProducts = null) {
                 ${isInWishlist ? '💖' : '🤍'}
             </button>
             <div class="product-image" style="background: linear-gradient(135deg, var(--secondary-pink), var(--lavender));">
-                ${product.video ? `
-                    <div class="product-video-container">
-                        <video class="product-video-thumbnail" muted loop playsinline preload="metadata" poster="${product.image}">
-                            <source src="${product.video}" type="video/mp4">
-                        </video>
-                        <div class="product-video-overlay">
-                            <span class="product-video-icon">▶</span>
-                        </div>
-                    </div>
-                ` : `
-                    <img src="${product.image}" alt="${product.name}" onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='👜';">
-                `}
+                <img src="${product.image}" alt="${product.name}" onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='👜';">
                 <button class="quick-view-btn" onclick="showQuickView(${product.id})">👁️ Quick View</button>
-                ${product.video ? `<button class="product-reel-btn" onclick="openProductReel('${product.video}', '${product.name}')" title="Watch Reel">🎬</button>` : ''}
             </div>
             <h3 class="product-name">${product.name}</h3>
             ${ratingHTML}
@@ -1184,11 +730,6 @@ function renderProducts(filteredProducts = null) {
         `;
         productsGrid.appendChild(productCard);
     });
-    
-    // Setup product videos after rendering
-    setTimeout(() => {
-        setupProductVideos();
-    }, 100);
 }
 
 // Filter Products
@@ -1277,9 +818,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 500);
         }
     }
-    
-    // Load reels
-    renderReels().catch(() => {}); // Handle any errors silently
     
     // Load SlayWorld
     if (typeof loadSlayWorld === 'function') {

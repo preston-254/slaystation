@@ -594,18 +594,18 @@ function initGoogleMap(order) {
             leafletMapInstance.removeLayer(routePolyline);
         }
         
-        // Create custom icon for customer (pink)
+        // Create custom icon for customer (pink) - simplified without rotation
         const customerIcon = L.divIcon({
             className: 'custom-marker',
-            html: '<div style="background-color: #FF6B9D; width: 30px; height: 30px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;"><span style="transform: rotate(45deg); font-size: 16px;">🏠</span></div>',
+            html: '<div style="background-color: #FF6B9D; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;"><span style="font-size: 16px;">🏠</span></div>',
             iconSize: [30, 30],
             iconAnchor: [15, 30]
         });
         
-        // Create custom icon for rider (purple)
+        // Create custom icon for rider (purple) - simplified without spinning animation
         const riderIcon = L.divIcon({
             className: 'custom-marker',
-            html: '<div style="background-color: #C77DFF; width: 36px; height: 36px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; animation: bounce 1s infinite;"><span style="transform: rotate(45deg); font-size: 18px;">🚴</span></div>',
+            html: '<div style="background-color: #C77DFF; width: 36px; height: 36px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;"><span style="font-size: 18px;">🚴</span></div>',
             iconSize: [36, 36],
             iconAnchor: [18, 36]
         });
