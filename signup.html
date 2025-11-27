@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Slay Station</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--light-bg) 0%, #FFF0F5 100%);
+            padding: 100px 20px 50px;
+        }
+        
+        .auth-box {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            max-width: 450px;
+            width: 100%;
+            animation: fadeInUp 0.5s ease;
+        }
+        
+        .auth-box h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--primary-pink), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+        
+        .auth-box p {
+            color: #666;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .points-banner {
+            background: linear-gradient(135deg, var(--primary-pink), var(--purple));
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .auth-box input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--light-bg);
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .auth-box input:focus {
+            outline: none;
+            border-color: var(--primary-pink);
+        }
+        
+        .auth-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--primary-pink), var(--purple));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1rem;
+        }
+        
+        .auth-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255, 107, 157, 0.4);
+        }
+        
+        .auth-links {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+        
+        .auth-links a {
+            color: var(--primary-pink);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+        
+        .auth-links a:hover {
+            color: var(--purple);
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 1rem;
+            color: var(--primary-pink);
+            text-decoration: none;
+            font-weight: 600;
+            text-align: center;
+            width: 100%;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <h1>✨ Slay Station ✨</h1>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="index.html#products">Bags</a></li>
+                <li><a href="wallets.html">Wallets</a></li>
+                <li><a href="accessories.html">Accessories</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="auth-container">
+        <div class="auth-box">
+            <h1>Sign Up ✨</h1>
+            <p>Create your account and start earning points!</p>
+            
+            <div class="points-banner">
+                🎉 Get 100 Welcome Points when you sign up! 🎉
+            </div>
+            
+            <form id="signupForm" onsubmit="handleSignup(event)">
+                <input type="text" id="signupName" placeholder="Full Name" required>
+                <input type="email" id="signupEmail" placeholder="Gmail/Email" required autocomplete="email">
+                <input type="tel" id="signupPhone" placeholder="Phone Number" required>
+                <input type="password" id="signupPassword" placeholder="Password" required minlength="6" autocomplete="new-password">
+                <button type="submit" class="auth-btn">Create Account 💖</button>
+            </form>
+            
+            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 2px solid var(--light-bg);">
+                <p style="color: #666; font-size: 0.9rem; margin-bottom: 0.5rem;">Are you a rider?</p>
+                <a href="rider-login.html" style="color: var(--primary-pink); text-decoration: none; font-weight: 600; font-size: 0.9rem;">Login as Rider 🏍️</a>
+            </div>
+            
+            <div class="auth-links">
+                <p>Already have an account? <a href="login.html">Login</a></p>
+                <a href="index.html" class="back-link">← Back to Home</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        // Wait for auth.js to load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ensure auth functions are available
+            if (typeof window.signup === 'undefined') {
+                console.error('Auth functions not loaded. Please refresh the page.');
+            }
+        });
+        
+        function handleSignup(e) {
+            e.preventDefault();
+            
+            const nameInput = document.getElementById('signupName');
+            const emailInput = document.getElementById('signupEmail');
+            const phoneInput = document.getElementById('signupPhone');
+            const passwordInput = document.getElementById('signupPassword');
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            
+            const name = nameInput.value.trim();
+            const email = emailInput.value.trim().toLowerCase();
+            const phone = phoneInput.value.trim();
+            const password = passwordInput.value;
+            
+            // Validation
+            if (!name || name.length < 2) {
+                showError('Please enter a valid name (at least 2 characters)');
+                nameInput.focus();
+                return;
+            }
+            
+            if (!email || !email.includes('@')) {
+                showError('Please enter a valid email address');
+                emailInput.focus();
+                return;
+            }
+            
+            if (!phone || phone.length < 10) {
+                showError('Please enter a valid phone number');
+                phoneInput.focus();
+                return;
+            }
+            
+            if (!password || password.length < 6) {
+                showError('Password must be at least 6 characters long');
+                passwordInput.focus();
+                return;
+            }
+            
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating Account...';
+            
+            // Check if auth.js is loaded
+            if (typeof window.signup === 'undefined') {
+                showError('Authentication system not loaded. Please refresh the page and try again.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create Account 💖';
+                return;
+            }
+            
+            try {
+                // Check if this is a rider email trying to sign up
+                const RIDER_EMAILS = [
+                    'preston.mwendwa@riarauniversity.ac.ke',
+                    'kangethekelvin56@gmail.com',
+                    'prestonmugo83@gmail.com'
+                ];
+                
+                if (RIDER_EMAILS.includes(email)) {
+                    // Rider signing up - allow it
+                    console.log('Rider account signup detected');
+                }
+                
+                const result = window.signup(email, password, name, phone);
+                
+                if (result.success) {
+                    createConfetti();
+                    showSuccess(result.message);
+                    
+                    // Redirect after a short delay
+                    setTimeout(() => {
+                        // Check for redirect parameter in URL (e.g., ?redirect=checkout)
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const redirectParam = urlParams.get('redirect');
+                        
+                        // Check if user should be redirected to admin/rider dashboard
+                        if (result.redirect === 'admin') {
+                            window.location.href = 'admin.html';
+                        } else if (result.redirect === 'rider') {
+                            window.location.href = 'rider-dashboard.html';
+                        } else if (redirectParam === 'checkout') {
+                            // Redirect back to checkout
+                            window.location.href = 'index.html#checkout';
+                        } else {
+                            window.location.href = 'index.html';
+                        }
+                    }, 1500);
+                } else {
+                    showError(result.message);
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Create Account 💖';
+                }
+            } catch (error) {
+                console.error('Signup error:', error);
+                showError('An error occurred. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create Account 💖';
+            }
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage') || document.createElement('div');
+            errorDiv.id = 'errorMessage';
+            errorDiv.style.cssText = 'background: #ffebee; color: #c62828; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; border: 2px solid #ef5350; text-align: center; font-weight: 600;';
+            errorDiv.textContent = message;
+            
+            const form = document.getElementById('signupForm');
+            if (!document.getElementById('errorMessage')) {
+                form.insertBefore(errorDiv, form.firstChild);
+            } else {
+                errorDiv.textContent = message;
+            }
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (errorDiv.parentNode) {
+                    errorDiv.remove();
+                }
+            }, 5000);
+        }
+        
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.style.cssText = 'background: #e8f5e9; color: #2e7d32; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; border: 2px solid #4caf50; text-align: center; font-weight: 600; position: fixed; top: 100px; left: 50%; transform: translateX(-50%); z-index: 10000; min-width: 300px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);';
+            successDiv.textContent = message;
+            document.body.appendChild(successDiv);
+            
+            setTimeout(() => {
+                if (successDiv.parentNode) {
+                    successDiv.remove();
+                }
+            }, 3000);
+        }
+        
+        function createConfetti() {
+            const confettiContainer = document.createElement('div');
+            confettiContainer.className = 'confetti-container';
+            
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.top = '-10px';
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                confettiContainer.appendChild(confetti);
+            }
+            
+            document.body.appendChild(confettiContainer);
+            
+            setTimeout(() => {
+                confettiContainer.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
