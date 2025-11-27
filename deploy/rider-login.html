@@ -231,6 +231,65 @@
             'prestonmugo83@gmail.com'
         ];
         
+        // Fallback function to trigger Google Sign-In (global scope)
+        function triggerGoogleSignIn() {
+            if (typeof google !== 'undefined' && google.accounts) {
+                showError('Please set up Google OAuth Client ID in the code. See GOOGLE_OAUTH_SETUP.md for instructions.');
+            } else {
+                showError('Google Sign-In is not available. Please check your internet connection and try again.');
+            }
+        }
+        
+        // Make function globally available
+        window.triggerGoogleSignIn = triggerGoogleSignIn;
+        
+        // Error and success message functions (global scope)
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage') || document.createElement('div');
+            errorDiv.id = 'errorMessage';
+            errorDiv.style.cssText = 'background: #ffebee; color: #c62828; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; border: 2px solid #ef5350; text-align: center; font-weight: 600;';
+            errorDiv.textContent = message;
+            
+            const form = document.getElementById('riderLoginForm');
+            if (form && !document.getElementById('errorMessage')) {
+                form.insertBefore(errorDiv, form.firstChild);
+            } else if (!form) {
+                // If form doesn't exist, insert before the login box content
+                const loginBox = document.querySelector('.rider-login-box');
+                if (loginBox && !document.getElementById('errorMessage')) {
+                    loginBox.insertBefore(errorDiv, loginBox.firstChild);
+                } else if (document.getElementById('errorMessage')) {
+                    errorDiv.textContent = message;
+                }
+            } else {
+                errorDiv.textContent = message;
+            }
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (errorDiv.parentNode) {
+                    errorDiv.remove();
+                }
+            }, 5000);
+        }
+        
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.style.cssText = 'background: #e8f5e9; color: #2e7d32; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; border: 2px solid #4caf50; text-align: center; font-weight: 600; position: fixed; top: 100px; left: 50%; transform: translateX(-50%); z-index: 10000; min-width: 300px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);';
+            successDiv.textContent = message;
+            document.body.appendChild(successDiv);
+            
+            setTimeout(() => {
+                if (successDiv.parentNode) {
+                    successDiv.remove();
+                }
+            }, 3000);
+        }
+        
+        // Make functions globally available
+        window.showError = showError;
+        window.showSuccess = showSuccess;
+        
         // Wait for scripts and Google Sign-In to load
         document.addEventListener('DOMContentLoaded', function() {
             if (typeof window.login === 'undefined' || typeof window.authenticateRider === 'undefined') {
@@ -247,8 +306,24 @@
                 }
                 
                 try {
+                    // Google OAuth Client ID
+                    const GOOGLE_CLIENT_ID = '386064572538-6p7o1k0j2s2emg1gud08626e3r1llf24.apps.googleusercontent.com';
+                    
+                    // Check if Client ID is still placeholder
+                    if (GOOGLE_CLIENT_ID.includes('YOUR_GOOGLE_CLIENT_ID')) {
+                        console.warn('Google Client ID not configured. Please set up OAuth credentials.');
+                        document.getElementById('customGoogleBtn').style.display = 'flex';
+                        document.getElementById('googleSignInButton').innerHTML = `
+                            <div style="background: #fff3cd; border: 2px solid #ffc107; border-radius: 10px; padding: 1rem; text-align: center;">
+                                <p style="margin: 0; color: #856404; font-weight: 600;">⚠️ Google Sign-In Not Configured</p>
+                                <p style="margin: 0.5rem 0 0 0; color: #856404; font-size: 0.9rem;">Please set up Google OAuth Client ID. See GOOGLE_OAUTH_SETUP.md for instructions.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
                     google.accounts.id.initialize({
-                        client_id: 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com', // Replace with your actual Google Client ID
+                        client_id: GOOGLE_CLIENT_ID,
                         callback: handleGoogleSignIn,
                         auto_select: false,
                         cancel_on_tap_outside: true
@@ -300,13 +375,13 @@
                 }
             };
             
-            // Fallback function to trigger Google Sign-In
-            function triggerGoogleSignIn() {
-                if (typeof google !== 'undefined' && google.accounts) {
-                    showError('Please set up Google OAuth Client ID in the code. See GOOGLE_OAUTH_SETUP.md for instructions.');
-                } else {
-                    showError('Google Sign-In is not available. Please check your internet connection and try again.');
-                }
+            // Also add event listener as backup
+            const customGoogleBtn = document.getElementById('customGoogleBtn');
+            if (customGoogleBtn) {
+                customGoogleBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    triggerGoogleSignIn();
+                });
             }
         });
         
@@ -469,40 +544,6 @@
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Login as Rider 🏍️';
             }
-        }
-        
-        function showError(message) {
-            const errorDiv = document.getElementById('errorMessage') || document.createElement('div');
-            errorDiv.id = 'errorMessage';
-            errorDiv.style.cssText = 'background: #ffebee; color: #c62828; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; border: 2px solid #ef5350; text-align: center; font-weight: 600;';
-            errorDiv.textContent = message;
-            
-            const form = document.getElementById('riderLoginForm');
-            if (!document.getElementById('errorMessage')) {
-                form.insertBefore(errorDiv, form.firstChild);
-            } else {
-                errorDiv.textContent = message;
-            }
-            
-            // Auto remove after 5 seconds
-            setTimeout(() => {
-                if (errorDiv.parentNode) {
-                    errorDiv.remove();
-                }
-            }, 5000);
-        }
-        
-        function showSuccess(message) {
-            const successDiv = document.createElement('div');
-            successDiv.style.cssText = 'background: #e8f5e9; color: #2e7d32; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; border: 2px solid #4caf50; text-align: center; font-weight: 600; position: fixed; top: 100px; left: 50%; transform: translateX(-50%); z-index: 10000; min-width: 300px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);';
-            successDiv.textContent = message;
-            document.body.appendChild(successDiv);
-            
-            setTimeout(() => {
-                if (successDiv.parentNode) {
-                    successDiv.remove();
-                }
-            }, 3000);
         }
     </script>
 </body>
