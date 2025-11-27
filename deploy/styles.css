@@ -1763,12 +1763,22 @@ html {
 
     .nav-btn-login,
     .nav-btn-signup {
-        font-size: 0.85rem;
-        padding: 0.7rem 1.2rem;
+        font-size: 0.9rem;
+        padding: 0.75rem 1.3rem;
         height: 45px;
         border-radius: 25px;
-        font-weight: 600;
-        box-shadow: 0 3px 10px rgba(255, 107, 157, 0.4);
+        font-weight: 700;
+        box-shadow: 0 4px 12px rgba(255, 107, 157, 0.5);
+        background: var(--primary-pink) !important;
+        color: white !important;
+        z-index: 100;
+        position: relative;
+        white-space: nowrap;
+        min-width: 90px;
+    }
+    
+    .nav-btn-signup {
+        background: var(--coral) !important;
     }
     
     .nav-btn-wishlist,
@@ -1776,7 +1786,10 @@ html {
         width: 45px;
         height: 45px;
         font-size: 1.2rem;
-        box-shadow: 0 3px 10px rgba(255, 107, 157, 0.4);
+        box-shadow: 0 4px 12px rgba(255, 107, 157, 0.5);
+        z-index: 100;
+        position: relative;
+        background: var(--primary-pink) !important;
     }
     
     .nav-btn-wishlist .nav-badge,
@@ -1942,19 +1955,34 @@ html {
 
     .nav-btn-login,
     .nav-btn-signup {
-        font-size: 0.9rem;
-        padding: 0.75rem 1.3rem;
-        height: 48px;
-        min-width: 80px;
-        box-shadow: 0 4px 12px rgba(255, 107, 157, 0.5);
+        font-size: 0.95rem;
+        padding: 0.8rem 1.5rem;
+        height: 50px;
+        min-width: 90px;
+        box-shadow: 0 5px 15px rgba(255, 107, 157, 0.6);
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        background: var(--primary-pink) !important;
+        color: white !important;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .nav-btn-signup {
+        background: var(--coral) !important;
     }
     
     .nav-btn-wishlist,
     .nav-btn-cart {
-        width: 48px;
-        height: 48px;
-        font-size: 1.3rem;
-        box-shadow: 0 4px 12px rgba(255, 107, 157, 0.5);
+        width: 50px;
+        height: 50px;
+        font-size: 1.4rem;
+        box-shadow: 0 5px 15px rgba(255, 107, 157, 0.6);
+        background: var(--primary-pink) !important;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .nav-btn-cart {
+        background: var(--purple) !important;
     }
 
     .nav-btn-logout {
@@ -3325,7 +3353,22 @@ html {
     justify-content: center;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
     position: relative;
-    overflow: hidden;
+    overflow: visible;
+    padding: 0;
+}
+
+.share-btn svg {
+    width: 24px;
+    height: 24px;
+    display: block;
+    flex-shrink: 0;
+}
+
+.share-btn svg {
+    width: 24px;
+    height: 24px;
+    z-index: 1;
+    position: relative;
 }
 
 .share-btn::before {
@@ -3859,6 +3902,7 @@ html {
     box-shadow: 0 5px 20px rgba(255, 107, 157, 0.4);
     transition: all 0.3s;
     animation: none !important;
+    transform: none !important;
 }
 
 .track-order-btn:hover {

@@ -18,7 +18,7 @@ class UserAuth {
         // Create new user
         const newUser = {
             id: Date.now(),
-            email: email,
+            email: email.toLowerCase().trim(), // Normalize email
             password: password, // In production, hash this!
             name: name,
             phone: phone,
@@ -31,8 +31,14 @@ class UserAuth {
         users.push(newUser);
         localStorage.setItem('slayStationUsers', JSON.stringify(users));
         
-        // Auto login and check for redirects
-        const loginResult = this.login(email, password);
+        // Auto login and save user session
+        const loginResult = this.login(newUser.email, password);
+        
+        // Ensure user is saved to session
+        if (loginResult.success && loginResult.user) {
+            this.currentUser = loginResult.user;
+            localStorage.setItem('slayStationCurrentUser', JSON.stringify(loginResult.user));
+        }
         
         return { 
             success: true, 
@@ -45,7 +51,9 @@ class UserAuth {
     // Login user
     login(email, password, isRiderLogin = false) {
         const users = this.getUsers();
-        const user = users.find(u => u.email === email && u.password === password);
+        // Case-insensitive email matching
+        const emailLower = email.toLowerCase().trim();
+        const user = users.find(u => u.email.toLowerCase().trim() === emailLower && u.password === password);
         
         if (!user) {
             return { success: false, message: 'Invalid email or password! 💕' };
@@ -69,8 +77,11 @@ class UserAuth {
             'prestonmugo83@gmail.com'
         ];
         
+        // Normalize email for comparison
+        const normalizedEmail = emailLower;
+        
         // If logging in from rider-login page, prioritize rider access
-        if (isRiderLogin && RIDER_EMAILS.includes(email.toLowerCase())) {
+        if (isRiderLogin && RIDER_EMAILS.some(e => e.toLowerCase() === normalizedEmail)) {
             // Store rider email for rider dashboard
             localStorage.setItem('riderEmail', email.toLowerCase());
             // Redirect to rider dashboard
@@ -78,13 +89,13 @@ class UserAuth {
                 window.location.href = 'rider-dashboard.html';
             }, 500);
             return { success: true, message: `Welcome back, ${user.name}! Redirecting to rider dashboard... ✨`, user: user, redirect: 'rider' };
-        } else if (email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+        } else if (normalizedEmail === ADMIN_EMAIL.toLowerCase()) {
             // Redirect to admin dashboard (only if not a rider login)
             setTimeout(() => {
                 window.location.href = 'admin.html';
             }, 500);
             return { success: true, message: `Welcome back, ${user.name}! Redirecting to admin dashboard... ✨`, user: user, redirect: 'admin' };
-        } else if (RIDER_EMAILS.includes(email.toLowerCase())) {
+        } else if (RIDER_EMAILS.some(e => e.toLowerCase() === normalizedEmail)) {
             // Store rider email for rider dashboard
             localStorage.setItem('riderEmail', email.toLowerCase());
             // Redirect to rider dashboard
