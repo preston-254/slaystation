@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rider Dashboard - Slay Station</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Leaflet.js - Free OpenStreetMap -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet Routing Machine for directions -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    <!-- Leaflet Control Geocoder for address search -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder@1.13.0/dist/Control.Geocoder.css" />
+    <script src="https://unpkg.com/leaflet-control-geocoder@1.13.0/dist/Control.Geocoder.js"></script>
+    <style>
+        /* Portal Navbar */
+        .portal-navbar {
+            background: white;
+            box-shadow: 0 4px 20px rgba(255, 107, 157, 0.15);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            border-bottom: 3px solid rgba(255, 107, 157, 0.2);
+        }
+        
+        .portal-nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+        }
+        
+        .portal-logo h1 {
+            background: linear-gradient(135deg, var(--primary-pink), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0;
+            font-size: 1.8rem;
+        }
+        
+        .portal-nav-tabs {
+            display: flex;
+            gap: 0.5rem;
+            flex: 1;
+            justify-content: center;
+        }
+        
+        .portal-tab {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            top: 3px;
+        }
+        
+        .portal-tab:hover {
+            color: var(--primary-pink);
+        }
+        
+        .portal-tab.active {
+            color: var(--primary-pink);
+            border-bottom-color: var(--primary-pink);
+        }
+        
+        .portal-nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .rider-email-display {
+            color: #666;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .portal-logout-btn {
+            padding: 0.6rem 1.2rem;
+            background: var(--coral);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .portal-logout-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(255, 140, 148, 0.4);
+        }
+        
+        .rider-dashboard {
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--light-bg) 0%, #FFF0F5 100%);
+            padding-top: 80px;
+        }
+        
+        .portal-tab-content {
+            display: none;
+        }
+        
+        .portal-tab-content.active {
+            display: block;
+        }
+        
+        /* Customer Communication Buttons */
+        .customer-communication {
+            margin-top: 1rem;
+        }
+        
+        .comm-btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        
+        .call-btn {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .sms-btn {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .whatsapp-btn {
+            background: #25D366;
+            color: white;
+        }
+        
+        .comm-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        /* Weather Info */
+        .weather-info {
+            font-size: 0.9rem;
+        }
+        
+        /* Dark Mode Styles */
+        body.dark-mode {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .portal-navbar {
+            background: #2d2d44;
+            border-bottom-color: rgba(255, 107, 157, 0.3);
+        }
+        
+        body.dark-mode .order-card-rider,
+        body.dark-mode .stat-card,
+        body.dark-mode .quick-actions-panel,
+        body.dark-mode .trip-history-portal {
+            background: #2d2d44;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .portal-tab {
+            color: #b0b0b0;
+        }
+        
+        body.dark-mode .portal-tab.active {
+            color: var(--primary-pink);
+        }
+        
+        body.dark-mode .order-info-rider p {
+            color: #d0d0d0;
+        }
+        
+        /* Delivery Proof Modal */
+        .delivery-proof-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 5000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .delivery-proof-modal.active {
+            display: flex;
+        }
+        
+        .delivery-proof-content {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        body.dark-mode .delivery-proof-content {
+            background: #2d2d44;
+            color: #e0e0e0;
+        }
+        
+        .proof-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .proof-section h3 {
+            margin-bottom: 0.75rem;
+            color: var(--dark);
+        }
+        
+        body.dark-mode .proof-section h3 {
+            color: #e0e0e0;
+        }
+        
+        .photo-capture-area {
+            width: 100%;
+            min-height: 200px;
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f9f9f9;
+            cursor: pointer;
+            margin-bottom: 0.5rem;
+        }
+        
+        body.dark-mode .photo-capture-area {
+            background: #1a1a2e;
+            border-color: #444;
+        }
+        
+        .signature-pad {
+            width: 100%;
+            height: 150px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            background: white;
+            cursor: crosshair;
+        }
+        
+        body.dark-mode .signature-pad {
+            background: #1a1a2e;
+            border-color: #444;
+        }
+        
+        .share-location-btn {
+            width: 100%;
+        }
+        
+        .rider-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Quick Actions Panel */
+        .quick-actions-panel {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 30px rgba(255, 107, 157, 0.15);
+            margin-bottom: 2rem;
+        }
+        
+        .quick-actions-panel h3 {
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+            font-size: 1.5rem;
+        }
+        
+        .quick-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .quick-action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(255, 107, 157, 0.1), rgba(199, 125, 255, 0.1));
+            border: 2px solid rgba(255, 107, 157, 0.2);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .quick-action-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(255, 107, 157, 0.3);
+            border-color: var(--primary-pink);
+        }
+        
+        .action-icon {
+            font-size: 2.5rem;
+        }
+        
+        .action-text {
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.95rem;
+        }
+        
+        /* Hide navigation menu */
+        .mobile-menu-toggle {
+            display: none !important;
+        }
+        
+        .nav-menu {
+            display: none !important;
+        }
+        
+        /* Quick Actions Panel */
+        .quick-actions-panel {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 30px rgba(255, 107, 157, 0.15);
+            margin-bottom: 2rem;
+        }
+        
+        .quick-actions-panel h3 {
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+            font-size: 1.5rem;
+        }
+        
+        .quick-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .quick-action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(255, 107, 157, 0.1), rgba(199, 125, 255, 0.1));
+            border: 2px solid rgba(255, 107, 157, 0.2);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .quick-action-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(255, 107, 157, 0.3);
+            border-color: var(--primary-pink);
+        }
+        
+        .action-icon {
+            font-size: 2.5rem;
+        }
+        
+        .action-text {
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.95rem;
+        }
+        
+        /* Hide mobile menu toggle since we removed nav */
+        .mobile-menu-toggle {
+            display: none !important;
+        }
+        
+        .nav-menu {
+            display: none !important;
+        }
+        
+        .dispatched-orders {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .order-card-rider {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .order-card-rider h3 {
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+        
+        .order-info-rider {
+            margin-bottom: 1rem;
+        }
+        
+        .order-info-rider p {
+            margin-bottom: 0.5rem;
+            color: #666;
+        }
+        
+        .map-container {
+            width: 100%;
+            height: 500px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 1rem 0;
+            position: relative;
+            background: #f0f0f0;
+        }
+        
+        .map-wrapper {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        
+        .google-map {
+            width: 100%;
+            height: 100%;
+            border-radius: 15px;
+        }
+        
+        .map-marker {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: var(--primary-pink);
+            border: 3px solid white;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            animation: markerPulse 2s infinite;
+        }
+        
+        .map-marker::after {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+        
+        .rider-marker {
+            background: var(--purple);
+            z-index: 10;
+        }
+        
+        .customer-marker {
+            background: var(--primary-pink);
+            z-index: 9;
+        }
+        
+        .route-line {
+            position: absolute;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-pink), var(--purple));
+            transform-origin: left center;
+            z-index: 5;
+            box-shadow: 0 0 10px rgba(255, 107, 157, 0.5);
+        }
+        
+        @keyframes markerPulse {
+            0%, 100% {
+                transform: rotate(-45deg) scale(1);
+            }
+            50% {
+                transform: rotate(-45deg) scale(1.2);
+            }
+        }
+        
+        .order-actions-rider {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .accept-btn, .start-btn, .complete-btn {
+            flex: 1;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .accept-btn {
+            background: linear-gradient(135deg, var(--primary-pink), var(--purple));
+            color: white;
+        }
+        
+        .start-btn {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .complete-btn {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .accept-btn:hover, .start-btn:hover, .complete-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .no-orders {
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .no-orders h3 {
+            color: var(--dark);
+            margin-bottom: 1rem;
+        }
+        
+        .no-orders p {
+            color: #666;
+        }
+        
+        .delivery-history {
+            margin-top: 2rem;
+        }
+        
+        @keyframes bounce {
+            0%, 100% {
+                transform: rotate(-45deg) translateY(0);
+            }
+            50% {
+                transform: rotate(-45deg) translateY(-10px);
+            }
+        }
+        
+        .custom-marker {
+            background: transparent !important;
+            border: none !important;
+        }
+        
+        /* Portal Statistics Section */
+        .rider-stats-portal {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 240, 245, 0.95) 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 30px rgba(255, 107, 157, 0.15);
+            border: 2px solid rgba(255, 107, 157, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-pink), var(--purple), var(--coral));
+            opacity: 0.8;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(255, 107, 157, 0.25);
+        }
+        
+        .stat-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-pink), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            line-height: 1;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .stat-subtitle {
+            color: #999;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+        
+        /* Enhanced Trip History */
+        .trip-history-portal {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            margin-top: 2rem;
+        }
+        
+        .trip-history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--light-bg);
+        }
+        
+        .trip-history-header h2 {
+            background: linear-gradient(135deg, var(--primary-pink), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0;
+            font-size: 1.8rem;
+        }
+        
+        .trip-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 240, 245, 0.5) 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-left: 5px solid #4CAF50;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .trip-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255, 107, 157, 0.05), rgba(156, 39, 176, 0.05));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .trip-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+        }
+        
+        .trip-card:hover::before {
+            opacity: 1;
+        }
+        
+        .trip-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .trip-id {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+        
+        .trip-status-badge {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+        }
+        
+        .trip-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .trip-detail-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .trip-detail-icon {
+            font-size: 1.2rem;
+        }
+        
+        .trip-detail-label {
+            color: #666;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .trip-detail-value {
+            color: var(--dark);
+            font-weight: 600;
+        }
+        
+        .trip-date {
+            color: #999;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+        
+        /* Mobile responsive for portal */
+        @media (max-width: 768px) {
+            .portal-nav-container {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+            
+            .portal-nav-tabs {
+                width: 100%;
+                justify-content: space-around;
+                flex-wrap: wrap;
+            }
+            
+            .portal-tab {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+            
+            .portal-nav-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .rider-stats-portal {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .stat-card {
+                padding: 1.5rem;
+            }
+            
+            .stat-value {
+                font-size: 2rem;
+            }
+            
+            .trip-history-portal {
+                padding: 1.5rem;
+            }
+            
+            .quick-actions-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .trip-details {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <!-- Portal Navbar -->
+    <nav class="portal-navbar">
+        <div class="portal-nav-container">
+            <div class="portal-logo">
+                <h1>🚴 Rider Portal</h1>
+            </div>
+            <div class="portal-nav-tabs">
+                <button class="portal-tab active" onclick="switchTab('active')" id="tab-active">
+                    📦 Active Orders
+                </button>
+                <button class="portal-tab" onclick="switchTab('history')" id="tab-history">
+                    📜 Trip History
+                </button>
+                <button class="portal-tab" onclick="switchTab('stats')" id="tab-stats">
+                    📊 Statistics
+                </button>
+            </div>
+            <div class="portal-nav-actions">
+                <div class="rider-email-display" id="riderEmailDisplayPortal">
+                    <span id="riderEmailTextPortal"></span>
+                </div>
+                <button class="portal-logout-btn" onclick="riderLogout()">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="rider-dashboard">
+
+        <div class="rider-container">
+            <!-- Active Orders Tab (Main/Default) -->
+            <div id="tab-content-active" class="portal-tab-content active">
+                <div id="dispatchedOrdersList">
+                    <!-- Active orders will be dynamically added here -->
+                </div>
+            </div>
+            
+            <!-- Trip History Tab -->
+            <div id="tab-content-history" class="portal-tab-content">
+                <div id="tripHistoryList">
+                    <!-- Trip history will be dynamically added here -->
+                </div>
+            </div>
+            
+            <!-- Statistics Tab -->
+            <div id="tab-content-stats" class="portal-tab-content">
+                <div class="quick-actions-panel">
+                    <h3>⚡ Quick Actions</h3>
+                    <div class="quick-actions-grid">
+                        <button class="quick-action-btn" onclick="refreshOrders()">
+                            <span class="action-icon">🔄</span>
+                            <span class="action-text">Refresh Orders</span>
+                        </button>
+                        <button class="quick-action-btn" onclick="viewEarnings()">
+                            <span class="action-icon">💰</span>
+                            <span class="action-text">View Earnings</span>
+                        </button>
+                        <button class="quick-action-btn" onclick="viewPerformance()">
+                            <span class="action-icon">📊</span>
+                            <span class="action-text">Performance</span>
+                        </button>
+                        <button class="quick-action-btn" onclick="openNotifications()">
+                            <span class="action-icon">🔔</span>
+                            <span class="action-text">Notifications</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Portal Statistics Section -->
+                <div id="riderStatsPortal" class="rider-stats-portal">
+                    <!-- Stats will be dynamically added here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="rider.js"></script>
+    <script>
+        // Mobile menu toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            const navMenu = document.getElementById('navMenu');
+            
+            if (mobileMenuToggle && navMenu) {
+                mobileMenuToggle.addEventListener('click', function() {
+                    mobileMenuToggle.classList.toggle('active');
+                    navMenu.classList.toggle('active');
+                });
+                
+                // Close menu when clicking on a link
+                const navLinks = navMenu.querySelectorAll('a');
+                navLinks.forEach(link => {
+                    link.addEventListener('click', function() {
+                        mobileMenuToggle.classList.remove('active');
+                        navMenu.classList.remove('active');
+                    });
+                });
+                
+                // Close menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!mobileMenuToggle.contains(event.target) && !navMenu.contains(event.target)) {
+                        mobileMenuToggle.classList.remove('active');
+                        navMenu.classList.remove('active');
+                    }
+                });
+            }
+        });
+        
+        // Check if rider is logged in and populate email displays
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait a bit for auth.js to load if needed
+            function checkRiderAuth() {
+                // Check if user is logged in via auth system
+                let currentUser = null;
+                
+                // Try multiple ways to get current user
+                if (typeof window.getCurrentUser === 'function') {
+                    currentUser = window.getCurrentUser();
+                } else if (typeof userAuth !== 'undefined' && userAuth) {
+                    currentUser = userAuth.getCurrentUser();
+                } else {
+                    // Fallback: check localStorage directly
+                    const userJson = localStorage.getItem('slayStationCurrentUser');
+                    if (userJson) {
+                        try {
+                            currentUser = JSON.parse(userJson);
+                        } catch (e) {
+                            console.error('Error parsing user data:', e);
+                        }
+                    }
+                }
+                
+                const riderEmail = localStorage.getItem('riderEmail');
+                
+                // Must be logged in AND have rider email
+                if (!currentUser || !riderEmail) {
+                    // If auth.js hasn't loaded yet, wait a bit more
+                    if (typeof window.getCurrentUser === 'undefined' && typeof userAuth === 'undefined') {
+                        setTimeout(checkRiderAuth, 500);
+                        return;
+                    }
+                    alert('Please log in to access the rider dashboard.');
+                    window.location.href = 'rider-login.html';
+                    return;
+                }
+                
+                // Verify the logged-in user is an authorized rider
+                const RIDER_EMAILS = [
+                    'preston.mwendwa@riarauniversity.ac.ke',
+                    'kangethekelvin56@gmail.com',
+                    'prestonmugo83@gmail.com'
+                ];
+                
+                if (!RIDER_EMAILS.includes(currentUser.email.toLowerCase())) {
+                    alert('Access Denied: You are not authorized to access the rider dashboard.');
+                    window.location.href = 'index.html';
+                    return;
+                }
+                
+                // Ensure rider email matches logged-in user
+                if (currentUser.email.toLowerCase() !== riderEmail.toLowerCase()) {
+                    localStorage.setItem('riderEmail', currentUser.email.toLowerCase());
+                }
+                
+                // Populate portal email display
+                const riderEmailTextPortal = document.getElementById('riderEmailTextPortal');
+                if (riderEmailTextPortal) {
+                    riderEmailTextPortal.textContent = currentUser.email.toLowerCase();
+                }
+                
+                // Show mobile rider info
+                const riderInfoMobile = document.querySelector('.rider-info-mobile');
+                if (riderInfoMobile) {
+                    riderInfoMobile.style.display = 'block';
+                }
+                
+                if (window.loadRiderOrders) {
+                    loadRiderOrders();
+                    // Refresh orders every 15 seconds (less frequent to prevent flickering)
+                    setInterval(() => {
+                        loadRiderOrders();
+                    }, 15000);
+                }
+            }
+            
+            // Initial check
+            checkRiderAuth();
+        });
+        
+        // Tab switching function
+        function switchTab(tabName) {
+            // Remove active class from all tabs and contents
+            document.querySelectorAll('.portal-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.portal-tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Add active class to selected tab and content
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            document.getElementById(`tab-content-${tabName}`).classList.add('active');
+            
+            // Load content for the tab if needed
+            if (tabName === 'active' && window.loadRiderOrders) {
+                loadRiderOrders();
+            } else if (tabName === 'history' && window.loadRiderOrders) {
+                loadRiderOrders(); // This will also load history
+            } else if (tabName === 'stats' && window.loadRiderOrders) {
+                loadRiderOrders(); // This will also load stats
+            }
+        }
+        
+        function riderLogout() {
+            localStorage.removeItem('riderEmail');
+            localStorage.removeItem('riderOrders');
+            window.location.href = 'rider-login.html';
+        }
+        
+        // Quick Actions Functions
+        function refreshOrders() {
+            if (window.loadRiderOrders) {
+                loadRiderOrders();
+                alert('Orders refreshed! ✨');
+            }
+        }
+        
+        function viewEarnings() {
+            const orders = JSON.parse(localStorage.getItem('slayStationOrders') || '[]');
+            const riderEmail = localStorage.getItem('riderEmail');
+            const riderOrders = orders.filter(order => 
+                order.assignedRider && 
+                order.assignedRider.toLowerCase() === riderEmail.toLowerCase() &&
+                (order.completed || order.status === 'delivered')
+            );
+            
+            const totalEarnings = riderOrders.reduce((sum, order) => {
+                const deliveryFee = order.deliveryFee || 0;
+                return sum + deliveryFee;
+            }, 0);
+            
+            const thisMonth = new Date().getMonth();
+            const thisYear = new Date().getFullYear();
+            const monthlyEarnings = riderOrders.filter(order => {
+                const orderDate = new Date(order.deliveredTime || order.date);
+                return orderDate.getMonth() === thisMonth && orderDate.getFullYear() === thisYear;
+            }).reduce((sum, order) => sum + (order.deliveryFee || 0), 0);
+            
+            alert(`💰 Earnings Summary:\n\nTotal Earnings: KSH ${totalEarnings.toLocaleString()}\nThis Month: KSH ${monthlyEarnings.toLocaleString()}\nCompleted Deliveries: ${riderOrders.length}`);
+        }
+        
+        function viewPerformance() {
+            const orders = JSON.parse(localStorage.getItem('slayStationOrders') || '[]');
+            const riderEmail = localStorage.getItem('riderEmail');
+            const riderOrders = orders.filter(order => 
+                order.assignedRider && 
+                order.assignedRider.toLowerCase() === riderEmail.toLowerCase()
+            );
+            
+            const completed = riderOrders.filter(o => o.completed || o.status === 'delivered').length;
+            const active = riderOrders.filter(o => !o.completed && (o.status === 'dispatched' || o.status === 'processing')).length;
+            const total = riderOrders.length;
+            
+            // Calculate average delivery time
+            const completedOrders = riderOrders.filter(o => o.completed || o.status === 'delivered');
+            let avgTime = 'N/A';
+            if (completedOrders.length > 0) {
+                const times = completedOrders
+                    .filter(o => o.estimatedTime)
+                    .map(o => {
+                        const timeStr = o.estimatedTime;
+                        const match = timeStr.match(/(\d+)\s*min/);
+                        return match ? parseInt(match[1]) : null;
+                    })
+                    .filter(t => t !== null);
+                
+                if (times.length > 0) {
+                    const avg = times.reduce((a, b) => a + b, 0) / times.length;
+                    avgTime = `${Math.round(avg)} min`;
+                }
+            }
+            
+            alert(`📊 Performance Metrics:\n\nTotal Trips: ${total}\nCompleted: ${completed}\nActive: ${active}\nSuccess Rate: ${total > 0 ? Math.round((completed / total) * 100) : 0}%\nAvg Delivery Time: ${avgTime}`);
+        }
+        
+        function openNotifications() {
+            const orders = JSON.parse(localStorage.getItem('slayStationOrders') || '[]');
+            const riderEmail = localStorage.getItem('riderEmail');
+            const activeOrders = orders.filter(order => 
+                order.assignedRider && 
+                order.assignedRider.toLowerCase() === riderEmail.toLowerCase() &&
+                !order.completed && 
+                (order.status === 'dispatched' || order.status === 'processing')
+            );
+            
+            if (activeOrders.length === 0) {
+                alert('🔔 No new notifications');
+            } else {
+                let message = `🔔 You have ${activeOrders.length} active order(s):\n\n`;
+                activeOrders.forEach((order, index) => {
+                    message += `${index + 1}. Order #${order.id} - ${order.name}\n`;
+                });
+                alert(message);
+            }
+        }
+    </script>
+    
+    <!-- Delivery Proof Modal -->
+    <div id="deliveryProofModal" class="delivery-proof-modal">
+        <div class="delivery-proof-content">
+            <h2 style="margin-top: 0; color: var(--dark);">📸 Delivery Proof</h2>
+            
+            <div class="proof-section">
+                <h3>📷 Delivery Photo</h3>
+                <div id="deliveryPhotoPreview" class="photo-capture-area" onclick="captureDeliveryPhoto()">
+                    <p style="color: #666; text-align: center;">Tap to capture photo</p>
+                </div>
+                <button onclick="captureDeliveryPhoto()" style="width: 100%; padding: 0.75rem; background: var(--primary-pink); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 0.5rem;">
+                    📷 Take Photo
+                </button>
+            </div>
+            
+            <div class="proof-section">
+                <h3>✍️ Customer Signature</h3>
+                <canvas id="deliverySignature" class="signature-pad" width="460" height="150"></canvas>
+                <button onclick="if(typeof initSignaturePad === 'function') { const ctx = document.getElementById('deliverySignature').getContext('2d'); ctx.clearRect(0, 0, 460, 150); }" style="width: 100%; padding: 0.5rem; background: #666; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 0.5rem;">
+                    🗑️ Clear Signature
+                </button>
+            </div>
+            
+            <div class="proof-section">
+                <h3>📝 Delivery Notes</h3>
+                <textarea id="deliveryNotes" placeholder="Add any notes about the delivery..." style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 8px; font-family: 'Poppins', sans-serif; min-height: 100px; resize: vertical;"></textarea>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button onclick="closeDeliveryProofModal()" style="flex: 1; padding: 0.75rem; background: #666; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                    Cancel
+                </button>
+                <button onclick="submitDeliveryProof()" style="flex: 1; padding: 0.75rem; background: var(--primary-pink); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                    ✅ Complete Delivery
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Dark Mode Toggle -->
+    <button id="darkModeToggle" onclick="toggleDarkMode()" style="position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; border-radius: 50%; background: var(--primary-pink); color: white; border: none; font-size: 1.5rem; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 1000; transition: all 0.3s;">
+        🌙
+    </button>
+</body>
+</html>

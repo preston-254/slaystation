@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rider Login - Slay Station</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .rider-login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--light-bg) 0%, #FFF0F5 100%);
+            padding: 20px;
+        }
+        
+        .rider-login-box {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .rider-login-box h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--primary-pink), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+        
+        .rider-login-box p {
+            color: #666;
+            margin-bottom: 2rem;
+        }
+        
+        .rider-login-box input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--light-bg);
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .rider-login-box input:focus {
+            outline: none;
+            border-color: var(--primary-pink);
+        }
+        
+        .rider-login-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--primary-pink), var(--purple));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1rem;
+        }
+        
+        .rider-login-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255, 107, 157, 0.4);
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 2rem;
+            color: var(--primary-pink);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .back-link:hover {
+            color: var(--purple);
+        }
+    </style>
+</head>
+<body>
+    <div class="rider-login-container">
+        <div class="rider-login-box">
+            <h1>🚴 Rider Login</h1>
+            <p>Sign in with your Gmail/Email to access deliveries</p>
+            
+            <div style="background: linear-gradient(135deg, #E3F2FD, #BBDEFB); padding: 1rem; border-radius: 10px; margin-bottom: 1.5rem; border: 2px solid #2196F3;">
+                <p style="margin: 0; color: #1976D2; font-weight: 600; font-size: 0.9rem;">🔒 Restricted Access - Authorized Riders Only</p>
+            </div>
+            
+            <form id="riderLoginForm" onsubmit="handleRiderLogin(event)">
+                <input type="email" id="riderEmail" placeholder="Enter your Gmail/Email" required autocomplete="email">
+                <input type="password" id="riderPassword" placeholder="Enter your password" required autocomplete="current-password" minlength="6">
+                <button type="submit" class="rider-login-btn">Login as Rider 🏍️</button>
+            </form>
+            
+            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid var(--light-bg);">
+                <p style="color: #666; font-size: 0.9rem; margin-bottom: 0.5rem;">Don't have a rider account?</p>
+                <a href="signup.html" style="color: var(--primary-pink); text-decoration: none; font-weight: 600; font-size: 0.9rem;">Sign up as Rider</a>
+            </div>
+            
+            <a href="index.html" class="back-link">← Back to Website</a>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="rider.js"></script>
+    <script>
+        // Wait for scripts to load
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof window.login === 'undefined' || typeof window.authenticateRider === 'undefined') {
+                console.error('Auth or rider functions not loaded. Please refresh the page.');
+            }
+        });
+        
+        function handleRiderLogin(e) {
+            e.preventDefault();
+            
+            const emailInput = document.getElementById('riderEmail');
+            const passwordInput = document.getElementById('riderPassword');
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            
+            const email = emailInput.value.trim().toLowerCase();
+            const password = passwordInput.value;
+            
+            // Validation
+            if (!email || !email.includes('@')) {
+                showError('Please enter a valid email address');
+                emailInput.focus();
+                return;
+            }
+            
+            if (!password || password.length < 6) {
+                showError('Password must be at least 6 characters long');
+                passwordInput.focus();
+                return;
+            }
+            
+            // Check if email is in allowed rider list
+            const RIDER_EMAILS = [
+                'preston.mwendwa@riarauniversity.ac.ke',
+                'kangethekelvin56@gmail.com',
+                'prestonmugo83@gmail.com'
+            ];
+            
+            if (!RIDER_EMAILS.includes(email)) {
+                showError('Access Denied: This email is not authorized for rider access. Please contact admin. 🔒');
+                emailInput.focus();
+                return;
+            }
+            
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Logging in...';
+            
+            // Check if auth.js is loaded
+            if (typeof window.login === 'undefined') {
+                showError('Authentication system not loaded. Please refresh the page and try again.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Login as Rider 🏍️';
+                return;
+            }
+            
+            try {
+                // First, try to login using the regular auth system with rider flag
+                // Pass true as third parameter to indicate this is a rider login
+                const loginResult = window.login(email, password, true);
+                
+                if (loginResult.success) {
+                    // Verify rider access again after login
+                    if (typeof window.authenticateRider === 'function') {
+                        window.authenticateRider(email);
+                    } else {
+                        // Fallback: store rider email
+                        localStorage.setItem('riderEmail', email);
+                    }
+                    
+                    showSuccess('Welcome back! Redirecting to rider dashboard...');
+                    
+                    // Redirect to rider dashboard
+                    setTimeout(() => {
+                        window.location.href = 'rider-dashboard.html';
+                    }, 1000);
+                } else {
+                    // If login fails, check if user exists but password is wrong
+                    const users = JSON.parse(localStorage.getItem('slayStationUsers') || '[]');
+                    const userExists = users.find(u => u.email === email);
+                    
+                    if (userExists) {
+                        showError('Invalid password. Please try again.');
+                        passwordInput.value = '';
+                        passwordInput.focus();
+                    } else {
+                        showError('Account not found. Please sign up first or contact admin for access.');
+                        emailInput.focus();
+                    }
+                    
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Login as Rider 🏍️';
+                }
+            } catch (error) {
+                console.error('Rider login error:', error);
+                showError('An error occurred. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Login as Rider 🏍️';
+            }
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage') || document.createElement('div');
+            errorDiv.id = 'errorMessage';
+            errorDiv.style.cssText = 'background: #ffebee; color: #c62828; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; border: 2px solid #ef5350; text-align: center; font-weight: 600;';
+            errorDiv.textContent = message;
+            
+            const form = document.getElementById('riderLoginForm');
+            if (!document.getElementById('errorMessage')) {
+                form.insertBefore(errorDiv, form.firstChild);
+            } else {
+                errorDiv.textContent = message;
+            }
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (errorDiv.parentNode) {
+                    errorDiv.remove();
+                }
+            }, 5000);
+        }
+        
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.style.cssText = 'background: #e8f5e9; color: #2e7d32; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; border: 2px solid #4caf50; text-align: center; font-weight: 600; position: fixed; top: 100px; left: 50%; transform: translateX(-50%); z-index: 10000; min-width: 300px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);';
+            successDiv.textContent = message;
+            document.body.appendChild(successDiv);
+            
+            setTimeout(() => {
+                if (successDiv.parentNode) {
+                    successDiv.remove();
+                }
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
