@@ -58,13 +58,16 @@ jobs:
           cat .firebaserc
 
       - name: 🔐 Verify Firebase Token
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
-          if [ -z "${{ secrets.FIREBASE_TOKEN }}" ]; then
+          if [ -z "$FIREBASE_TOKEN" ]; then
             echo "❌ Error: FIREBASE_TOKEN secret is not set!"
             echo "Please add FIREBASE_TOKEN to GitHub Secrets"
+            echo "Go to: Settings → Secrets and variables → Actions"
             exit 1
           fi
-          echo "✅ Firebase token is configured"
+          echo "✅ Firebase token is configured (length: ${#FIREBASE_TOKEN} chars)"
 
       - name: 🚀 Deploy to Firebase Hosting
         env:
@@ -73,15 +76,18 @@ jobs:
           echo "🚀 Starting deployment..."
           echo "📦 Project: slay-station-28453"
           echo "📁 Deploy folder: deploy/"
+          echo "🔑 Token configured: $([ -n "$FIREBASE_TOKEN" ] && echo 'Yes' || echo 'No')"
           
+          # List deploy folder contents
+          echo "📋 Deploy folder contents:"
+          ls -la deploy/ | head -10
+          
+          # Deploy with verbose output
           firebase deploy --only hosting \
             --project slay-station-28453 \
             --non-interactive \
-            --message "Deploy from GitHub Actions - ${{ github.sha }}" || {
-              echo "❌ Deployment failed!"
-              echo "Check the error messages above"
-              exit 1
-            }
+            --debug \
+            --message "Deploy from GitHub Actions - ${{ github.sha }}"
           
           echo "✅ Deployment completed successfully!"
 
