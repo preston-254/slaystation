@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Your Order - Slay Station</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Leaflet.js - Free OpenStreetMap -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet Routing Machine for directions -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    <style>
+        .track-container {
+            max-width: 800px;
+            margin: 120px auto 50px;
+            padding: 0 20px;
+        }
+        
+        .track-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .track-header h1 {
+            font-size: 3rem;
+            background: linear-gradient(135deg, var(--primary-pink), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+        
+        .track-form {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .track-input-group {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .track-input-group input {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid var(--light-bg);
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+        }
+        
+        .track-input-group input:focus {
+            outline: none;
+            border-color: var(--primary-pink);
+        }
+        
+        .track-btn {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, var(--primary-pink), var(--purple));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .track-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255, 107, 157, 0.4);
+        }
+        
+        .order-details {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            display: none;
+        }
+        
+        .order-details.active {
+            display: block;
+        }
+        
+        .tracking-timeline {
+            margin: 2rem 0;
+        }
+        
+        .timeline-item {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-left: 2rem;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 30px;
+            width: 2px;
+            height: calc(100% + 10px);
+            background: var(--light-bg);
+        }
+        
+        .timeline-item:last-child::before {
+            display: none;
+        }
+        
+        .timeline-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            position: absolute;
+            left: 0;
+            background: var(--light-bg);
+        }
+        
+        .timeline-item.active .timeline-icon {
+            background: linear-gradient(135deg, var(--primary-pink), var(--purple));
+            color: white;
+            animation: pulse 2s infinite;
+        }
+        
+        .timeline-item.completed .timeline-icon {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .timeline-content h4 {
+            margin-bottom: 0.3rem;
+            color: var(--dark);
+        }
+        
+        .timeline-content p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .delivery-info {
+            background: var(--light-bg);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin: 2rem 0;
+        }
+        
+        .delivery-map {
+            width: 100%;
+            height: 500px;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            margin: 1rem 0;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        #googleMap {
+            width: 100%;
+            height: 100%;
+            border-radius: 15px;
+        }
+        
+        .map-grid {
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+            position: relative;
+        }
+        
+        .map-marker {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border: 3px solid white;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            animation: markerPulse 2s infinite;
+            z-index: 10;
+        }
+        
+        .map-marker::after {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+        
+        .store-marker {
+            background: #4CAF50;
+        }
+        
+        .customer-marker {
+            background: var(--primary-pink);
+            z-index: 9;
+        }
+        
+        .rider-marker {
+            background: var(--purple);
+            z-index: 11;
+            animation: riderMove 3s infinite;
+        }
+        
+        @keyframes markerPulse {
+            0%, 100% {
+                transform: rotate(-45deg) scale(1);
+            }
+            50% {
+                transform: rotate(-45deg) scale(1.2);
+            }
+        }
+        
+        @keyframes riderMove {
+            0%, 100% {
+                transform: rotate(-45deg) scale(1);
+            }
+            25% {
+                transform: rotate(-45deg) scale(1.1);
+            }
+            50% {
+                transform: rotate(-45deg) scale(1.2);
+            }
+            75% {
+                transform: rotate(-45deg) scale(1.1);
+            }
+        }
+        
+        .map-label {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 12;
+        }
+        
+        .route-line {
+            position: absolute;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-pink), var(--purple));
+            transform-origin: left center;
+            z-index: 5;
+            box-shadow: 0 0 10px rgba(255, 107, 157, 0.5);
+            border-radius: 2px;
+        }
+        
+        .delivery-fee-section {
+            background: var(--light-bg);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin: 2rem 0;
+            text-align: center;
+        }
+        
+        .pay-delivery-btn {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, var(--primary-pink), var(--purple));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .pay-delivery-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255, 107, 157, 0.4);
+        }
+        
+        .pay-delivery-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .eta-display {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-pink);
+            margin: 1rem 0;
+        }
+        
+        .delivery-guy-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 10px;
+            margin-top: 1rem;
+        }
+        
+        .delivery-guy-icon {
+            font-size: 3rem;
+        }
+        
+        @keyframes bounce {
+            0%, 100% {
+                transform: rotate(-45deg) translateY(0);
+            }
+            50% {
+                transform: rotate(-45deg) translateY(-10px);
+            }
+        }
+        
+        .custom-marker {
+            background: transparent !important;
+            border: none !important;
+        }
+        /* Hide directions panel on customer side */
+        .leaflet-routing-container {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <h1>✨ Slay Station ✨</h1>
+            </div>
+            <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="index.html#home">Home</a></li>
+                <li><a href="index.html#products">Bags</a></li>
+                <li><a href="wallets.html">Wallets</a></li>
+                <li><a href="accessories.html">Accessories</a></li>
+                <li><a href="index.html#reels">Reels</a></li>
+                <li><a href="index.html#about">About</a></li>
+                <li><a href="index.html#contact">Contact</a></li>
+            </ul>
+            <div class="nav-actions">
+                <div id="userInfo" class="user-info" style="display: none;">
+                    <!-- User info will be populated here -->
+                </div>
+                <a href="login.html" id="loginBtn" class="nav-btn-round nav-btn-login">Login</a>
+                <a href="signup.html" id="signupBtn" class="nav-btn-round nav-btn-signup">Sign Up</a>
+                <button id="logoutBtn" onclick="logout()" class="nav-btn-round nav-btn-logout" style="display: none;">Logout</button>
+                <div class="nav-btn-round nav-btn-wishlist" onclick="toggleWishlist()" title="Wishlist">
+                    💖 <span class="nav-badge" id="wishlistCount">0</span>
+                </div>
+                <div class="nav-btn-round nav-btn-cart" onclick="toggleCart()" title="Cart">
+                    🛍️ <span class="nav-badge" id="cartCount">0</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="track-container">
+        <div class="track-header">
+            <h1>Track Your Order 📍</h1>
+            <p>Enter your order number to track your delivery</p>
+        </div>
+
+        <div class="track-form">
+            <div class="track-input-group">
+                <input type="number" id="orderNumber" placeholder="Enter Order Number (e.g., 1, 2, 3...)" min="1">
+                <button class="track-btn" onclick="trackOrder()">Track Order 🔍</button>
+            </div>
+        </div>
+
+        <div class="order-details" id="orderDetails">
+            <h2 style="margin-bottom: 1rem; color: var(--dark);">Order #<span id="displayOrderId"></span></h2>
+            
+            <div class="delivery-info">
+                <h3 style="margin-bottom: 1rem;">Customer Information</h3>
+                <p><strong>Name:</strong> <span id="customerName"></span></p>
+                <p><strong>Email:</strong> <span id="customerEmail"></span></p>
+                <p><strong>Phone:</strong> <span id="customerPhone"></span></p>
+                <p><strong>Address:</strong> <span id="customerAddress"></span></p>
+            </div>
+
+            <div class="tracking-timeline" id="trackingTimeline">
+                <!-- Timeline items will be dynamically added here -->
+            </div>
+
+            <div class="delivery-fee-section" id="deliveryFeeSection" style="display: none;">
+                <h3 id="deliveryFeeTitle">Delivery Fee Information 🚚</h3>
+                <div id="deliveryFeePending" style="display: none;">
+                    <p style="color: #ff9800; font-weight: 600;">⏳ Waiting for admin to set delivery fee...</p>
+                    <p style="color: #666; margin-top: 0.5rem;">You will be notified once the delivery fee is set.</p>
+                </div>
+                <div id="deliveryFeeSet" style="display: none;">
+                    <p>Delivery Fee: <strong id="deliveryFeeAmount">KSH 0</strong></p>
+                    
+                    <!-- M-Pesa STK Push Prompt -->
+                    <div class="mpesa-stk-prompt" style="background: linear-gradient(135deg, #4CAF50, #45a049); color: white; padding: 2rem; border-radius: 20px; margin: 1.5rem 0; text-align: center; box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4); animation: pulse 2s infinite; border: 3px solid rgba(255,255,255,0.3);">
+                        <div style="font-size: 4rem; margin-bottom: 1rem; animation: bounce 1s infinite;">📱</div>
+                        <h2 style="margin: 0 0 1rem 0; font-size: 1.5rem; font-weight: 700;">Check Your Phone Now!</h2>
+                        <p style="margin: 0 0 1rem 0; font-size: 1.1rem; opacity: 0.95; line-height: 1.6;">
+                            You will receive an <strong>M-Pesa payment request</strong> on your phone<br>
+                            <span style="font-size: 1.3rem; font-weight: 700; display: block; margin-top: 0.5rem;" id="stkAmountDisplay">KSH 0</span>
+                        </p>
+                        <div style="background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 10px; margin-top: 1rem;">
+                            <p style="margin: 0; font-size: 1rem; font-weight: 600;">✅ Just enter your M-Pesa PIN when prompted</p>
+                            <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; opacity: 0.9;">No need to enter paybill or account number - it's automatic!</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Payment Status -->
+                    <div id="stkPaymentStatus" style="display: none; background: #E3F2FD; padding: 1.5rem; border-radius: 15px; margin: 1rem 0; border: 2px solid #2196F3; text-align: center;">
+                        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">⏳</div>
+                        <p style="margin: 0; color: #1976D2; font-weight: 600; font-size: 1rem;">Waiting for you to complete payment on your phone...</p>
+                        <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.9rem;">After entering your PIN, you'll receive a confirmation code</p>
+                    </div>
+                    
+                    <!-- Confirmation Code Input -->
+                    <div id="mpesaCodeSection" style="margin-top: 1.5rem; display: none;">
+                        <div style="background: #f0f0f0; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; text-align: center;">
+                            <p style="margin: 0; color: #1976D2; font-weight: 600; font-size: 1rem;">✅ Payment completed on your phone?</p>
+                            <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.9rem;">Enter the confirmation code you received via SMS</p>
+                        </div>
+                    
+                    <div style="margin-top: 1.5rem;">
+                        <label for="mpesaCode" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">M-Pesa Confirmation Code:</label>
+                        <input 
+                            type="text" 
+                            id="mpesaCode" 
+                            placeholder="Enter M-Pesa code (e.g., QH8A2B3C4D)" 
+                            style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 10px; font-family: 'Poppins', sans-serif; font-size: 1rem; margin-bottom: 1rem;"
+                            maxlength="10"
+                        >
+                        <button class="pay-delivery-btn" onclick="submitMpesaCode()" id="submitMpesaBtn">Submit M-Pesa Code 💳</button>
+                    </div>
+                    
+                    <div id="mpesaStatus" style="margin-top: 1rem; padding: 1rem; border-radius: 10px; display: none;"></div>
+                </div>
+            </div>
+
+            <div id="deliveryTracking" style="display: none;">
+                <h3 style="margin-bottom: 1rem;">Live Delivery Tracking 🗺️</h3>
+                <div class="eta-display" id="etaDisplay">Estimated Arrival: <span id="etaTime"></span></div>
+                <div class="delivery-map" id="deliveryMap">
+                    <div id="googleMap"></div>
+                </div>
+                <div class="delivery-guy-info">
+                    <div class="delivery-guy-icon">🚴</div>
+                    <div>
+                        <h4>Delivery Guy</h4>
+                        <p id="deliveryGuyName">On the way to you!</p>
+                        <p style="color: #666; font-size: 0.9rem;" id="deliveryGuyStatus">Status: <span id="deliveryStatus"></span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="index.html" class="category-link">← Back to Shopping</a>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profileModal" class="profile-modal">
+        <div class="profile-modal-content">
+            <div class="profile-modal-header">
+                <h2>My Profile ✨</h2>
+                <button class="close-profile-modal" onclick="closeProfileModal()">✕</button>
+            </div>
+            
+            <div class="profile-picture-section">
+                <div class="profile-picture-container">
+                    <div class="profile-picture-display" id="profilePictureDisplay">
+                        <img id="profilePictureImg" src="" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: none;">
+                        <span id="profilePictureIcon">👤</span>
+                    </div>
+                    <button class="profile-picture-edit-btn" onclick="document.getElementById('profilePictureInput').click()">📷</button>
+                    <input type="file" id="profilePictureInput" class="profile-picture-input" accept="image/*" onchange="handleProfilePictureChange(event)" title="Upload profile picture" aria-label="Upload profile picture">
+                </div>
+            </div>
+
+            <div class="profile-info-section">
+                <div class="profile-info-item">
+                    <label>Full Name:</label>
+                    <input type="text" id="profileName" placeholder="Enter your name">
+                </div>
+                <div class="profile-info-item">
+                    <label>Email:</label>
+                    <input type="email" id="profileEmail" placeholder="Enter your email" readonly style="background: #f5f5f5;">
+                </div>
+                <div class="profile-info-item">
+                    <label>Phone:</label>
+                    <input type="tel" id="profilePhone" placeholder="Enter your phone">
+                </div>
+            </div>
+
+            <div class="profile-points-section">
+                <div class="points-display">
+                    <div class="points-label">Total Points Earned</div>
+                    <div class="points-value" id="profilePointsValue">0</div>
+                    <div class="points-label">⭐ Keep shopping to earn more points!</div>
+                </div>
+                <div class="points-history" id="pointsHistory">
+                    <h3>Points History</h3>
+                    <div id="pointsHistoryList">
+                        <!-- Points history will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-modal-buttons">
+                <button class="cancel-profile-btn" onclick="closeProfileModal()">Cancel</button>
+                <button class="save-profile-btn" onclick="saveProfile()">💾 Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="track-order.js"></script>
+    <script>
+        // Update auth UI on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Update authentication UI
+            if (typeof updateAuthUI === 'function') {
+                updateAuthUI();
+            }
+            
+            // Mobile menu toggle
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            const navMenu = document.getElementById('navMenu');
+            
+            if (mobileMenuToggle && navMenu) {
+                mobileMenuToggle.addEventListener('click', function() {
+                    mobileMenuToggle.classList.toggle('active');
+                    navMenu.classList.toggle('active');
+                });
+                
+                // Close menu when clicking on a link
+                const navLinks = navMenu.querySelectorAll('a');
+                navLinks.forEach(link => {
+                    link.addEventListener('click', function() {
+                        mobileMenuToggle.classList.remove('active');
+                        navMenu.classList.remove('active');
+                    });
+                });
+                
+                // Close menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!mobileMenuToggle.contains(event.target) && !navMenu.contains(event.target)) {
+                        mobileMenuToggle.classList.remove('active');
+                        navMenu.classList.remove('active');
+                    }
+                });
+            }
+        });
+
+        // Profile Modal Functions
+        function showProfileModal() {
+            const user = userAuth.getCurrentUser();
+            if (!user) return;
+
+            const modal = document.getElementById('profileModal');
+            const profileName = document.getElementById('profileName');
+            const profileEmail = document.getElementById('profileEmail');
+            const profilePhone = document.getElementById('profilePhone');
+            const profilePointsValue = document.getElementById('profilePointsValue');
+            const profilePictureDisplay = document.getElementById('profilePictureDisplay');
+            const profilePictureImg = document.getElementById('profilePictureImg');
+            const profilePictureIcon = document.getElementById('profilePictureIcon');
+
+            // Populate form
+            profileName.value = user.name || '';
+            profileEmail.value = user.email || '';
+            profilePhone.value = user.phone || '';
+            profilePointsValue.textContent = user.points || 0;
+
+            // Set profile picture
+            if (user.profilePicture) {
+                profilePictureImg.src = user.profilePicture;
+                profilePictureImg.style.display = 'block';
+                profilePictureIcon.style.display = 'none';
+            } else {
+                profilePictureImg.style.display = 'none';
+                profilePictureIcon.style.display = 'block';
+            }
+
+            // Load points history
+            loadPointsHistory(user);
+
+            modal.classList.add('active');
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profileModal').classList.remove('active');
+        }
+
+        function handleProfilePictureChange(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const profilePictureImg = document.getElementById('profilePictureImg');
+                const profilePictureIcon = document.getElementById('profilePictureIcon');
+                
+                profilePictureImg.src = e.target.result;
+                profilePictureImg.style.display = 'block';
+                profilePictureIcon.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function saveProfile() {
+            const user = userAuth.getCurrentUser();
+            if (!user) return;
+
+            const profileName = document.getElementById('profileName').value;
+            const profilePhone = document.getElementById('profilePhone').value;
+            const profilePictureImg = document.getElementById('profilePictureImg');
+            const profilePicture = profilePictureImg.style.display === 'block' ? profilePictureImg.src : null;
+
+            const updates = {
+                name: profileName,
+                phone: profilePhone,
+                profilePicture: profilePicture
+            };
+
+            userAuth.updateUser(user.id, updates);
+            updateAuthUI();
+            closeProfileModal();
+            
+            // Show success message
+            alert('Profile updated successfully! ✨');
+        }
+
+        function loadPointsHistory(user) {
+            const pointsHistoryList = document.getElementById('pointsHistoryList');
+            const pointsHistory = user.pointsHistory || [];
+
+            if (pointsHistory.length === 0) {
+                pointsHistoryList.innerHTML = '<p style="text-align: center; color: #666; padding: 1rem;">No points history yet. Start shopping to earn points! 🛍️</p>';
+                return;
+            }
+
+            // Sort by date (newest first)
+            const sortedHistory = [...pointsHistory].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            pointsHistoryList.innerHTML = sortedHistory.map(entry => {
+                const date = new Date(entry.date).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                return `
+                    <div class="points-history-item">
+                        <div>
+                            <div style="font-weight: 600; color: var(--dark);">${entry.reason}</div>
+                            <div style="font-size: 0.85rem; color: #666;">${date}</div>
+                        </div>
+                        <div class="points-amount">+${entry.amount} pts</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Close modal when clicking outside
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('profileModal');
+            if (event.target === modal) {
+                closeProfileModal();
+            }
+        });
+    </script>
+</body>
+</html>
