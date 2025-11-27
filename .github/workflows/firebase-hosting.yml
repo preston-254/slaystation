@@ -46,18 +46,42 @@ jobs:
             echo "❌ Error: firebase.json not found!"
             exit 1
           fi
+          if [ ! -f ".firebaserc" ]; then
+            echo "❌ Error: .firebaserc not found!"
+            exit 1
+          fi
           echo "✅ Firebase configuration found"
+          echo "📄 firebase.json:"
           cat firebase.json
+          echo ""
+          echo "📄 .firebaserc:"
+          cat .firebaserc
+
+      - name: 🔐 Verify Firebase Token
+        run: |
+          if [ -z "${{ secrets.FIREBASE_TOKEN }}" ]; then
+            echo "❌ Error: FIREBASE_TOKEN secret is not set!"
+            echo "Please add FIREBASE_TOKEN to GitHub Secrets"
+            exit 1
+          fi
+          echo "✅ Firebase token is configured"
 
       - name: 🚀 Deploy to Firebase Hosting
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
           echo "🚀 Starting deployment..."
+          echo "📦 Project: slay-station-28453"
+          echo "📁 Deploy folder: deploy/"
+          
           firebase deploy --only hosting \
             --project slay-station-28453 \
             --non-interactive \
-            --message "Deploy from GitHub Actions - ${{ github.sha }}"
+            --message "Deploy from GitHub Actions - ${{ github.sha }}" || {
+              echo "❌ Deployment failed!"
+              echo "Check the error messages above"
+              exit 1
+            }
           
           echo "✅ Deployment completed successfully!"
 

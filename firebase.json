@@ -1,0 +1,59 @@
+{
+  "hosting": {
+    "public": "deploy",
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      ".git/**",
+      ".gitignore",
+      "**/node_modules/**",
+      "**/node_mpesa/**",
+      "*.md",
+      "*.bat",
+      "*.ps1",
+      "*.yaml",
+      "*.toml",
+      "firebase-debug.log",
+      "**/firebase-debug.log",
+      ".claude.json*",
+      ".node_repl_history",
+      "**/*.mp4",
+      "images/Reels/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "**/*.@(jpg|jpeg|gif|png|svg|webp|js|css)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "max-age=31536000"
+          }
+        ]
+      },
+      {
+        "source": "**",
+        "headers": [
+          {
+            "key": "X-Content-Type-Options",
+            "value": "nosniff"
+          },
+          {
+            "key": "X-Frame-Options",
+            "value": "DENY"
+          },
+          {
+            "key": "X-XSS-Protection",
+            "value": "1; mode=block"
+          }
+        ]
+      }
+    ]
+  }
+}
+
