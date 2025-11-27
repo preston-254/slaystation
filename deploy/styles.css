@@ -2338,28 +2338,7 @@ html {
 }
 
 .product-reel-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(255, 107, 157, 0.9);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    font-size: 1.2rem;
-    cursor: pointer;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.3s, background 0.3s;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-}
-
-.product-reel-btn:hover {
-    transform: scale(1.1);
-    background: rgba(255, 107, 157, 1);
+    display: none !important;
 }
 
 .reel-modal {
@@ -3751,7 +3730,6 @@ html {
     font-weight: 600;
     box-shadow: 0 5px 20px rgba(255, 107, 157, 0.4);
     transition: all 0.3s;
-    animation: float 3s ease-in-out infinite;
 }
 
 .track-order-btn:hover {
