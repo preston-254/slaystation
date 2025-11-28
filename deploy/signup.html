@@ -8,6 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Google Sign-In API -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         .auth-container {
             min-height: 100vh;
@@ -151,13 +153,18 @@
                 🎉 Get 100 Welcome Points when you sign up! 🎉
             </div>
             
-            <form id="signupForm" onsubmit="handleSignup(event)">
-                <input type="text" id="signupName" placeholder="Full Name" required>
-                <input type="email" id="signupEmail" placeholder="Gmail/Email" required autocomplete="email">
-                <input type="tel" id="signupPhone" placeholder="Phone Number" required>
-                <input type="password" id="signupPassword" placeholder="Password" required minlength="6" autocomplete="new-password">
-                <button type="submit" class="auth-btn">Create Account 💖</button>
-            </form>
+            <!-- Google Sign-In Button -->
+            <div id="g_id_signin" style="margin-bottom: 1.5rem;"></div>
+            
+            <!-- Fallback Custom Google Button -->
+            <button id="customGoogleSignIn" onclick="triggerGoogleSignIn()" style="display: none; width: 100%; padding: 1rem; background: white; border: 2px solid #ddd; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s; margin-bottom: 1rem;">
+                <span style="display: inline-block; margin-right: 0.5rem;">🔵</span>
+                Sign up with Google
+            </button>
+            
+            <div style="text-align: center; margin: 1.5rem 0; color: #999; font-size: 0.9rem;">
+                <p>Quick and secure signup with your Google account</p>
+            </div>
             
             <div style="margin-top: 1rem; padding-top: 1rem; border-top: 2px solid var(--light-bg);">
                 <p style="color: #666; font-size: 0.9rem; margin-bottom: 0.5rem;">Are you a rider?</p>
@@ -173,126 +180,146 @@
 
     <script src="auth.js"></script>
     <script>
-        // Wait for auth.js to load
-        document.addEventListener('DOMContentLoaded', function() {
-            // Ensure auth functions are available
-            if (typeof window.signup === 'undefined') {
-                console.error('Auth functions not loaded. Please refresh the page.');
-            }
-        });
+        // Google OAuth Client ID
+        const GOOGLE_CLIENT_ID = '386064572538-6p7o1k0j2s2emg1gud08626e3r1llf24.apps.googleusercontent.com';
         
-        function handleSignup(e) {
-            e.preventDefault();
+        // Initialize Google Sign-In
+        window.onload = function() {
+            google.accounts.id.initialize({
+                client_id: GOOGLE_CLIENT_ID,
+                callback: handleGoogleSignIn,
+                auto_select: false,
+                cancel_on_tap_outside: true
+            });
             
-            const nameInput = document.getElementById('signupName');
-            const emailInput = document.getElementById('signupEmail');
-            const phoneInput = document.getElementById('signupPhone');
-            const passwordInput = document.getElementById('signupPassword');
-            const submitBtn = e.target.querySelector('button[type="submit"]');
+            // Render the button
+            google.accounts.id.renderButton(
+                document.getElementById('g_id_signin'),
+                {
+                    theme: 'outline',
+                    size: 'large',
+                    width: '100%',
+                    text: 'signup_with',
+                    locale: 'en'
+                }
+            );
             
-            const name = nameInput.value.trim();
-            const email = emailInput.value.trim().toLowerCase();
-            const phone = phoneInput.value.trim();
-            const password = passwordInput.value;
-            
-            // Validation
-            if (!name || name.length < 2) {
-                showError('Please enter a valid name (at least 2 characters)');
-                nameInput.focus();
-                return;
-            }
-            
-            if (!email || !email.includes('@')) {
-                showError('Please enter a valid email address');
-                emailInput.focus();
-                return;
-            }
-            
-            if (!phone || phone.length < 10) {
-                showError('Please enter a valid phone number');
-                phoneInput.focus();
-                return;
-            }
-            
-            if (!password || password.length < 6) {
-                showError('Password must be at least 6 characters long');
-                passwordInput.focus();
-                return;
-            }
-            
-            // Disable button and show loading
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Creating Account...';
-            
-            // Check if auth.js is loaded
-            if (typeof window.signup === 'undefined') {
-                showError('Authentication system not loaded. Please refresh the page and try again.');
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Create Account 💖';
-                return;
-            }
-            
+            // Show custom button if Google API fails
+            setTimeout(() => {
+                const googleButton = document.getElementById('g_id_signin');
+                if (!googleButton || !googleButton.querySelector('iframe')) {
+                    document.getElementById('customGoogleSignIn').style.display = 'block';
+                }
+            }, 2000);
+        };
+        
+        // Handle Google Sign-In callback
+        function handleGoogleSignIn(response) {
             try {
-                // Check if this is a rider email trying to sign up
-                const RIDER_EMAILS = [
-                    'preston.mwendwa@riarauniversity.ac.ke',
-                    'kangethekelvin56@gmail.com',
-                    'prestonmugo83@gmail.com'
-                ];
+                // Decode the JWT token
+                const payload = JSON.parse(atob(response.credential.split('.')[1]));
+                const email = payload.email.toLowerCase();
+                const name = payload.name || email.split('@')[0];
+                const picture = payload.picture || '';
                 
-                if (RIDER_EMAILS.includes(email)) {
-                    // Rider signing up - allow it
-                    console.log('Rider account signup detected');
-                }
+                console.log('Google Sign-Up successful:', { email, name });
                 
-                const result = window.signup(email, password, name, phone);
+                // Check if user exists
+                const users = JSON.parse(localStorage.getItem('slayStationUsers') || '[]');
+                let user = users.find(u => u.email.toLowerCase() === email);
                 
-                if (result.success) {
-                    createConfetti();
-                    showSuccess(result.message);
+                if (!user) {
+                    // Create new account for Google users
+                    const newUser = {
+                        id: Date.now(),
+                        email: email,
+                        password: null, // No password for Google users
+                        name: name,
+                        phone: '',
+                        points: 100, // Welcome bonus
+                        orders: [],
+                        createdAt: new Date().toISOString(),
+                        level: 'Bronze',
+                        pointsHistory: [{
+                            amount: 100,
+                            reason: 'Welcome bonus',
+                            date: new Date().toISOString()
+                        }],
+                        profilePicture: picture,
+                        googleSignIn: true
+                    };
                     
-                    // Redirect after a short delay
-                    setTimeout(() => {
-                        // Check for redirect parameter in URL (e.g., ?redirect=checkout)
-                        const urlParams = new URLSearchParams(window.location.search);
-                        const redirectParam = urlParams.get('redirect');
-                        
-                        // Check if user should be redirected to admin/rider dashboard
-                        if (result.redirect === 'admin') {
-                            window.location.href = 'admin.html';
-                        } else if (result.redirect === 'rider') {
-                            window.location.href = 'rider-dashboard.html';
-                        } else if (redirectParam === 'checkout') {
-                            // Redirect back to checkout
-                            window.location.href = 'index.html#checkout';
-                        } else {
-                            window.location.href = 'index.html';
-                        }
-                    }, 1500);
+                    users.push(newUser);
+                    localStorage.setItem('slayStationUsers', JSON.stringify(users));
+                    user = newUser;
+                    console.log('New user created via Google Sign-Up');
+                    showSuccess(`Welcome ${name}! You've earned 100 welcome points! 🎉✨`);
                 } else {
-                    showError(result.message);
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Create Account 💖';
+                    // User already exists - just log them in
+                    if (picture && !user.profilePicture) {
+                        user.profilePicture = picture;
+                    }
+                    if (!user.googleSignIn) {
+                        user.googleSignIn = true;
+                    }
+                    const userIndex = users.findIndex(u => u.id === user.id);
+                    if (userIndex !== -1) {
+                        users[userIndex] = user;
+                        localStorage.setItem('slayStationUsers', JSON.stringify(users));
+                    }
+                    showSuccess(`Welcome back ${name}! ✨`);
                 }
+                
+                // Save current user session
+                localStorage.setItem('slayStationCurrentUser', JSON.stringify(user));
+                
+                // Redirect
+                setTimeout(() => {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const redirectParam = urlParams.get('redirect');
+                    
+                    if (redirectParam === 'checkout') {
+                        window.location.href = 'index.html#checkout';
+                    } else {
+                        window.location.href = 'index.html';
+                    }
+                }, 1500);
+                
             } catch (error) {
-                console.error('Signup error:', error);
-                showError('An error occurred. Please try again.');
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Create Account 💖';
+                console.error('Google Sign-Up error:', error);
+                showError('Failed to sign up. Please try again.');
             }
         }
         
+        // Fallback function for custom button
+        function triggerGoogleSignIn() {
+            google.accounts.id.prompt((notification) => {
+                if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                    showError('Please enable pop-ups and try again.');
+                }
+            });
+        }
+        
         function showError(message) {
-            const errorDiv = document.getElementById('errorMessage') || document.createElement('div');
+            // Remove existing error message
+            const existingError = document.getElementById('errorMessage');
+            if (existingError) {
+                existingError.remove();
+            }
+            
+            const errorDiv = document.createElement('div');
             errorDiv.id = 'errorMessage';
             errorDiv.style.cssText = 'background: #ffebee; color: #c62828; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; border: 2px solid #ef5350; text-align: center; font-weight: 600;';
             errorDiv.textContent = message;
             
-            const form = document.getElementById('signupForm');
-            if (!document.getElementById('errorMessage')) {
-                form.insertBefore(errorDiv, form.firstChild);
-            } else {
-                errorDiv.textContent = message;
+            const authBox = document.querySelector('.auth-box');
+            if (authBox) {
+                const googleButton = document.getElementById('g_id_signin');
+                if (googleButton && googleButton.parentNode) {
+                    googleButton.parentNode.insertBefore(errorDiv, googleButton);
+                } else {
+                    authBox.insertBefore(errorDiv, authBox.firstChild);
+                }
             }
             
             // Auto remove after 5 seconds
