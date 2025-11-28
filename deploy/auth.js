@@ -1,4 +1,5 @@
 // User Authentication and Points System
+// Updated: Enhanced storage and retrieval for better persistence
 
 class UserAuth {
     constructor() {
