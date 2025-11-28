@@ -42,16 +42,36 @@ class UserAuth {
             
             // Save users array - ensure it's saved properly
             try {
-                localStorage.setItem('slayStationUsers', JSON.stringify(users));
-                // Verify save
-                const verifyUsers = JSON.parse(localStorage.getItem('slayStationUsers') || '[]');
-                if (verifyUsers.length !== users.length) {
-                    console.error('User save verification failed');
+                const usersJson = JSON.stringify(users);
+                localStorage.setItem('slayStationUsers', usersJson);
+                
+                // Verify save immediately
+                const verifyUsersJson = localStorage.getItem('slayStationUsers');
+                if (!verifyUsersJson) {
+                    console.error('User save verification failed - no data in storage');
+                    return { success: false, message: 'Failed to save account. Please check browser settings and try again.' };
+                }
+                
+                const verifyUsers = JSON.parse(verifyUsersJson);
+                if (!Array.isArray(verifyUsers) || verifyUsers.length !== users.length) {
+                    console.error('User save verification failed - data mismatch', {
+                        expected: users.length,
+                        actual: verifyUsers.length
+                    });
                     return { success: false, message: 'Failed to save account. Please try again.' };
                 }
+                
+                // Verify the new user is in the saved array
+                const savedUser = verifyUsers.find(u => u.id === newUser.id && u.email === normalizedEmail);
+                if (!savedUser) {
+                    console.error('New user not found in saved array');
+                    return { success: false, message: 'Failed to save account. Please try again.' };
+                }
+                
+                console.log('User successfully saved:', { email: normalizedEmail, id: newUser.id, totalUsers: verifyUsers.length });
             } catch (storageError) {
                 console.error('Storage error:', storageError);
-                return { success: false, message: 'Storage error. Please check browser settings.' };
+                return { success: false, message: 'Storage error. Please check browser settings and enable localStorage.' };
             }
             
             // Auto login and save user session
@@ -88,22 +108,40 @@ class UserAuth {
     login(email, password, isRiderLogin = false) {
         try {
             const users = this.getUsers();
+            console.log(`Login attempt for: ${email}, Total users in storage: ${users.length}`);
             
             // Case-insensitive email matching
             const emailLower = email.toLowerCase().trim();
+            
+            // Debug: log all user emails
+            if (users.length > 0) {
+                console.log('Registered user emails:', users.map(u => u.email));
+            }
+            
             const user = users.find(u => {
                 const userEmail = u.email.toLowerCase().trim();
-                return userEmail === emailLower && u.password === password;
+                const emailMatch = userEmail === emailLower;
+                const passwordMatch = u.password === password;
+                
+                if (emailMatch && !passwordMatch) {
+                    console.log('Email found but password mismatch');
+                }
+                
+                return emailMatch && passwordMatch;
             });
             
             if (!user) {
                 // Check if email exists but password is wrong
                 const emailExists = users.find(u => u.email.toLowerCase().trim() === emailLower);
                 if (emailExists) {
+                    console.log('Email found but password incorrect');
                     return { success: false, message: 'Incorrect password! Please try again. 💕' };
                 }
+                console.log('Email not found in registered users');
                 return { success: false, message: 'Account not found! Please sign up first. 💕' };
             }
+            
+            console.log('User found, logging in:', { email: user.email, id: user.id });
 
             // Update user data from storage to get latest info
             const updatedUser = users.find(u => u.id === user.id) || user;
@@ -112,17 +150,27 @@ class UserAuth {
             
             // Ensure user data is properly saved to session
             try {
-                localStorage.setItem('slayStationCurrentUser', JSON.stringify(updatedUser));
+                const userJson = JSON.stringify(updatedUser);
+                localStorage.setItem('slayStationCurrentUser', userJson);
                 
                 // Verify the save worked
-                const savedUser = localStorage.getItem('slayStationCurrentUser');
-                if (!savedUser) {
-                    console.error('Failed to save user session!');
+                const savedUserJson = localStorage.getItem('slayStationCurrentUser');
+                if (!savedUserJson) {
+                    console.error('Failed to save user session - no data in storage');
                     return { success: false, message: 'Failed to save session. Please try again.' };
                 }
+                
+                // Verify the saved user matches
+                const savedUser = JSON.parse(savedUserJson);
+                if (savedUser.id !== updatedUser.id || savedUser.email !== updatedUser.email) {
+                    console.error('Session save verification failed - data mismatch');
+                    return { success: false, message: 'Failed to save session. Please try again.' };
+                }
+                
+                console.log('User session saved successfully:', { email: updatedUser.email, id: updatedUser.id });
             } catch (storageError) {
                 console.error('Session storage error:', storageError);
-                return { success: false, message: 'Storage error. Please check browser settings.' };
+                return { success: false, message: 'Storage error. Please check browser settings and enable localStorage.' };
             }
             
             // Check if user is admin or rider and redirect
@@ -187,20 +235,34 @@ class UserAuth {
         const userJson = localStorage.getItem('slayStationCurrentUser');
         if (userJson) {
             try {
-                this.currentUser = JSON.parse(userJson);
-                // Reload from users to get latest points
+                const sessionUser = JSON.parse(userJson);
+                
+                // Reload from users array to get latest data (points, orders, etc.)
                 const users = this.getUsers();
-                const updatedUser = users.find(u => u.id === this.currentUser.id);
+                const updatedUser = users.find(u => u.id === sessionUser.id);
+                
                 if (updatedUser) {
+                    // User found in users array - use the latest data
                     this.currentUser = updatedUser;
+                    // Update session with latest data
                     localStorage.setItem('slayStationCurrentUser', JSON.stringify(updatedUser));
-                } else if (this.currentUser && this.currentUser.id) {
-                    // User exists in session but not in users array - keep the session user
-                    // This can happen if localStorage was partially cleared
-                    // Don't clear the session, just use what we have
-                    console.warn('User not found in users array, but session exists. Keeping session.');
+                    console.log('Current user loaded from storage:', { email: updatedUser.email, id: updatedUser.id });
+                } else if (sessionUser && sessionUser.id && sessionUser.email) {
+                    // User exists in session but not in users array
+                    // This can happen if users array was cleared but session wasn't
+                    // Try to restore the user to the users array
+                    console.warn('User found in session but not in users array. Attempting to restore...');
+                    
+                    // Add user back to users array
+                    const allUsers = this.getUsers();
+                    allUsers.push(sessionUser);
+                    localStorage.setItem('slayStationUsers', JSON.stringify(allUsers));
+                    
+                    this.currentUser = sessionUser;
+                    console.log('User restored to users array:', { email: sessionUser.email, id: sessionUser.id });
                 } else {
                     // Invalid user data, clear it
+                    console.warn('Invalid user data in session, clearing');
                     this.currentUser = null;
                     localStorage.removeItem('slayStationCurrentUser');
                 }
@@ -209,12 +271,32 @@ class UserAuth {
                 this.currentUser = null;
                 localStorage.removeItem('slayStationCurrentUser');
             }
+        } else {
+            console.log('No user session found');
         }
     }
 
     // Get all users
     getUsers() {
-        return JSON.parse(localStorage.getItem('slayStationUsers') || '[]');
+        try {
+            const usersJson = localStorage.getItem('slayStationUsers');
+            if (!usersJson) {
+                console.log('No users found in localStorage, initializing empty array');
+                return [];
+            }
+            const users = JSON.parse(usersJson);
+            if (!Array.isArray(users)) {
+                console.error('Users data is not an array, resetting');
+                localStorage.setItem('slayStationUsers', JSON.stringify([]));
+                return [];
+            }
+            console.log(`Retrieved ${users.length} users from storage`);
+            return users;
+        } catch (error) {
+            console.error('Error getting users:', error);
+            // Return empty array if there's an error
+            return [];
+        }
     }
 
     // Update user
@@ -487,6 +569,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Ensure userAuth is initialized and session is loaded
     if (typeof userAuth !== 'undefined' && userAuth) {
         userAuth.loadCurrentUser();
+        
+        // Debug: Log storage status
+        const users = userAuth.getUsers();
+        const currentUser = userAuth.getCurrentUser();
+        console.log('Auth initialization:', {
+            totalUsers: users.length,
+            currentUser: currentUser ? { email: currentUser.email, id: currentUser.id } : null,
+            localStorageAvailable: typeof Storage !== 'undefined'
+        });
     }
     
     updateAuthUI();
@@ -494,3 +585,29 @@ document.addEventListener('DOMContentLoaded', () => {
     // Refresh every 5 seconds to update points
     setInterval(updateAuthUI, 5000);
 });
+
+// Debug function to check storage (can be called from browser console)
+if (typeof window !== 'undefined') {
+    window.debugAuth = function() {
+        const users = userAuth.getUsers();
+        const currentUser = userAuth.getCurrentUser();
+        const usersJson = localStorage.getItem('slayStationUsers');
+        const sessionJson = localStorage.getItem('slayStationCurrentUser');
+        
+        console.log('=== AUTH DEBUG INFO ===');
+        console.log('Total users:', users.length);
+        console.log('Users:', users.map(u => ({ email: u.email, id: u.id, name: u.name })));
+        console.log('Current user:', currentUser ? { email: currentUser.email, id: currentUser.id, name: currentUser.name } : null);
+        console.log('Users JSON length:', usersJson ? usersJson.length : 0);
+        console.log('Session JSON length:', sessionJson ? sessionJson.length : 0);
+        console.log('localStorage available:', typeof Storage !== 'undefined');
+        console.log('======================');
+        
+        return {
+            totalUsers: users.length,
+            users: users,
+            currentUser: currentUser,
+            localStorageAvailable: typeof Storage !== 'undefined'
+        };
+    };
+}
