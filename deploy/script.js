@@ -1065,7 +1065,7 @@ function handlePaymentMethodChange(paymentMethod) {
         // Update M-Pesa amount with FULL TOTAL (items + delivery fee)
         if (mpesaAmount) {
             const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const giftWrap = document.getElementById('giftWrap')?.checked ? 150 : 0;
+            const giftWrap = document.getElementById('giftWrap')?.checked ? 80 : 0;
             const deliveryFee = calculatedDeliveryFee !== null ? calculatedDeliveryFee : getDeliveryFee();
             const fullTotal = subtotal + giftWrap + deliveryFee;
             mpesaAmount.textContent = `KSH ${fullTotal.toLocaleString()}`;
@@ -1371,7 +1371,7 @@ function setupDeliveryFeeCalculator() {
                         const mpesaAmount = document.getElementById('mpesaAmount');
                         if (paymentMethod === 'mpesa' && mpesaAmount) {
                             const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                            const giftWrap = document.getElementById('giftWrap')?.checked ? 150 : 0;
+                            const giftWrap = document.getElementById('giftWrap')?.checked ? 80 : 0;
                             const fullTotal = subtotal + giftWrap + result.fee;
                             mpesaAmount.textContent = `KSH ${fullTotal.toLocaleString()}`;
                         }
@@ -1449,7 +1449,7 @@ function updateOrderSummary() {
         `;
     });
     
-    const giftWrapCost = giftWrapChecked ? 150 : 0;
+    const giftWrapCost = giftWrapChecked ? 80 : 0;
     
     // Use calculated delivery fee if available, otherwise use default
     const deliveryFee = calculatedDeliveryFee !== null ? calculatedDeliveryFee : getDeliveryFee();
@@ -1473,8 +1473,8 @@ function updateOrderSummary() {
         </div>
         ${giftWrapChecked ? `
         <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.3);">
-            <span>Gift Wrapping 🎀</span>
-            <span>KSH 150</span>
+            <span>Gift Card with Message 💌</span>
+            <span>KSH 80</span>
         </div>
         ` : ''}
         <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.3); ${calculatedDeliveryFee !== null ? 'color: #1976D2; font-weight: 600;' : 'color: #999;'} font-size: 0.9rem;">
@@ -1981,7 +1981,7 @@ if (orderForm) {
         const formData = new FormData(e.target);
         const giftWrap = document.getElementById('giftWrap').checked;
         const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const total = subtotal + (giftWrap ? 150 : 0);
+        const total = subtotal + (giftWrap ? 80 : 0);
         
         // Handle M-Pesa payment
         const paymentMethod = formData.get('payment');
@@ -2117,7 +2117,7 @@ function proceedWithOrderPlacement(orderData, subtotal, giftWrap, paymentMethod,
         orderData.deliveryFeeAutoCalculated = true;
         orderData.deliveryFeeSet = true;
         orderData.withinNairobi = true;
-        orderData.total = subtotal + (giftWrap ? 150 : 0) + deliveryFee;
+        orderData.total = subtotal + (giftWrap ? 80 : 0) + deliveryFee;
         console.log(`✅ Auto-set delivery fee for Nairobi M-Pesa customer: KSH ${deliveryFee}`);
         
         // Continue with order creation
@@ -2128,7 +2128,7 @@ function proceedWithOrderPlacement(orderData, subtotal, giftWrap, paymentMethod,
         orderData.deliveryFeeAutoCalculated = true;
         orderData.deliveryDistance = calculatedDeliveryDistance;
         orderData.withinNairobi = true;
-        orderData.total = subtotal + (giftWrap ? 150 : 0) + calculatedDeliveryFee;
+        orderData.total = subtotal + (giftWrap ? 80 : 0) + calculatedDeliveryFee;
         
         console.log(`Using pre-calculated delivery fee: KSH ${calculatedDeliveryFee} (Distance: ${calculatedDeliveryDistance} km)`);
         
@@ -2146,7 +2146,7 @@ function proceedWithOrderPlacement(orderData, subtotal, giftWrap, paymentMethod,
                 orderData.deliveryFeeCalculation = result;
                 
                 // Update order total to include delivery fee
-                orderData.total = subtotal + (giftWrap ? 150 : 0) + result.fee;
+                orderData.total = subtotal + (giftWrap ? 80 : 0) + result.fee;
                 
                 console.log(`Auto-calculated delivery fee: KSH ${result.fee} (Distance: ${result.distance} km)`);
             } else if (result.outsideNairobi) {
@@ -2219,7 +2219,7 @@ function createOrderWithData(orderData, subtotal, giftWrap, paymentMethod, mpesa
         }
         
         // Calculate total for display
-        const total = subtotal + (giftWrap ? 150 : 0);
+        const total = subtotal + (giftWrap ? 80 : 0);
         
         // Award points if user is logged in
         if (userId && typeof window.userAuth !== 'undefined') {
@@ -2241,7 +2241,7 @@ function createOrderWithData(orderData, subtotal, giftWrap, paymentMethod, mpesa
         }
         
         const deliveryFee = orderData.deliveryFee || 0;
-        const itemsTotal = subtotal + (giftWrap ? 150 : 0);
+        const itemsTotal = subtotal + (giftWrap ? 80 : 0);
         const fullTotal = itemsTotal + deliveryFee;
         
         let paymentMessage = '';

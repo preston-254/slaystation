@@ -157,7 +157,7 @@ function renderOrders() {
                         </div>
                     `;
                 }).join('')}
-                ${order.giftWrap ? '<div class="order-item-row"><span>🎀 Gift Wrapping</span><span>KSH 150</span></div>' : ''}
+                ${order.giftWrap ? '<div class="order-item-row"><span>💌 Gift Card with Message</span><span>KSH 80</span></div>' : ''}
                 <div class="order-item-row total-row">
                     <strong>Subtotal:</strong>
                     <strong>KSH ${order.subtotal.toLocaleString()}</strong>

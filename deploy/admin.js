@@ -162,7 +162,7 @@ function renderOrders() {
                         <span>KSH ${(item.price * item.quantity).toLocaleString()}</span>
                     </div>
                 `).join('')}
-                ${order.giftWrap ? '<div class="order-item-row"><span>Gift Wrapping</span><span>KSH 150</span></div>' : ''}
+                ${order.giftWrap ? '<div class="order-item-row"><span>Gift Card with Message 💌</span><span>KSH 80</span></div>' : ''}
                 <div class="order-item-row total-row">
                     <strong>Subtotal:</strong>
                     <strong>KSH ${order.subtotal.toLocaleString()}</strong>
@@ -466,7 +466,7 @@ function setDeliveryFee(orderId, useAutoCalculated = false) {
     order.deliveryFee = fee;
     order.deliveryFeeSet = true;
     order.deliveryFeeSetTime = new Date().toISOString();
-    order.total = order.subtotal + (order.giftWrap ? 150 : 0) + fee;
+    order.total = order.subtotal + (order.giftWrap ? 80 : 0) + fee;
     
     // Mark that STK push should be sent (simulated)
     order.mpesaStkPushSent = true;
@@ -524,7 +524,7 @@ function confirmAndDispatchNairobi(orderId) {
     // Set delivery fee
     order.deliveryFeeSet = true;
     order.deliveryFeeSetTime = new Date().toISOString();
-    order.total = order.subtotal + (order.giftWrap ? 150 : 0) + order.deliveryFee;
+    order.total = order.subtotal + (order.giftWrap ? 80 : 0) + order.deliveryFee;
     
     // Update status to confirmed and then dispatch
     const oldStatus = order.status;
