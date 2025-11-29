@@ -973,7 +973,11 @@
                     <h3>${product.name}</h3>
                     <div class="product-field">
                         <label>Price (KSH):</label>
-                        <input type="number" id="price_${product.id}" value="${product.price}" min="0">
+                        <input type="number" id="price_${product.id}" value="${product.price}" min="0" onchange="checkPriceReduction(${product.id})">
+                    </div>
+                    <div class="product-field" id="originalPriceField_${product.id}" style="display: ${product.originalPrice ? 'block' : 'none'};">
+                        <label>Original Price (KSH) - for sale display:</label>
+                        <input type="number" id="originalPrice_${product.id}" value="${product.originalPrice || ''}" min="0" placeholder="Leave empty if not on sale">
                     </div>
                     <div class="product-field">
                         <label>Image URL:</label>
@@ -995,9 +999,38 @@
             `).join('');
         }
 
+        // Check if price was reduced and show original price field
+        function checkPriceReduction(productId) {
+            const priceInput = document.getElementById(`price_${productId}`);
+            const originalPriceField = document.getElementById(`originalPriceField_${productId}`);
+            const originalPriceInput = document.getElementById(`originalPrice_${productId}`);
+            
+            if (!priceInput || !originalPriceField) return;
+            
+            const newPrice = parseFloat(priceInput.value);
+            
+            // Get current product to compare
+            const allProducts = getAllProducts();
+            const product = allProducts.find(p => p.id === productId);
+            
+            if (product && product.price && newPrice < product.price) {
+                // Price was reduced - show original price field
+                originalPriceField.style.display = 'block';
+                if (!originalPriceInput.value) {
+                    originalPriceInput.value = product.price;
+                }
+            } else if (newPrice && originalPriceInput && parseFloat(originalPriceInput.value) <= newPrice) {
+                // Original price is not higher than new price - hide field
+                originalPriceField.style.display = 'none';
+                originalPriceInput.value = '';
+            }
+        }
+        
         // Save product changes
         function saveProduct(productId, category) {
             const price = parseFloat(document.getElementById(`price_${productId}`).value);
+            const originalPriceInput = document.getElementById(`originalPrice_${productId}`);
+            const originalPrice = originalPriceInput && originalPriceInput.value ? parseFloat(originalPriceInput.value) : null;
             const image = document.getElementById(`image_${productId}`).value;
             const video = document.getElementById(`video_${productId}`).value;
             const description = document.getElementById(`desc_${productId}`).value;
@@ -1008,6 +1041,7 @@
                 const product = wallets.find(p => p.id === productId);
                 if (product) {
                     product.price = price;
+                    product.originalPrice = (originalPrice && originalPrice > price) ? originalPrice : null;
                     product.image = image;
                     product.video = video;
                     product.description = description;
@@ -1018,6 +1052,7 @@
                 const product = accessories.find(p => p.id === productId);
                 if (product) {
                     product.price = price;
+                    product.originalPrice = (originalPrice && originalPrice > price) ? originalPrice : null;
                     product.image = image;
                     product.video = video;
                     product.description = description;
@@ -1029,6 +1064,7 @@
                     const product = window.products.find(p => p.id === productId);
                     if (product) {
                         product.price = price;
+                        product.originalPrice = (originalPrice && originalPrice > price) ? originalPrice : null;
                         product.image = image;
                         product.video = video;
                         product.description = description;

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sign Up - Slay Station</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -231,28 +231,50 @@
                 cancel_on_tap_outside: true
             });
             
-            // Render the button with custom styling
-            google.accounts.id.renderButton(
-                document.getElementById('g_id_signin'),
-                {
-                    theme: 'filled_blue',
-                    size: 'large',
-                    width: '100%',
-                    text: 'signup_with',
-                    locale: 'en',
-                    shape: 'rectangular'
+            // Wait for Google API to be fully loaded
+            const initGoogleSignIn = () => {
+                if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) {
+                    setTimeout(initGoogleSignIn, 100);
+                    return;
                 }
-            );
+                
+                try {
+                    // Render the button with custom styling
+                    google.accounts.id.renderButton(
+                        document.getElementById('g_id_signin'),
+                        {
+                            theme: 'filled_blue',
+                            size: 'large',
+                            width: '100%',
+                            text: 'signup_with',
+                            locale: 'en',
+                            shape: 'rectangular'
+                        }
+                    );
+                    
+                    // Apply custom girlish styling after button renders (multiple attempts for mobile)
+                    const applyStyling = (attempt = 0) => {
+                        const googleButton = document.querySelector('#g_id_signin iframe');
+                        if (googleButton) {
+                            googleButton.style.borderRadius = '15px';
+                            googleButton.style.boxShadow = '0 5px 20px rgba(255, 107, 157, 0.3)';
+                            googleButton.style.overflow = 'hidden';
+                            googleButton.style.width = '100%';
+                            googleButton.style.maxWidth = '100%';
+                        } else if (attempt < 5) {
+                            setTimeout(() => applyStyling(attempt + 1), 500);
+                        }
+                    };
+                    
+                    setTimeout(() => applyStyling(), 500);
+                    setTimeout(() => applyStyling(), 1500);
+                } catch (error) {
+                    console.error('Error initializing Google Sign-In:', error);
+                    document.getElementById('customGoogleSignIn').style.display = 'block';
+                }
+            };
             
-            // Apply custom girlish styling after button renders
-            setTimeout(() => {
-                const googleButton = document.querySelector('#g_id_signin iframe');
-                if (googleButton) {
-                    googleButton.style.borderRadius = '15px';
-                    googleButton.style.boxShadow = '0 5px 20px rgba(255, 107, 157, 0.3)';
-                    googleButton.style.overflow = 'hidden';
-                }
-            }, 1000);
+            initGoogleSignIn();
             
             // Show custom button if Google API fails
             setTimeout(() => {
