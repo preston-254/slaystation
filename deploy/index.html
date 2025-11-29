@@ -735,25 +735,62 @@
 
         function saveProfile() {
             const user = userAuth.getCurrentUser();
-            if (!user) return;
+            if (!user) {
+                alert('You must be logged in to update your profile.');
+                return;
+            }
 
-            const profileName = document.getElementById('profileName').value;
-            const profilePhone = document.getElementById('profilePhone').value;
+            const profileName = document.getElementById('profileName');
+            const profilePhone = document.getElementById('profilePhone');
             const profilePictureImg = document.getElementById('profilePictureImg');
-            const profilePicture = profilePictureImg.style.display === 'block' ? profilePictureImg.src : null;
+            
+            if (!profileName || !profilePhone) {
+                alert('Profile form fields not found. Please refresh the page.');
+                return;
+            }
+
+            const name = profileName.value.trim();
+            const phone = profilePhone.value.trim();
+            const profilePicture = profilePictureImg && profilePictureImg.style.display === 'block' ? profilePictureImg.src : null;
+
+            if (!name || name.length < 2) {
+                alert('Please enter a valid name (at least 2 characters).');
+                profileName.focus();
+                return;
+            }
 
             const updates = {
-                name: profileName,
-                phone: profilePhone,
+                name: name,
+                phone: phone,
                 profilePicture: profilePicture
             };
 
-            userAuth.updateUser(user.id, updates);
-            updateAuthUI();
-            closeProfileModal();
-            
-            // Show success message
-            alert('Profile updated successfully! ✨');
+            try {
+                const updatedUser = userAuth.updateUser(user.id, updates);
+                if (updatedUser) {
+                    // Reload current user to get updated data
+                    userAuth.loadCurrentUser();
+                    updateAuthUI();
+                    closeProfileModal();
+                    
+                    // Show success message
+                    const successMsg = document.createElement('div');
+                    successMsg.style.cssText = 'position: fixed; top: 100px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #4CAF50, #45a049); color: white; padding: 1rem 2rem; border-radius: 15px; box-shadow: 0 5px 20px rgba(76, 175, 80, 0.4); z-index: 10000; font-weight: 600;';
+                    successMsg.textContent = '✨ Profile updated successfully! ✨';
+                    document.body.appendChild(successMsg);
+                    
+                    setTimeout(() => {
+                        if (successMsg.parentNode) {
+                            successMsg.remove();
+                        }
+                    }, 3000);
+                } else {
+                    alert('Failed to update profile. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error saving profile:', error);
+                alert('An error occurred while saving your profile. Please try again.');
+            }
         }
 
         function loadPointsHistory(user) {

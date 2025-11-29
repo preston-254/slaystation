@@ -234,12 +234,40 @@
             <p>Welcome back! Sign in with Google</p>
             
             <!-- Google Sign-In Button -->
-            <div id="g_id_signin" style="margin-bottom: 1.5rem;"></div>
+            <div id="g_id_signin" style="margin-bottom: 1.5rem; position: relative;">
+                <style>
+                    #g_id_signin iframe {
+                        border-radius: 15px !important;
+                        box-shadow: 0 5px 20px rgba(255, 107, 157, 0.3) !important;
+                    }
+                    #g_id_signin::before {
+                        content: '✨';
+                        position: absolute;
+                        top: -10px;
+                        left: 10px;
+                        font-size: 1.5rem;
+                        animation: sparkle 2s infinite;
+                    }
+                    #g_id_signin::after {
+                        content: '💖';
+                        position: absolute;
+                        top: -10px;
+                        right: 10px;
+                        font-size: 1.5rem;
+                        animation: sparkle 2s infinite 0.5s;
+                    }
+                    @keyframes sparkle {
+                        0%, 100% { opacity: 1; transform: scale(1); }
+                        50% { opacity: 0.5; transform: scale(1.2); }
+                    }
+                </style>
+            </div>
             
             <!-- Fallback Custom Google Button -->
-            <button id="customGoogleSignIn" onclick="triggerGoogleSignIn()" style="display: none; width: 100%; padding: 1rem; background: white; border: 2px solid #ddd; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s; margin-bottom: 1rem;">
-                <span style="display: inline-block; margin-right: 0.5rem;">🔵</span>
-                Sign in with Google
+            <button id="customGoogleSignIn" onclick="triggerGoogleSignIn()" style="display: none; width: 100%; padding: 1.2rem; background: linear-gradient(135deg, #FF6B9D, #C77DFF); color: white; border: none; border-radius: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s; margin-bottom: 1rem; box-shadow: 0 5px 20px rgba(255, 107, 157, 0.4); position: relative; overflow: hidden;">
+                <span style="display: inline-block; margin-right: 0.5rem; font-size: 1.2rem;">✨</span>
+                <span>Sign in with Google</span>
+                <span style="display: inline-block; margin-left: 0.5rem; font-size: 1.2rem;">💖</span>
             </button>
             
             <div style="text-align: center; margin: 1.5rem 0; color: #999; font-size: 0.9rem;">
@@ -293,17 +321,27 @@
                 cancel_on_tap_outside: true
             });
             
-            // Render the button
+            // Render the button with custom styling
             google.accounts.id.renderButton(
                 document.getElementById('g_id_signin'),
                 {
-                    theme: 'outline',
+                    theme: 'filled_blue',
                     size: 'large',
                     width: '100%',
                     text: 'signin_with',
-                    locale: 'en'
+                    locale: 'en',
+                    shape: 'rectangular'
                 }
             );
+            
+            // Apply custom girlish styling after button renders
+            setTimeout(() => {
+                const googleButton = document.querySelector('#g_id_signin iframe');
+                if (googleButton) {
+                    googleButton.style.borderRadius = '15px';
+                    googleButton.style.boxShadow = '0 5px 20px rgba(255, 107, 157, 0.3)';
+                }
+            }, 500);
             
             // Show custom button if Google API fails
             setTimeout(() => {
@@ -371,6 +409,16 @@
                 
                 // Save current user session
                 localStorage.setItem('slayStationCurrentUser', JSON.stringify(user));
+                
+                // Check if user is admin and redirect accordingly
+                const ADMIN_EMAIL = 'preston.mwendwa@riarauniversity.ac.ke';
+                if (email === ADMIN_EMAIL.toLowerCase()) {
+                    showSuccess(`Welcome Admin ${name}! Redirecting to admin dashboard... 👑✨`);
+                    setTimeout(() => {
+                        window.location.href = 'admin.html';
+                    }, 1500);
+                    return;
+                }
                 
                 // Show success
                 showSuccess(`Welcome ${name}! ✨`);
