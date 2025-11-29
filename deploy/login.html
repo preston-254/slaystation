@@ -13,6 +13,44 @@
     <!-- EmailJS SDK -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
+        /* Google Sign-In Button Styling */
+        #g_id_signin {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        
+        #g_id_signin::before {
+            content: '✨';
+            position: absolute;
+            top: -15px;
+            left: 10px;
+            font-size: 1.5rem;
+            z-index: 10;
+            animation: sparkle 2s infinite;
+            pointer-events: none;
+        }
+        
+        #g_id_signin::after {
+            content: '💖';
+            position: absolute;
+            top: -15px;
+            right: 10px;
+            font-size: 1.5rem;
+            z-index: 10;
+            animation: sparkle 2s infinite 0.5s;
+            pointer-events: none;
+        }
+        
+        @keyframes sparkle {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+        
+        #g_id_signin iframe {
+            border-radius: 15px !important;
+            box-shadow: 0 5px 20px rgba(255, 107, 157, 0.3) !important;
+            overflow: hidden !important;
+        }
         .auth-container {
             min-height: 100vh;
             display: flex;
@@ -234,34 +272,7 @@
             <p>Welcome back! Sign in with Google</p>
             
             <!-- Google Sign-In Button -->
-            <div id="g_id_signin" style="margin-bottom: 1.5rem; position: relative;">
-                <style>
-                    #g_id_signin iframe {
-                        border-radius: 15px !important;
-                        box-shadow: 0 5px 20px rgba(255, 107, 157, 0.3) !important;
-                    }
-                    #g_id_signin::before {
-                        content: '✨';
-                        position: absolute;
-                        top: -10px;
-                        left: 10px;
-                        font-size: 1.5rem;
-                        animation: sparkle 2s infinite;
-                    }
-                    #g_id_signin::after {
-                        content: '💖';
-                        position: absolute;
-                        top: -10px;
-                        right: 10px;
-                        font-size: 1.5rem;
-                        animation: sparkle 2s infinite 0.5s;
-                    }
-                    @keyframes sparkle {
-                        0%, 100% { opacity: 1; transform: scale(1); }
-                        50% { opacity: 0.5; transform: scale(1.2); }
-                    }
-                </style>
-            </div>
+            <div id="g_id_signin" style="margin-bottom: 1.5rem; position: relative;"></div>
             
             <!-- Fallback Custom Google Button -->
             <button id="customGoogleSignIn" onclick="triggerGoogleSignIn()" style="display: none; width: 100%; padding: 1.2rem; background: linear-gradient(135deg, #FF6B9D, #C77DFF); color: white; border: none; border-radius: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s; margin-bottom: 1rem; box-shadow: 0 5px 20px rgba(255, 107, 157, 0.4); position: relative; overflow: hidden;">
@@ -340,8 +351,9 @@
                 if (googleButton) {
                     googleButton.style.borderRadius = '15px';
                     googleButton.style.boxShadow = '0 5px 20px rgba(255, 107, 157, 0.3)';
+                    googleButton.style.overflow = 'hidden';
                 }
-            }, 500);
+            }, 1000);
             
             // Show custom button if Google API fails
             setTimeout(() => {
