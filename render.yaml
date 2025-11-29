@@ -1,0 +1,36 @@
+services:
+  # M-Pesa Backend Service
+  - type: web
+    name: slaystation-mpesa-backend
+    env: node
+    rootDir: backend-mpesa
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      # Add these in Render dashboard:
+      # MPESA_CONSUMER_KEY
+      # MPESA_CONSUMER_SECRET
+      # MPESA_PASSKEY
+      # MPESA_BUSINESS_SHORT_CODE=516600
+      # MPESA_ACCOUNT_REFERENCE=944444
+      # MPESA_BASE_URL=https://api.safaricom.co.ke
+      # MPESA_CALLBACK_URL=https://your-backend-url.onrender.com/api/mpesa/callback
+      # MPESA_TIMEOUT_URL=https://your-backend-url.onrender.com/api/mpesa/timeout
+
+  # Email Service
+  - type: web
+    name: slaystation-email-service
+    env: node
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      # Add SENDGRID_API_KEY and FROM_EMAIL in Render dashboard
+

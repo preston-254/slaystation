@@ -29,7 +29,11 @@ const MPESA_CONFIG = {
     BUSINESS_SHORT_CODE: '516600',                 // Production Business Short Code
     ACCOUNT_REFERENCE: '944444',                   // Your account reference
     
-    // Callback URLs (for production - update with your actual callback URLs)
+    // Backend Server URL (Update this after deploying backend to Render)
+    // Example: https://slaystation-mpesa-backend.onrender.com
+    BACKEND_URL: process.env.MPESA_BACKEND_URL || 'https://slaystation-mpesa-backend.onrender.com',
+    
+    // Callback URLs (will be set by backend)
     CALLBACK_URL: 'https://slay-station-28453.firebaseapp.com/api/mpesa/callback',  // Your callback URL
     TIMEOUT_URL: 'https://slay-station-28453.firebaseapp.com/api/mpesa/timeout',    // Your timeout URL
 };
@@ -220,7 +224,7 @@ async function testMpesaConnection() {
 }
 
 /**
- * Initiate M-Pesa STK Push (Production - Direct API Call)
+ * Initiate M-Pesa STK Push (via Backend Server)
  * @param {string} phoneNumber - Customer phone number
  * @param {number} amount - Amount to charge
  * @param {string} orderId - Order ID for reference
@@ -228,100 +232,71 @@ async function testMpesaConnection() {
  */
 async function initiateStkPush(phoneNumber, amount, orderId) {
     try {
-        // Check if passkey is configured
-        if (!MPESA_CONFIG.PASSKEY || 
-            MPESA_CONFIG.PASSKEY === 'YOUR_PASSKEY_HERE' || 
-            MPESA_CONFIG.PASSKEY.trim() === '') {
+        // Check if backend URL is configured
+        if (!MPESA_CONFIG.BACKEND_URL || MPESA_CONFIG.BACKEND_URL.includes('localhost')) {
             return {
                 success: false,
-                error: 'M-Pesa Passkey not configured. Please contact support.',
-                needsPasskey: true
+                error: 'M-Pesa backend server not configured. Please use Cash on Delivery or Card payment instead.',
+                needsBackend: true
             };
         }
         
-        console.log('📱 Initiating M-Pesa STK Push...');
+        console.log('📱 Initiating M-Pesa STK Push via backend...');
         console.log('Phone:', phoneNumber);
         console.log('Amount:', amount);
+        console.log('Backend URL:', MPESA_CONFIG.BACKEND_URL);
         
-        // Get access token first
-        const accessToken = await getMpesaAccessToken();
-        
-        // Format phone number
-        const formattedPhone = formatPhoneNumber(phoneNumber);
-        
-        // Generate timestamp and password
-        const timestamp = generateTimestamp();
-        const password = generatePassword(timestamp);
-        
-        // Prepare STK Push request
-        const stkPushRequest = {
-            BusinessShortCode: MPESA_CONFIG.BUSINESS_SHORT_CODE,
-            Password: password,
-            Timestamp: timestamp,
-            TransactionType: 'CustomerPayBillOnline',
-            Amount: Math.round(amount),
-            PartyA: formattedPhone,
-            PartyB: MPESA_CONFIG.BUSINESS_SHORT_CODE,
-            PhoneNumber: formattedPhone,
-            CallBackURL: MPESA_CONFIG.CALLBACK_URL,
-            AccountReference: MPESA_CONFIG.ACCOUNT_REFERENCE,
-            TransactionDesc: `Order ${orderId} - Slay Station`
-        };
-        
-        console.log('📤 Sending STK Push request...');
-        
-        // Make STK Push request
-        const response = await fetch(`${MPESA_CONFIG.BASE_URL}${MPESA_CONFIG.STK_PUSH_URL}`, {
+        // Make request to backend server
+        const response = await fetch(`${MPESA_CONFIG.BACKEND_URL}/api/mpesa/stkpush`, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${accessToken}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(stkPushRequest)
+            body: JSON.stringify({
+                phoneNumber: phoneNumber,
+                amount: amount,
+                orderId: orderId
+            })
         });
         
         if (!response.ok) {
-            const errorText = await response.text();
-            console.error('❌ STK Push failed:', errorText);
-            throw new Error(`STK Push failed: ${response.status} ${response.statusText}`);
+            const errorData = await response.json().catch(() => ({ error: response.statusText }));
+            console.error('❌ STK Push failed:', errorData);
+            throw new Error(errorData.error || `STK Push failed: ${response.status} ${response.statusText}`);
         }
         
         const data = await response.json();
         
-        if (data.ResponseCode === '0') {
+        if (data.success) {
             console.log('✅ STK Push sent successfully!');
-            console.log('Checkout Request ID:', data.CheckoutRequestID);
+            console.log('Checkout Request ID:', data.checkoutRequestID);
             return {
                 success: true,
-                checkoutRequestID: data.CheckoutRequestID,
-                customerMessage: data.CustomerMessage,
-                merchantRequestID: data.MerchantRequestID
+                checkoutRequestID: data.checkoutRequestID,
+                customerMessage: data.customerMessage,
+                merchantRequestID: data.merchantRequestID
             };
         } else {
-            throw new Error(data.CustomerMessage || 'STK Push failed');
+            throw new Error(data.error || 'STK Push failed');
         }
     } catch (error) {
         console.error('❌ Error initiating STK Push:', error);
         
-        // Handle CORS errors gracefully - M-Pesa API doesn't allow direct browser calls
-        // This is a security restriction by Safari M-Pesa API
+        // Handle network/backend errors
         const errorMessage = error.message || '';
-        const isCorsError = errorMessage.includes('Failed to fetch') || 
-                           errorMessage.includes('CORS') || 
-                           errorMessage.includes('NetworkError') ||
-                           errorMessage.includes('ERR_CONNECTION_REFUSED') ||
-                           errorMessage.includes('ERR_BLOCKED_BY_CLIENT') ||
-                           error.name === 'TypeError' ||
-                           error.name === 'NetworkError';
+        const isNetworkError = errorMessage.includes('Failed to fetch') || 
+                              errorMessage.includes('CORS') || 
+                              errorMessage.includes('NetworkError') ||
+                              errorMessage.includes('ERR_CONNECTION_REFUSED') ||
+                              errorMessage.includes('ERR_BLOCKED_BY_CLIENT') ||
+                              error.name === 'TypeError';
         
-        if (isCorsError) {
-            console.warn('⚠️ M-Pesa API CORS restriction detected. Direct browser calls are not allowed.');
+        if (isNetworkError) {
             return {
                 success: false,
-                error: 'M-Pesa payment requires a secure backend server. Please use Cash on Delivery or Card payment instead. Thank you! 💕',
+                error: 'Cannot connect to payment server. Please check your internet connection or use Cash on Delivery instead.',
                 needsBackend: true,
-                suggestAlternative: true,
-                isCorsError: true
+                suggestAlternative: true
             };
         }
         
@@ -340,6 +315,10 @@ async function initiateStkPush(phoneNumber, amount, orderId) {
  */
 async function queryStkPushStatus(checkoutRequestID) {
     try {
+        if (!MPESA_CONFIG.BACKEND_URL || MPESA_CONFIG.BACKEND_URL.includes('localhost')) {
+            throw new Error('Backend server not configured');
+        }
+        
         // Use backend server to avoid CORS issues
         const response = await fetch(`${MPESA_CONFIG.BACKEND_URL}/api/mpesa/query`, {
             method: 'POST',
