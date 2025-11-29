@@ -1742,12 +1742,21 @@ async function sendStkPushImmediately(amount, orderData) {
                 failedDiv.style.display = 'block';
             }
             if (failureMessage) {
-                if (result.needsBackend || result.error?.includes('Failed to fetch') || result.error?.includes('localhost')) {
-                    failureMessage.innerHTML = '⚠️ M-Pesa payment is currently unavailable.<br><br>Please use <strong>Cash on Delivery</strong> or <strong>Card</strong> payment instead.<br><br>If you need M-Pesa, please contact support.';
-                } else if (result.error?.includes('quota') || result.error?.includes('exceeded')) {
-                    failureMessage.textContent = '⚠️ Payment quota exceeded. Please try again later or use a different payment method.';
+                // Check for various error conditions
+                const errorText = result.error || '';
+                const isBackendError = result.needsBackend || 
+                                     errorText.includes('Failed to fetch') || 
+                                     errorText.includes('localhost') ||
+                                     errorText.includes('Backend server') ||
+                                     errorText.includes('CORS') ||
+                                     errorText.includes('NetworkError');
+                
+                if (isBackendError) {
+                    failureMessage.innerHTML = '⚠️ M-Pesa payment is currently unavailable.<br><br>Please use <strong>Cash on Delivery</strong> or <strong>Card</strong> payment instead.<br><br>Thank you for your understanding! 💕';
+                } else if (errorText.includes('quota') || errorText.includes('exceeded')) {
+                    failureMessage.innerHTML = '⚠️ Payment quota exceeded.<br><br>Please try again later or use <strong>Cash on Delivery</strong> or <strong>Card</strong> payment.';
                 } else {
-                    failureMessage.textContent = result.error || 'Payment could not be processed. Please try again or use Cash on Delivery.';
+                    failureMessage.innerHTML = errorText || 'Payment could not be processed.<br><br>Please try again or use <strong>Cash on Delivery</strong>.';
                 }
             }
         }
