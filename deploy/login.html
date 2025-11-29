@@ -371,7 +371,14 @@
                     setTimeout(() => applyStyling(), 1500);
                 } catch (error) {
                     console.error('Error initializing Google Sign-In:', error);
-                    document.getElementById('customGoogleSignIn').style.display = 'block';
+                    try {
+                        const customBtn = document.getElementById('customGoogleSignIn');
+                        if (customBtn) {
+                            customBtn.style.display = 'block';
+                        }
+                    } catch (e) {
+                        // Silently handle if element doesn't exist
+                    }
                 }
             };
             
@@ -471,7 +478,11 @@
                 
             } catch (error) {
                 console.error('Google Sign-In error:', error);
-                showError('Failed to sign in. Please try again.');
+                try {
+                    showError('Failed to sign in. Please try again.');
+                } catch (e) {
+                    alert('Failed to sign in. Please try again.');
+                }
             }
         }
         

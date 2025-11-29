@@ -971,17 +971,25 @@
                 <div class="product-edit-card">
                     <img src="${product.image}" alt="${product.name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23FF6B9D%22 width=%22200%22 height=%22200%22/%3E%3Ctext fill=%22white%22 font-family=%22Arial%22 font-size=%2220%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3E${product.name}%3C/text%3E%3C/svg%3E'">
                     <h3>${product.name}</h3>
-                    <div class="product-field">
-                        <label>Price (KSH):</label>
-                        <input type="number" id="price_${product.id}" value="${product.price}" min="0" onchange="checkPriceReduction(${product.id})">
+                    <div class="product-field" style="background: linear-gradient(135deg, #fff5f8, #ffeef5); padding: 1.2rem; border-radius: 10px; border: 2px solid var(--primary-pink); margin-bottom: 1rem;">
+                        <label style="font-weight: 700; color: var(--primary-pink); display: block; margin-bottom: 0.75rem; font-size: 1.1rem;">💰 Edit Price (KSH):</label>
+                        <input type="number" id="price_${product.id}" value="${product.price}" min="0" onchange="checkPriceReduction(${product.id})" style="width: 100%; padding: 1rem; border: 2px solid var(--primary-pink); border-radius: 8px; font-size: 1.2rem; font-weight: 600; color: var(--dark);">
+                        <small style="color: #666; font-size: 0.85rem; display: block; margin-top: 0.5rem;">Current price: KSH ${product.price.toLocaleString()}</small>
                     </div>
                     <div class="product-field" id="originalPriceField_${product.id}" style="display: ${product.originalPrice ? 'block' : 'none'};">
                         <label>Original Price (KSH) - for sale display:</label>
                         <input type="number" id="originalPrice_${product.id}" value="${product.originalPrice || ''}" min="0" placeholder="Leave empty if not on sale">
                     </div>
                     <div class="product-field">
-                        <label>Image URL:</label>
-                        <input type="text" id="image_${product.id}" value="${product.image}">
+                        <label>Product Image:</label>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <input type="file" id="imageFile_${product.id}" accept="image/*" onchange="handleImageUpload(${product.id}, this)" style="padding: 0.5rem; border: 2px solid var(--light-bg); border-radius: 8px; cursor: pointer;">
+                            <small style="color: #666; font-size: 0.85rem;">Or enter image URL:</small>
+                            <input type="text" id="image_${product.id}" value="${product.image}" placeholder="https://example.com/image.jpg">
+                        </div>
+                        <div id="imagePreview_${product.id}" style="margin-top: 0.5rem; display: ${product.image ? 'block' : 'none'};">
+                            <img src="${product.image}" alt="Preview" style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 2px solid var(--light-bg);" onerror="this.style.display='none'">
+                        </div>
                     </div>
                     <div class="product-field">
                         <label>Video URL (optional):</label>
@@ -1026,6 +1034,55 @@
             }
         }
         
+        // Handle image file upload
+        function handleImageUpload(productId, fileInput) {
+            const file = fileInput.files[0];
+            if (!file) return;
+            
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file (jpg, png, gif, etc.)');
+                fileInput.value = '';
+                return;
+            }
+            
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Image file is too large. Please select an image smaller than 5MB.');
+                fileInput.value = '';
+                return;
+            }
+            
+            // Read file as data URL
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imageUrl = e.target.result;
+                const imageInput = document.getElementById(`image_${productId}`);
+                const preview = document.getElementById(`imagePreview_${productId}`);
+                
+                if (imageInput) {
+                    imageInput.value = imageUrl;
+                }
+                
+                if (preview) {
+                    const img = preview.querySelector('img') || document.createElement('img');
+                    img.src = imageUrl;
+                    img.style.cssText = 'max-width: 200px; max-height: 200px; border-radius: 8px; border: 2px solid var(--light-bg);';
+                    img.alt = 'Preview';
+                    img.onerror = function() { this.style.display = 'none'; };
+                    if (!preview.querySelector('img')) {
+                        preview.appendChild(img);
+                    }
+                    preview.style.display = 'block';
+                }
+            };
+            reader.onerror = function() {
+                alert('Error reading image file. Please try again.');
+                fileInput.value = '';
+            };
+            reader.readAsDataURL(file);
+        }
+        
         // Save product changes
         function saveProduct(productId, category) {
             const price = parseFloat(document.getElementById(`price_${productId}`).value);
@@ -1034,6 +1091,16 @@
             const image = document.getElementById(`image_${productId}`).value;
             const video = document.getElementById(`video_${productId}`).value;
             const description = document.getElementById(`desc_${productId}`).value;
+            
+            if (!price || price <= 0) {
+                alert('Please enter a valid price');
+                return;
+            }
+            
+            if (!image || image.trim() === '') {
+                alert('Please upload an image or enter an image URL');
+                return;
+            }
 
             // Update in appropriate product array
             if (category === 'wallet') {
@@ -1147,8 +1214,15 @@
                             <input type="number" id="newProductPrice" min="0" required>
                         </div>
                         <div class="form-group">
-                            <label>Image URL:</label>
-                            <input type="text" id="newProductImage" required>
+                            <label>Product Image:</label>
+                            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                <input type="file" id="newProductImageFile" accept="image/*" onchange="handleNewProductImageUpload(this)" style="padding: 0.5rem; border: 2px solid var(--light-bg); border-radius: 8px; cursor: pointer;">
+                                <small style="color: #666; font-size: 0.85rem;">Or enter image URL:</small>
+                                <input type="text" id="newProductImage" placeholder="https://example.com/image.jpg">
+                            </div>
+                            <div id="newProductImagePreview" style="margin-top: 0.5rem; display: none;">
+                                <img id="newProductPreviewImg" src="" alt="Preview" style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 2px solid var(--light-bg);">
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Video URL (optional):</label>
@@ -1173,6 +1247,46 @@
             });
         }
 
+        // Handle new product image upload
+        function handleNewProductImageUpload(fileInput) {
+            const file = fileInput.files[0];
+            if (!file) return;
+            
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
+                fileInput.value = '';
+                return;
+            }
+            
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Image file is too large. Please select an image smaller than 5MB.');
+                fileInput.value = '';
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imageUrl = e.target.result;
+                const imageInput = document.getElementById('newProductImage');
+                const preview = document.getElementById('newProductImagePreview');
+                const previewImg = document.getElementById('newProductPreviewImg');
+                
+                if (imageInput) {
+                    imageInput.value = imageUrl;
+                }
+                
+                if (preview && previewImg) {
+                    previewImg.src = imageUrl;
+                    preview.style.display = 'block';
+                }
+            };
+            reader.onerror = function() {
+                alert('Error reading image file. Please try again.');
+                fileInput.value = '';
+            };
+            reader.readAsDataURL(file);
+        }
+        
         // Add new product
         function addNewProduct() {
             const name = document.getElementById('newProductName').value;
@@ -1181,6 +1295,11 @@
             const image = document.getElementById('newProductImage').value;
             const video = document.getElementById('newProductVideo').value;
             const description = document.getElementById('newProductDescription').value;
+            
+            if (!name || !image || !price || price <= 0) {
+                alert('Please fill in all required fields (name, price, image)');
+                return;
+            }
 
             const newProduct = {
                 id: Date.now(),

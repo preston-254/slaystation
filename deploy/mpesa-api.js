@@ -18,24 +18,20 @@ const MPESA_CONFIG = {
     CONSUMER_SECRET: 'rtu6fziXm62cV5OjjA7R59lM4LcvaLT7mQSbgRR0WB6sYMtwzWZOwsVAGJLPgbUL',  // From Daraja Developer Portal
     PASSKEY: 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919',                  // From Safaricom (for STK Push)
     
-    // Your business details
-    // IMPORTANT: For sandbox testing, use Business Short Code: 174379
-    // For production, use your actual Business Short Code: 516600
-    BUSINESS_SHORT_CODE: '174379',                 // Sandbox test code (use 516600 for production)
-    ACCOUNT_REFERENCE: '944444',                   // Your account reference
     
     // API Endpoints
-    BASE_URL: 'https://sandbox.safaricom.co.ke',   // Use 'https://api.safaricom.co.ke' for production
+    BASE_URL: 'https://api.safaricom.co.ke',   // Production API
     AUTH_URL: '/oauth/v1/generate?grant_type=client_credentials',
     STK_PUSH_URL: '/mpesa/stkpush/v1/processrequest',
     QUERY_URL: '/mpesa/stkpushquery/v1/query',
     
-    // Backend server URL (use this to avoid CORS issues)
-    BACKEND_URL: 'http://localhost:8000',  // Your backend server URL
+    // Production Business Short Code
+    BUSINESS_SHORT_CODE: '516600',                 // Production Business Short Code
+    ACCOUNT_REFERENCE: '944444',                   // Your account reference
     
-    // Callback URLs (will be set by backend, but kept here for reference)
-    CALLBACK_URL: 'http://localhost:8000/api/mpesa/callback',  // Your server callback URL
-    TIMEOUT_URL: 'http://localhost:8000/api/mpesa/timeout',    // Your server timeout URL
+    // Callback URLs (for production - update with your actual callback URLs)
+    CALLBACK_URL: 'https://slay-station-28453.firebaseapp.com/api/mpesa/callback',  // Your callback URL
+    TIMEOUT_URL: 'https://slay-station-28453.firebaseapp.com/api/mpesa/timeout',    // Your timeout URL
 };
 
 /**
@@ -224,7 +220,7 @@ async function testMpesaConnection() {
 }
 
 /**
- * Initiate M-Pesa STK Push
+ * Initiate M-Pesa STK Push (Production - Direct API Call)
  * @param {string} phoneNumber - Customer phone number
  * @param {number} amount - Amount to charge
  * @param {string} orderId - Order ID for reference
@@ -238,72 +234,88 @@ async function initiateStkPush(phoneNumber, amount, orderId) {
             MPESA_CONFIG.PASSKEY.trim() === '') {
             return {
                 success: false,
-                error: 'Passkey not configured. Please add your M-Pesa Passkey to MPESA_CONFIG.PASSKEY. You can test OAuth connection using testMpesaConnection() function.',
+                error: 'M-Pesa Passkey not configured. Please contact support.',
                 needsPasskey: true
             };
         }
         
-        // Check if backend URL is configured
-        if (!MPESA_CONFIG.BACKEND_URL) {
-            return {
-                success: false,
-                error: 'Backend URL not configured. Please set MPESA_CONFIG.BACKEND_URL in mpesa-api.js',
-                needsBackend: true
-            };
-        }
-        
-        console.log('📱 Initiating STK Push via backend...');
+        console.log('📱 Initiating M-Pesa STK Push...');
         console.log('Phone:', phoneNumber);
         console.log('Amount:', amount);
-        console.log('Backend URL:', MPESA_CONFIG.BACKEND_URL);
         
-        // Use backend server to avoid CORS issues
-        const response = await fetch(`${MPESA_CONFIG.BACKEND_URL}/api/mpesa/stkpush`, {
+        // Get access token first
+        const accessToken = await getMpesaAccessToken();
+        
+        // Format phone number
+        const formattedPhone = formatPhoneNumber(phoneNumber);
+        
+        // Generate timestamp and password
+        const timestamp = generateTimestamp();
+        const password = generatePassword(timestamp);
+        
+        // Prepare STK Push request
+        const stkPushRequest = {
+            BusinessShortCode: MPESA_CONFIG.BUSINESS_SHORT_CODE,
+            Password: password,
+            Timestamp: timestamp,
+            TransactionType: 'CustomerPayBillOnline',
+            Amount: Math.round(amount),
+            PartyA: formattedPhone,
+            PartyB: MPESA_CONFIG.BUSINESS_SHORT_CODE,
+            PhoneNumber: formattedPhone,
+            CallBackURL: MPESA_CONFIG.CALLBACK_URL,
+            AccountReference: MPESA_CONFIG.ACCOUNT_REFERENCE,
+            TransactionDesc: `Order ${orderId} - Slay Station`
+        };
+        
+        console.log('📤 Sending STK Push request...');
+        
+        // Make STK Push request
+        const response = await fetch(`${MPESA_CONFIG.BASE_URL}${MPESA_CONFIG.STK_PUSH_URL}`, {
             method: 'POST',
             headers: {
+                'Authorization': `Bearer ${accessToken}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                phoneNumber: phoneNumber,
-                amount: amount,
-                orderId: orderId
-            })
+            body: JSON.stringify(stkPushRequest)
         });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ STK Push failed:', errorText);
+            throw new Error(`STK Push failed: ${response.status} ${response.statusText}`);
+        }
         
         const data = await response.json();
         
-        if (!response.ok) {
-            console.error('❌ STK Push failed:', data);
-            throw new Error(data.error || `STK Push failed: ${response.statusText}`);
-        }
-        
-        if (data.success) {
+        if (data.ResponseCode === '0') {
             console.log('✅ STK Push sent successfully!');
-            console.log('Checkout Request ID:', data.checkoutRequestID);
+            console.log('Checkout Request ID:', data.CheckoutRequestID);
             return {
                 success: true,
-                checkoutRequestID: data.checkoutRequestID,
-                customerMessage: data.customerMessage,
-                merchantRequestID: data.merchantRequestID
+                checkoutRequestID: data.CheckoutRequestID,
+                customerMessage: data.CustomerMessage,
+                merchantRequestID: data.MerchantRequestID
             };
         } else {
-            throw new Error(data.error || 'STK Push failed');
+            throw new Error(data.CustomerMessage || 'STK Push failed');
         }
     } catch (error) {
         console.error('❌ Error initiating STK Push:', error);
         
-        // Check if it's a network/CORS error
+        // Handle CORS errors gracefully - M-Pesa API doesn't allow direct browser calls
         if (error.message.includes('Failed to fetch') || error.message.includes('CORS') || error.message.includes('NetworkError')) {
             return {
                 success: false,
-                error: 'Cannot connect to backend server. Make sure your server is running on ' + (MPESA_CONFIG.BACKEND_URL || 'http://localhost:8000'),
-                needsBackend: true
+                error: 'M-Pesa payment is currently unavailable. Please use Cash on Delivery or Card payment instead. Thank you! 💕',
+                needsBackend: true,
+                suggestAlternative: true
             };
         }
         
         return {
             success: false,
-            error: error.message
+            error: error.message || 'Payment request failed. Please try again or use Cash on Delivery.'
         };
     }
 }
