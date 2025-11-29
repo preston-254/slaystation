@@ -1742,10 +1742,12 @@ async function sendStkPushImmediately(amount, orderData) {
                 failedDiv.style.display = 'block';
             }
             if (failureMessage) {
-                if (result.needsBackend) {
-                    failureMessage.textContent = 'Backend server not running! Please start your server and try again.';
+                if (result.needsBackend || result.error?.includes('Failed to fetch') || result.error?.includes('localhost')) {
+                    failureMessage.innerHTML = '⚠️ M-Pesa payment is currently unavailable.<br><br>Please use <strong>Cash on Delivery</strong> or <strong>Card</strong> payment instead.<br><br>If you need M-Pesa, please contact support.';
+                } else if (result.error?.includes('quota') || result.error?.includes('exceeded')) {
+                    failureMessage.textContent = '⚠️ Payment quota exceeded. Please try again later or use a different payment method.';
                 } else {
-                    failureMessage.textContent = result.error || 'Transaction failed. Please try again.';
+                    failureMessage.textContent = result.error || 'Payment could not be processed. Please try again or use Cash on Delivery.';
                 }
             }
         }
