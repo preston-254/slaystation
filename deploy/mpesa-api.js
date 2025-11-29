@@ -304,18 +304,30 @@ async function initiateStkPush(phoneNumber, amount, orderId) {
         console.error('❌ Error initiating STK Push:', error);
         
         // Handle CORS errors gracefully - M-Pesa API doesn't allow direct browser calls
-        if (error.message.includes('Failed to fetch') || error.message.includes('CORS') || error.message.includes('NetworkError')) {
+        // This is a security restriction by Safari M-Pesa API
+        const errorMessage = error.message || '';
+        const isCorsError = errorMessage.includes('Failed to fetch') || 
+                           errorMessage.includes('CORS') || 
+                           errorMessage.includes('NetworkError') ||
+                           errorMessage.includes('ERR_CONNECTION_REFUSED') ||
+                           errorMessage.includes('ERR_BLOCKED_BY_CLIENT') ||
+                           error.name === 'TypeError' ||
+                           error.name === 'NetworkError';
+        
+        if (isCorsError) {
+            console.warn('⚠️ M-Pesa API CORS restriction detected. Direct browser calls are not allowed.');
             return {
                 success: false,
-                error: 'M-Pesa payment is currently unavailable. Please use Cash on Delivery or Card payment instead. Thank you! 💕',
+                error: 'M-Pesa payment requires a secure backend server. Please use Cash on Delivery or Card payment instead. Thank you! 💕',
                 needsBackend: true,
-                suggestAlternative: true
+                suggestAlternative: true,
+                isCorsError: true
             };
         }
         
         return {
             success: false,
-            error: error.message || 'Payment request failed. Please try again or use Cash on Delivery.'
+            error: errorMessage || 'Payment request failed. Please try again or use Cash on Delivery.'
         };
     }
 }
