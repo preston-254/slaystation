@@ -18,10 +18,12 @@ This guide will help you set up the M-Pesa backend server on Render.com so your 
    - **Environment**: `Node`
    - **Region**: Choose closest to Kenya (e.g., Singapore)
    - **Branch**: `main`
-   - **Root Directory**: `backend-mpesa`
-   - **Build Command**: `npm install`
-   - **Start Command**: `npm start`
+   - **Root Directory**: Leave empty (or set to `.`)
+   - **Build Command**: `cd backend-mpesa && npm install`
+   - **Start Command**: `cd backend-mpesa && npm start`
    - **Instance Type**: Free tier is fine to start
+   
+   **Important**: Make sure the build and start commands include `cd backend-mpesa &&` to navigate to the correct directory!
 
 4. **Add Environment Variables**
    Click "Advanced" → "Add Environment Variable" and add:
