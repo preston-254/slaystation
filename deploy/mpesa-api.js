@@ -31,7 +31,8 @@ const MPESA_CONFIG = {
     
     // Backend Server URL (Update this after deploying backend to Render)
     // Example: https://slaystation-mpesa-backend.onrender.com
-    BACKEND_URL: process.env.MPESA_BACKEND_URL || 'https://slaystation-mpesa-backend.onrender.com',
+    // IMPORTANT: Update this with your actual Render backend URL after deployment!
+    BACKEND_URL: 'https://slaystation-mpesa-backend.onrender.com',
     
     // Callback URLs (will be set by backend)
     CALLBACK_URL: 'https://slay-station-28453.firebaseapp.com/api/mpesa/callback',  // Your callback URL
@@ -233,11 +234,12 @@ async function testMpesaConnection() {
 async function initiateStkPush(phoneNumber, amount, orderId) {
     try {
         // Check if backend URL is configured
-        if (!MPESA_CONFIG.BACKEND_URL || MPESA_CONFIG.BACKEND_URL.includes('localhost')) {
+        if (!MPESA_CONFIG.BACKEND_URL || MPESA_CONFIG.BACKEND_URL.includes('localhost') || MPESA_CONFIG.BACKEND_URL.includes('your-mpesa-backend')) {
             return {
                 success: false,
-                error: 'M-Pesa backend server not configured. Please use Cash on Delivery or Card payment instead.',
-                needsBackend: true
+                error: 'M-Pesa backend server not configured. The backend server needs to be deployed to Render.com. Please use Cash on Delivery or contact support.',
+                needsBackend: true,
+                backendUrl: MPESA_CONFIG.BACKEND_URL
             };
         }
         
@@ -245,6 +247,35 @@ async function initiateStkPush(phoneNumber, amount, orderId) {
         console.log('Phone:', phoneNumber);
         console.log('Amount:', amount);
         console.log('Backend URL:', MPESA_CONFIG.BACKEND_URL);
+        
+        // First, test if backend is reachable
+        try {
+            const testResponse = await fetch(`${MPESA_CONFIG.BACKEND_URL}/api/mpesa/test`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                signal: AbortSignal.timeout(5000) // 5 second timeout
+            });
+            
+            if (!testResponse.ok) {
+                return {
+                    success: false,
+                    error: `Backend server is not responding correctly (Status: ${testResponse.status}). Please check if the backend is deployed and running on Render.com.`,
+                    needsBackend: true,
+                    suggestAlternative: true
+                };
+            }
+        } catch (testError) {
+            console.error('Backend connectivity test failed:', testError);
+            return {
+                success: false,
+                error: `Cannot reach M-Pesa backend server at ${MPESA_CONFIG.BACKEND_URL}. The server may not be deployed or is down. Please use Cash on Delivery or contact support.`,
+                needsBackend: true,
+                suggestAlternative: true,
+                testError: testError.message
+            };
+        }
         
         // Make request to backend server
         const response = await fetch(`${MPESA_CONFIG.BACKEND_URL}/api/mpesa/stkpush`, {
@@ -256,12 +287,28 @@ async function initiateStkPush(phoneNumber, amount, orderId) {
                 phoneNumber: phoneNumber,
                 amount: amount,
                 orderId: orderId
-            })
+            }),
+            signal: AbortSignal.timeout(30000) // 30 second timeout
         });
         
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ error: response.statusText }));
+            let errorData;
+            try {
+                errorData = await response.json();
+            } catch (e) {
+                errorData = { error: response.statusText };
+            }
             console.error('❌ STK Push failed:', errorData);
+            
+            if (response.status === 404) {
+                return {
+                    success: false,
+                    error: 'M-Pesa endpoint not found. The backend server may not be properly configured. Please use Cash on Delivery.',
+                    needsBackend: true,
+                    suggestAlternative: true
+                };
+            }
+            
             throw new Error(errorData.error || `STK Push failed: ${response.status} ${response.statusText}`);
         }
         
@@ -289,14 +336,17 @@ async function initiateStkPush(phoneNumber, amount, orderId) {
                               errorMessage.includes('NetworkError') ||
                               errorMessage.includes('ERR_CONNECTION_REFUSED') ||
                               errorMessage.includes('ERR_BLOCKED_BY_CLIENT') ||
-                              error.name === 'TypeError';
+                              errorMessage.includes('timeout') ||
+                              error.name === 'TypeError' ||
+                              error.name === 'AbortError';
         
         if (isNetworkError) {
             return {
                 success: false,
-                error: 'Cannot connect to payment server. Please check your internet connection or use Cash on Delivery instead.',
+                error: `Cannot connect to M-Pesa payment server. The backend at ${MPESA_CONFIG.BACKEND_URL} may not be deployed or is unreachable. Please use Cash on Delivery or contact support.`,
                 needsBackend: true,
-                suggestAlternative: true
+                suggestAlternative: true,
+                backendUrl: MPESA_CONFIG.BACKEND_URL
             };
         }
         

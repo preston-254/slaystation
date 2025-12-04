@@ -1863,6 +1863,9 @@ async function sendStkPushImmediately(amount, orderData) {
                                      errorText.includes('Failed to fetch') || 
                                      errorText.includes('localhost') ||
                                      errorText.includes('Backend server') ||
+                                     errorText.includes('not deployed') ||
+                                     errorText.includes('Cannot reach') ||
+                                     errorText.includes('not responding') ||
                                      errorText.includes('CORS') ||
                                      errorText.includes('NetworkError');
                 
