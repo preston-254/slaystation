@@ -590,6 +590,15 @@ products.forEach((product, index) => {
     // No automatic assignment - admins can set badge and originalPrice through admin panel
 });
 
+// Save products to localStorage after initialization
+if (typeof products !== 'undefined' && products.length > 0) {
+    try {
+        localStorage.setItem('slayStationProducts', JSON.stringify(products));
+    } catch (e) {
+        console.error('Error saving products to localStorage:', e);
+    }
+}
+
 
 // Send product to friend
 function sendToFriend(productId) {
@@ -721,24 +730,34 @@ function renderProducts(filteredProducts = null) {
         const colorsHTML = colors.length > 0 ? `<div style="margin: 0.5rem 0; font-size: 0.85rem; color: #666;"><strong>Colors:</strong> ${colors.join(', ')}</div>` : '';
         const soldOutHTML = isSoldOut ? `<div style="position: absolute; top: 10px; right: 10px; background: #d32f2f; color: white; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 700; font-size: 0.9rem; z-index: 10; box-shadow: 0 2px 10px rgba(0,0,0,0.3);">SOLD OUT</div>` : '';
         
-        // Check if user is admin
-        const ADMIN_EMAIL = 'preston.mwendwa@riarauniversity.ac.ke';
-        let isAdmin = false;
-        if (typeof userAuth !== 'undefined' && userAuth) {
-            const currentUser = userAuth.getCurrentUser();
-            isAdmin = currentUser && currentUser.email && currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
-        } else {
-            // Fallback check
+        // Check if user is admin (function to check dynamically)
+        function checkIfAdmin() {
+            const ADMIN_EMAIL = 'preston.mwendwa@riarauniversity.ac.ke';
+            if (typeof userAuth !== 'undefined' && userAuth) {
+                const currentUser = userAuth.getCurrentUser();
+                if (currentUser && currentUser.email && currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+                    return true;
+                }
+            }
+            // Check localStorage
             const currentUserJson = localStorage.getItem('slayStationCurrentUser');
             if (currentUserJson) {
                 try {
                     const currentUser = JSON.parse(currentUserJson);
-                    isAdmin = currentUser && currentUser.email && currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
-                } catch (e) {
-                    isAdmin = false;
-                }
+                    if (currentUser && currentUser.email && currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+                        return true;
+                    }
+                } catch (e) {}
             }
+            // Check admin login flag
+            const adminLoggedIn = localStorage.getItem('slayStationAdminLoggedIn');
+            const adminEmail = localStorage.getItem('slayStationAdminEmail');
+            if (adminLoggedIn === 'true' && adminEmail && adminEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+                return true;
+            }
+            return false;
         }
+        const isAdmin = checkIfAdmin();
         const editButtonHTML = isAdmin ? `<button class="edit-product-btn-frontend" onclick="editProductFromFrontend(${product.id}, '${product.category || 'bag'}')" style="width: 100%; margin-top: 0.5rem; padding: 0.6rem; background: linear-gradient(135deg, var(--primary-pink), var(--purple)); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem; transition: all 0.3s;">✏️ Edit Product</button>` : '';
         
         productCard.innerHTML = `
@@ -2961,15 +2980,51 @@ function editProductFromFrontend(productId, category) {
         }
     }
     
+    // Also check localStorage for admin login
     if (!isAdmin) {
-        alert('Only admins can edit products!');
+        const adminLoggedIn = localStorage.getItem('slayStationAdminLoggedIn');
+        const adminEmail = localStorage.getItem('slayStationAdminEmail');
+        if (adminLoggedIn === 'true' && adminEmail && adminEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+            isAdmin = true;
+        }
+    }
+    
+    if (!isAdmin) {
+        alert('Only admins can edit products! Please log in as admin first.');
         return;
     }
     
-    // Redirect to admin dashboard with product search
-    const product = products.find(p => p.id === productId) || 
-                   (typeof walletProducts !== 'undefined' ? walletProducts.find(p => p.id === productId) : null) ||
-                   (typeof accessoryProducts !== 'undefined' ? accessoryProducts.find(p => p.id === productId) : null);
+    // Find product from all sources
+    let product = null;
+    if (typeof products !== 'undefined') {
+        product = products.find(p => p.id === productId);
+    }
+    if (!product && typeof walletProducts !== 'undefined') {
+        product = walletProducts.find(p => p.id === productId);
+    }
+    if (!product && typeof accessoryProducts !== 'undefined') {
+        product = accessoryProducts.find(p => p.id === productId);
+    }
+    
+    // Try loading from localStorage if still not found
+    if (!product) {
+        try {
+            const savedProducts = JSON.parse(localStorage.getItem('slayStationProducts') || '[]');
+            product = savedProducts.find(p => p.id === productId);
+        } catch (e) {}
+    }
+    if (!product) {
+        try {
+            const savedWallets = JSON.parse(localStorage.getItem('slayStationWallets') || '[]');
+            product = savedWallets.find(p => p.id === productId);
+        } catch (e) {}
+    }
+    if (!product) {
+        try {
+            const savedAccessories = JSON.parse(localStorage.getItem('slayStationAccessories') || '[]');
+            product = savedAccessories.find(p => p.id === productId);
+        } catch (e) {}
+    }
     
     if (product) {
         // Store product ID to highlight in admin dashboard
