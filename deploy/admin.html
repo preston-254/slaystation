@@ -1050,6 +1050,124 @@
             }
         }
 
+        // Predefined color palette
+        const COLOR_PALETTE = [
+            {name: 'Black', hex: '#000000'},
+            {name: 'White', hex: '#FFFFFF'},
+            {name: 'Pink', hex: '#FF69B4'},
+            {name: 'Brown', hex: '#8B4513'},
+            {name: 'Red', hex: '#FF0000'},
+            {name: 'Blue', hex: '#0000FF'},
+            {name: 'Green', hex: '#008000'},
+            {name: 'Yellow', hex: '#FFFF00'},
+            {name: 'Purple', hex: '#800080'},
+            {name: 'Orange', hex: '#FFA500'},
+            {name: 'Gray', hex: '#808080'},
+            {name: 'Navy', hex: '#000080'},
+            {name: 'Beige', hex: '#F5F5DC'},
+            {name: 'Gold', hex: '#FFD700'},
+            {name: 'Silver', hex: '#C0C0C0'},
+            {name: 'Coral', hex: '#FF7F50'},
+            {name: 'Lavender', hex: '#E6E6FA'},
+            {name: 'Mint', hex: '#98FB98'}
+        ];
+        
+        // Initialize color picker for a product
+        function initColorPicker(productId, selectedColors) {
+            const colorPickerDiv = document.getElementById(`colorPicker_${productId}`);
+            if (!colorPickerDiv) return;
+            
+            // Parse selected colors
+            let colors = [];
+            try {
+                if (Array.isArray(selectedColors)) {
+                    colors = selectedColors.map(c => {
+                        if (typeof c === 'string') {
+                            // Legacy format: just color name
+                            const paletteColor = COLOR_PALETTE.find(p => p.name.toLowerCase() === c.toLowerCase());
+                            return paletteColor || {name: c, hex: '#808080'};
+                        }
+                        return c; // Already in {name, hex} format
+                    });
+                } else {
+                    colors = [{name: 'Black', hex: '#000000'}, {name: 'White', hex: '#FFFFFF'}, {name: 'Pink', hex: '#FF69B4'}, {name: 'Brown', hex: '#8B4513'}];
+                }
+            } catch (e) {
+                colors = [{name: 'Black', hex: '#000000'}, {name: 'White', hex: '#FFFFFF'}, {name: 'Pink', hex: '#FF69B4'}, {name: 'Brown', hex: '#8B4513'}];
+            }
+            
+            // Get selected color hexes
+            const selectedHexes = colors.map(c => c.hex.toLowerCase());
+            
+            colorPickerDiv.innerHTML = COLOR_PALETTE.map(color => {
+                const isSelected = selectedHexes.includes(color.hex.toLowerCase());
+                return `
+                    <div class="color-swatch ${isSelected ? 'selected' : ''}" 
+                         onclick="toggleColor(${productId}, '${color.hex}', '${color.name}')"
+                         style="width: 40px; height: 40px; border-radius: 50%; background: ${color.hex}; border: 3px solid ${isSelected ? '#ff9800' : '#ddd'}; cursor: pointer; position: relative; box-shadow: ${isSelected ? '0 0 0 2px white, 0 0 0 4px #ff9800' : '0 2px 4px rgba(0,0,0,0.1)'}; transition: all 0.2s;"
+                         title="${color.name}">
+                        ${isSelected ? '<span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 1.2rem; text-shadow: 0 0 3px rgba(0,0,0,0.5);">✓</span>' : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Toggle color selection
+        function toggleColor(productId, hex, name) {
+            const colorsInput = document.getElementById(`colors_${productId}`);
+            if (!colorsInput) return;
+            
+            let colors = [];
+            try {
+                colors = JSON.parse(colorsInput.value || '[]');
+            } catch (e) {
+                colors = [];
+            }
+            
+            const colorIndex = colors.findIndex(c => c.hex.toLowerCase() === hex.toLowerCase());
+            if (colorIndex > -1) {
+                colors.splice(colorIndex, 1);
+            } else {
+                colors.push({name: name, hex: hex});
+            }
+            
+            colorsInput.value = JSON.stringify(colors);
+            initColorPicker(productId, colors);
+        }
+        
+        // Add custom color
+        function addCustomColor(productId) {
+            const hex = prompt('Enter color hex code (e.g., #FF5733):');
+            if (!hex) return;
+            
+            // Validate hex
+            if (!/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(hex)) {
+                alert('Invalid hex code! Please use format #RRGGBB (e.g., #FF5733)');
+                return;
+            }
+            
+            const name = prompt('Enter color name (e.g., Coral Red):') || hex;
+            
+            const colorsInput = document.getElementById(`colors_${productId}`);
+            if (!colorsInput) return;
+            
+            let colors = [];
+            try {
+                colors = JSON.parse(colorsInput.value || '[]');
+            } catch (e) {
+                colors = [];
+            }
+            
+            // Check if color already exists
+            if (!colors.find(c => c.hex.toLowerCase() === hex.toLowerCase())) {
+                colors.push({name: name, hex: hex});
+                colorsInput.value = JSON.stringify(colors);
+                initColorPicker(productId, colors);
+            } else {
+                alert('This color is already selected!');
+            }
+        }
+
         // Display product results
         function displayProductResults(products) {
             const resultsDiv = document.getElementById('productResults');
