@@ -1466,7 +1466,26 @@
             if (window.loadOrders) {
                 window.loadOrders();
             }
+            // Load products if on products tab
+            setTimeout(function() {
+                if (document.getElementById('productsTab') && document.getElementById('productsTab').classList.contains('active')) {
+                    loadAllProducts();
+                }
+            }, 100);
         }
+        
+        // Load products when products tab is clicked
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if we came from frontend edit button
+            const editProductId = sessionStorage.getItem('editProductId');
+            if (editProductId) {
+                // Switch to products tab
+                const productsTab = document.querySelector('.admin-tab[onclick*="products"]');
+                if (productsTab) {
+                    switchAdminTab('products', productsTab);
+                }
+            }
+        });
     </script>
 </body>
 </html>
