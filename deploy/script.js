@@ -578,6 +578,14 @@ products.forEach((product, index) => {
     const likes = getProductLikes(product.id);
     product.likes = likes.count;
     
+    // Initialize stock and colors if not set
+    if (product.stock === undefined) {
+        product.stock = 10; // Default stock
+    }
+    if (!product.colors || product.colors.length === 0) {
+        product.colors = ['Black', 'White', 'Pink', 'Brown']; // Default colors
+    }
+    
     // Badges and sale prices are now controlled by admin in the admin portal
     // No automatic assignment - admins can set badge and originalPrice through admin panel
 });
@@ -706,19 +714,29 @@ function renderProducts(filteredProducts = null) {
         const originalPriceHTML = product.originalPrice ? `<span style="text-decoration: line-through; color: #999; font-size: 1rem; margin-left: 0.5rem;">KSH ${product.originalPrice.toLocaleString()}</span>` : '';
         const ratingHTML = `<div class="product-rating"><span class="stars">${'⭐'.repeat(Math.floor(product.rating))}</span><span class="rating-count">(${product.reviewCount})</span></div>`;
         
+        // Check stock
+        const stock = product.stock !== undefined ? product.stock : 10; // Default to 10 if not set
+        const isSoldOut = stock === 0;
+        const colors = product.colors || ['Black', 'White', 'Pink', 'Brown'];
+        const colorsHTML = colors.length > 0 ? `<div style="margin: 0.5rem 0; font-size: 0.85rem; color: #666;"><strong>Colors:</strong> ${colors.join(', ')}</div>` : '';
+        const soldOutHTML = isSoldOut ? `<div style="position: absolute; top: 10px; right: 10px; background: #d32f2f; color: white; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 700; font-size: 0.9rem; z-index: 10; box-shadow: 0 2px 10px rgba(0,0,0,0.3);">SOLD OUT</div>` : '';
+        
         productCard.innerHTML = `
             ${badgeHTML}
+            ${soldOutHTML}
             <button class="wishlist-heart ${isInWishlist ? 'active' : ''}" onclick="toggleWishlistItem(${product.id})" title="${isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}">
                 ${isInWishlist ? '💖' : '🤍'}
             </button>
-            <div class="product-image" style="background: linear-gradient(135deg, var(--secondary-pink), var(--lavender));">
+            <div class="product-image" style="background: linear-gradient(135deg, var(--secondary-pink), var(--lavender)); ${isSoldOut ? 'opacity: 0.6; filter: grayscale(50%);' : ''}">
                 <img src="${product.image}" alt="${product.name}" onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='👜';">
                 <button class="quick-view-btn" onclick="showQuickView(${product.id})">👁️ Quick View</button>
             </div>
             <h3 class="product-name">${product.name}</h3>
             ${ratingHTML}
             <p class="product-description">${product.description}</p>
+            ${colorsHTML}
             <div class="product-price">KSH ${product.price.toLocaleString()}${originalPriceHTML}</div>
+            ${!isSoldOut ? `<div style="font-size: 0.85rem; color: #4CAF50; margin: 0.5rem 0; font-weight: 600;">📦 ${stock} in stock</div>` : ''}
             <div class="social-share">
                 <button class="share-btn share-instagram" onclick="shareProduct('${product.name}', '${product.image}', 'instagram')" title="Share on Instagram">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -731,8 +749,8 @@ function renderProducts(filteredProducts = null) {
                     </svg>
                 </button>
             </div>
-            <button class="add-to-cart-btn" onclick="addToCart(${product.id})">
-                Add to Cart 🛍️
+            <button class="add-to-cart-btn" onclick="addToCart(${product.id})" ${isSoldOut ? 'disabled style="opacity: 0.5; cursor: not-allowed; background: #ccc;"' : ''}>
+                ${isSoldOut ? 'Sold Out ❌' : 'Add to Cart 🛍️'}
             </button>
         `;
         productsGrid.appendChild(productCard);
@@ -834,9 +852,23 @@ function addToCart(productId) {
     const product = products.find(p => p.id === productId);
     if (!product) return;
 
+    // Check stock
+    const stock = product.stock !== undefined ? product.stock : 10; // Default to 10 if not set
+    if (stock === 0) {
+        showNotification('This product is sold out! ❌');
+        return;
+    }
+
     // Get all items from shared cart
     const allCartItems = getSharedCart();
     const existingItem = allCartItems.find(item => item.id === productId && item.category === product.category);
+    
+    // Check if adding this item would exceed stock
+    const currentQuantity = existingItem ? existingItem.quantity : 0;
+    if (currentQuantity + 1 > stock) {
+        showNotification(`Only ${stock} units available in stock! ⚠️`);
+        return;
+    }
     
     if (existingItem) {
         existingItem.quantity += 1;
@@ -2337,9 +2369,31 @@ function addToCart(productId) {
     const product = products.find(p => p.id === productId);
     if (!product) return;
 
+    // Check stock
+    const stock = product.stock !== undefined ? product.stock : 10; // Default to 10 if not set
+    if (stock === 0) {
+        if (typeof showNotification === 'function') {
+            showNotification('This product is sold out! ❌');
+        } else {
+            alert('This product is sold out! ❌');
+        }
+        return;
+    }
+
     // Check if item exists in shared cart across all pages
     const allCartItems = getSharedCart();
     const existingItem = allCartItems.find(item => item.id === productId && item.category === product.category);
+    
+    // Check if adding this item would exceed stock
+    const currentQuantity = existingItem ? existingItem.quantity : 0;
+    if (currentQuantity + 1 > stock) {
+        if (typeof showNotification === 'function') {
+            showNotification(`Only ${stock} units available in stock! ⚠️`);
+        } else {
+            alert(`Only ${stock} units available in stock! ⚠️`);
+        }
+        return;
+    }
     
     if (existingItem) {
         existingItem.quantity += 1;
@@ -2797,6 +2851,15 @@ function showQuickView(productId) {
     const originalPriceHTML = product.originalPrice ? `<span style="text-decoration: line-through; color: #999; font-size: 1rem; margin-left: 0.5rem;">KSH ${product.originalPrice.toLocaleString()}</span>` : '';
     const ratingHTML = `<div class="product-rating"><span class="stars">${'⭐'.repeat(Math.floor(product.rating))}</span><span class="rating-count">(${product.reviewCount} reviews)</span></div>`;
     
+    // Check stock and colors
+    const stock = product.stock !== undefined ? product.stock : 10;
+    const isSoldOut = stock === 0;
+    const colors = product.colors || ['Black', 'White', 'Pink', 'Brown'];
+    const stockHTML = isSoldOut ? 
+        '<div style="color: #d32f2f; font-weight: 700; font-size: 1.1rem; margin: 1rem 0;">⚠️ SOLD OUT</div>' : 
+        `<div style="color: #4CAF50; font-weight: 600; font-size: 1rem; margin: 1rem 0;">📦 ${stock} units in stock</div>`;
+    const colorsHTML = `<div style="margin: 1rem 0;"><strong>Available Colors:</strong> ${colors.join(', ')}</div>`;
+    
     modal.innerHTML = `
         <div class="quick-view-content">
             <button class="quick-view-close" onclick="closeQuickView()">✕</button>
@@ -2812,9 +2875,11 @@ function showQuickView(productId) {
                     <div style="font-size: 2rem; font-weight: 700; color: var(--primary-pink); margin: 1.5rem 0;">
                         KSH ${product.price.toLocaleString()}${originalPriceHTML}
                     </div>
+                    ${stockHTML}
+                    ${colorsHTML}
                     <div style="margin: 2rem 0;">
-                        <button class="add-to-cart-btn" onclick="addToCart(${product.id}); closeQuickView();" style="width: 100%; font-size: 1.1rem; padding: 1rem;">
-                            Add to Cart 🛍️
+                        <button class="add-to-cart-btn" onclick="addToCart(${product.id}); closeQuickView();" style="width: 100%; font-size: 1.1rem; padding: 1rem;" ${isSoldOut ? 'disabled style="opacity: 0.5; cursor: not-allowed; background: #ccc; width: 100%; font-size: 1.1rem; padding: 1rem;"' : ''}>
+                            ${isSoldOut ? 'Sold Out ❌' : 'Add to Cart 🛍️'}
                         </button>
                         <button class="wishlist-heart" onclick="toggleWishlistItem(${product.id}); closeQuickView();" style="width: 100%; margin-top: 1rem; padding: 0.8rem; background: var(--light-bg); border: 2px solid var(--primary-pink); border-radius: 10px; cursor: pointer;">
                             ${isInWishlist ? '💖 Remove from Wishlist' : '🤍 Add to Wishlist'}

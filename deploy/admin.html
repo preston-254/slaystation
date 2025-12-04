@@ -999,6 +999,18 @@
                         <label>Description:</label>
                         <textarea id="desc_${product.id}" rows="3">${product.description || ''}</textarea>
                     </div>
+                    <div class="product-field" style="background: linear-gradient(135deg, #e8f5e9, #c8e6c9); padding: 1.2rem; border-radius: 10px; border: 2px solid #4CAF50; margin-bottom: 1rem;">
+                        <label style="font-weight: 700; color: #2e7d32; display: block; margin-bottom: 0.75rem; font-size: 1.1rem;">📦 Units in Stock:</label>
+                        <input type="number" id="stock_${product.id}" value="${product.stock !== undefined ? product.stock : 10}" min="0" style="width: 100%; padding: 1rem; border: 2px solid #4CAF50; border-radius: 8px; font-size: 1.2rem; font-weight: 600; color: var(--dark);">
+                        <small style="color: #666; font-size: 0.85rem; display: block; margin-top: 0.5rem;">
+                            ${product.stock !== undefined && product.stock === 0 ? '<span style="color: #d32f2f; font-weight: 600;">⚠️ SOLD OUT</span>' : product.stock !== undefined && product.stock < 5 ? '<span style="color: #f57c00; font-weight: 600;">⚠️ Low Stock</span>' : '✅ In Stock'}
+                        </small>
+                    </div>
+                    <div class="product-field" style="background: linear-gradient(135deg, #fff3e0, #ffe0b2); padding: 1.2rem; border-radius: 10px; border: 2px solid #ff9800; margin-bottom: 1rem;">
+                        <label style="font-weight: 700; color: #e65100; display: block; margin-bottom: 0.75rem; font-size: 1.1rem;">🎨 Available Colors (comma-separated):</label>
+                        <input type="text" id="colors_${product.id}" value="${product.colors ? product.colors.join(', ') : 'Black, White, Pink, Brown'}" placeholder="e.g., Black, White, Pink, Brown" style="width: 100%; padding: 1rem; border: 2px solid #ff9800; border-radius: 8px; font-size: 1rem; color: var(--dark);">
+                        <small style="color: #666; font-size: 0.85rem; display: block; margin-top: 0.5rem;">Separate colors with commas</small>
+                    </div>
                     <div class="edit-buttons">
                         <button class="edit-product-btn" onclick="saveProduct(${product.id}, '${product.category || 'bag'}')">💾 Save Changes</button>
                         <button class="delete-product-btn" onclick="deleteProduct(${product.id}, '${product.category || 'bag'}')">🗑️ Delete</button>
@@ -1091,6 +1103,10 @@
             const image = document.getElementById(`image_${productId}`).value;
             const video = document.getElementById(`video_${productId}`).value;
             const description = document.getElementById(`desc_${productId}`).value;
+            const stockInput = document.getElementById(`stock_${productId}`);
+            const stock = stockInput ? parseInt(stockInput.value) : 10;
+            const colorsInput = document.getElementById(`colors_${productId}`);
+            const colors = colorsInput ? colorsInput.value.split(',').map(c => c.trim()).filter(c => c) : ['Black', 'White', 'Pink', 'Brown'];
             
             if (!price || price <= 0) {
                 alert('Please enter a valid price');
@@ -1112,6 +1128,8 @@
                     product.image = image;
                     product.video = video;
                     product.description = description;
+                    product.stock = stock;
+                    product.colors = colors;
                     localStorage.setItem('slayStationWallets', JSON.stringify(wallets));
                 }
             } else if (category === 'accessory' || category === 'belt' || category === 'mp3-player') {
@@ -1123,6 +1141,8 @@
                     product.image = image;
                     product.video = video;
                     product.description = description;
+                    product.stock = stock;
+                    product.colors = colors;
                     localStorage.setItem('slayStationAccessories', JSON.stringify(accessories));
                 }
             } else {
@@ -1135,6 +1155,8 @@
                         product.image = image;
                         product.video = video;
                         product.description = description;
+                        product.stock = stock;
+                        product.colors = colors;
                         localStorage.setItem('slayStationProducts', JSON.stringify(window.products));
                     }
                 }
@@ -1232,6 +1254,14 @@
                             <label>Description:</label>
                             <textarea id="newProductDescription" rows="3" required></textarea>
                         </div>
+                        <div class="form-group">
+                            <label>Units in Stock:</label>
+                            <input type="number" id="newProductStock" min="0" value="10" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Available Colors (comma-separated):</label>
+                            <input type="text" id="newProductColors" placeholder="e.g., Black, White, Pink, Brown" value="Black, White, Pink, Brown">
+                        </div>
                         <div class="modal-buttons">
                             <button type="button" class="cancel-btn" onclick="closeAddProductModal()">Cancel</button>
                             <button type="submit" class="save-btn">💾 Add Product</button>
@@ -1295,6 +1325,9 @@
             const image = document.getElementById('newProductImage').value;
             const video = document.getElementById('newProductVideo').value;
             const description = document.getElementById('newProductDescription').value;
+            const stock = parseInt(document.getElementById('newProductStock').value) || 10;
+            const colorsInput = document.getElementById('newProductColors').value;
+            const colors = colorsInput ? colorsInput.split(',').map(c => c.trim()).filter(c => c) : ['Black', 'White', 'Pink', 'Brown'];
             
             if (!name || !image || !price || price <= 0) {
                 alert('Please fill in all required fields (name, price, image)');
@@ -1308,7 +1341,9 @@
                 price: price,
                 image: image,
                 video: video || null,
-                description: description
+                description: description,
+                stock: stock,
+                colors: colors
             };
 
             // Add to appropriate array
