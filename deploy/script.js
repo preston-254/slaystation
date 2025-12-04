@@ -583,7 +583,20 @@ products.forEach((product, index) => {
         product.stock = 10; // Default stock
     }
     if (!product.colors || product.colors.length === 0) {
-        product.colors = ['Black', 'White', 'Pink', 'Brown']; // Default colors
+        product.colors = [{name: 'Black', hex: '#000000'}, {name: 'White', hex: '#FFFFFF'}, {name: 'Pink', hex: '#FF69B4'}, {name: 'Brown', hex: '#8B4513'}]; // Default colors
+    } else if (product.colors.length > 0 && typeof product.colors[0] === 'string') {
+        // Convert old format to new format
+        const colorMap = {
+            'black': {name: 'Black', hex: '#000000'},
+            'white': {name: 'White', hex: '#FFFFFF'},
+            'pink': {name: 'Pink', hex: '#FF69B4'},
+            'brown': {name: 'Brown', hex: '#8B4513'},
+            'red': {name: 'Red', hex: '#FF0000'},
+            'blue': {name: 'Blue', hex: '#0000FF'},
+            'green': {name: 'Green', hex: '#008000'},
+            'yellow': {name: 'Yellow', hex: '#FFFF00'}
+        };
+        product.colors = product.colors.map(c => colorMap[c.toLowerCase()] || {name: c, hex: '#808080'});
     }
     
     // Badges and sale prices are now controlled by admin in the admin portal
@@ -726,8 +739,38 @@ function renderProducts(filteredProducts = null) {
         // Check stock
         const stock = product.stock !== undefined ? product.stock : 10; // Default to 10 if not set
         const isSoldOut = stock === 0;
-        const colors = product.colors || ['Black', 'White', 'Pink', 'Brown'];
-        const colorsHTML = colors.length > 0 ? `<div style="margin: 0.5rem 0; font-size: 0.85rem; color: #666;"><strong>Colors:</strong> ${colors.join(', ')}</div>` : '';
+        
+        // Parse colors - support both old format (array of strings) and new format (array of objects)
+        let colors = product.colors || [{name: 'Black', hex: '#000000'}, {name: 'White', hex: '#FFFFFF'}, {name: 'Pink', hex: '#FF69B4'}, {name: 'Brown', hex: '#8B4513'}];
+        if (colors.length > 0 && typeof colors[0] === 'string') {
+            // Convert old format to new format
+            colors = colors.map(c => {
+                const colorMap = {
+                    'black': {name: 'Black', hex: '#000000'},
+                    'white': {name: 'White', hex: '#FFFFFF'},
+                    'pink': {name: 'Pink', hex: '#FF69B4'},
+                    'brown': {name: 'Brown', hex: '#8B4513'},
+                    'red': {name: 'Red', hex: '#FF0000'},
+                    'blue': {name: 'Blue', hex: '#0000FF'},
+                    'green': {name: 'Green', hex: '#008000'},
+                    'yellow': {name: 'Yellow', hex: '#FFFF00'}
+                };
+                return colorMap[c.toLowerCase()] || {name: c, hex: '#808080'};
+            });
+        }
+        
+        // Create color swatches HTML
+        const colorsHTML = colors.length > 0 ? `
+            <div style="margin: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                <strong style="font-size: 0.85rem; color: #666;">Colors:</strong>
+                ${colors.map(c => `
+                    <div style="display: flex; align-items: center; gap: 0.3rem;">
+                        <div style="width: 24px; height: 24px; border-radius: 50%; background: ${c.hex || '#808080'}; border: 2px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" title="${c.name || c}"></div>
+                        <span style="font-size: 0.85rem; color: #666;">${c.name || c}</span>
+                    </div>
+                `).join('')}
+            </div>
+        ` : '';
         const soldOutHTML = isSoldOut ? `<div style="position: absolute; top: 10px; right: 10px; background: #d32f2f; color: white; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 700; font-size: 0.9rem; z-index: 10; box-shadow: 0 2px 10px rgba(0,0,0,0.3);">SOLD OUT</div>` : '';
         
         // Check if user is admin (function to check dynamically)

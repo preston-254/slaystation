@@ -1098,9 +1098,13 @@
                         </small>
                     </div>
                     <div class="product-field" style="background: linear-gradient(135deg, #fff3e0, #ffe0b2); padding: 1.2rem; border-radius: 10px; border: 2px solid #ff9800; margin-bottom: 1rem;">
-                        <label style="font-weight: 700; color: #e65100; display: block; margin-bottom: 0.75rem; font-size: 1.1rem;">🎨 Available Colors (comma-separated):</label>
-                        <input type="text" id="colors_${product.id}" value="${product.colors ? product.colors.join(', ') : 'Black, White, Pink, Brown'}" placeholder="e.g., Black, White, Pink, Brown" style="width: 100%; padding: 1rem; border: 2px solid #ff9800; border-radius: 8px; font-size: 1rem; color: var(--dark);">
-                        <small style="color: #666; font-size: 0.85rem; display: block; margin-top: 0.5rem;">Separate colors with commas</small>
+                        <label style="font-weight: 700; color: #e65100; display: block; margin-bottom: 0.75rem; font-size: 1.1rem;">🎨 Available Colors:</label>
+                        <div id="colorPicker_${product.id}" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; padding: 1rem; background: white; border-radius: 8px; border: 2px solid #ff9800;">
+                            <!-- Color swatches will be inserted here -->
+                        </div>
+                        <input type="hidden" id="colors_${product.id}" value="${product.colors ? JSON.stringify(product.colors) : JSON.stringify([{name: 'Black', hex: '#000000'}, {name: 'White', hex: '#FFFFFF'}, {name: 'Pink', hex: '#FF69B4'}, {name: 'Brown', hex: '#8B4513'}])}">
+                        <button type="button" onclick="addCustomColor(${product.id})" style="padding: 0.5rem 1rem; background: #ff9800; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem;">+ Add Custom Color</button>
+                        <small style="color: #666; font-size: 0.85rem; display: block; margin-top: 0.5rem;">Click colors to select/deselect</small>
                     </div>
                     <div class="edit-buttons">
                         <button class="edit-product-btn" onclick="saveProduct(${product.id}, '${product.category || 'bag'}')">💾 Save Changes</button>
@@ -1108,6 +1112,19 @@
                     </div>
                 </div>
             `).join('');
+            
+            // Initialize color pickers after rendering
+            products.forEach(product => {
+                const colorsInput = document.getElementById(`colors_${product.id}`);
+                if (colorsInput) {
+                    try {
+                        const colors = JSON.parse(colorsInput.value || '[]');
+                        initColorPicker(product.id, colors);
+                    } catch (e) {
+                        initColorPicker(product.id, product.colors || []);
+                    }
+                }
+            });
         }
 
         // Check if price was reduced and show original price field
@@ -1197,7 +1214,22 @@
             const stockInput = document.getElementById(`stock_${productId}`);
             const stock = stockInput ? parseInt(stockInput.value) : 10;
             const colorsInput = document.getElementById(`colors_${productId}`);
-            const colors = colorsInput ? colorsInput.value.split(',').map(c => c.trim()).filter(c => c) : ['Black', 'White', 'Pink', 'Brown'];
+            let colors = [];
+            if (colorsInput && colorsInput.value) {
+                try {
+                    colors = JSON.parse(colorsInput.value);
+                } catch (e) {
+                    // Fallback: try to parse as comma-separated string
+                    colors = colorsInput.value.split(',').map(c => {
+                        const trimmed = c.trim();
+                        const paletteColor = COLOR_PALETTE.find(p => p.name.toLowerCase() === trimmed.toLowerCase());
+                        return paletteColor || {name: trimmed, hex: '#808080'};
+                    }).filter(c => c.name);
+                }
+            }
+            if (colors.length === 0) {
+                colors = [{name: 'Black', hex: '#000000'}, {name: 'White', hex: '#FFFFFF'}, {name: 'Pink', hex: '#FF69B4'}, {name: 'Brown', hex: '#8B4513'}];
+            }
             
             if (!price || price <= 0) {
                 alert('Please enter a valid price');
@@ -1362,6 +1394,11 @@
             `;
             document.body.appendChild(modal);
             
+            // Initialize color picker for new product
+            setTimeout(() => {
+                initNewProductColorPicker();
+            }, 100);
+            
             document.getElementById('addProductForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 addNewProduct();
@@ -1417,8 +1454,18 @@
             const video = document.getElementById('newProductVideo').value;
             const description = document.getElementById('newProductDescription').value;
             const stock = parseInt(document.getElementById('newProductStock').value) || 10;
-            const colorsInput = document.getElementById('newProductColors').value;
-            const colors = colorsInput ? colorsInput.split(',').map(c => c.trim()).filter(c => c) : ['Black', 'White', 'Pink', 'Brown'];
+            const colorsInput = document.getElementById('newProductColors');
+            let colors = [];
+            if (colorsInput && colorsInput.value) {
+                try {
+                    colors = JSON.parse(colorsInput.value);
+                } catch (e) {
+                    colors = [{name: 'Black', hex: '#000000'}, {name: 'White', hex: '#FFFFFF'}, {name: 'Pink', hex: '#FF69B4'}, {name: 'Brown', hex: '#8B4513'}];
+                }
+            }
+            if (colors.length === 0) {
+                colors = [{name: 'Black', hex: '#000000'}, {name: 'White', hex: '#FFFFFF'}, {name: 'Pink', hex: '#FF69B4'}, {name: 'Brown', hex: '#8B4513'}];
+            }
             
             if (!name || !image || !price || price <= 0) {
                 alert('Please fill in all required fields (name, price, image)');
