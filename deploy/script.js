@@ -721,6 +721,26 @@ function renderProducts(filteredProducts = null) {
         const colorsHTML = colors.length > 0 ? `<div style="margin: 0.5rem 0; font-size: 0.85rem; color: #666;"><strong>Colors:</strong> ${colors.join(', ')}</div>` : '';
         const soldOutHTML = isSoldOut ? `<div style="position: absolute; top: 10px; right: 10px; background: #d32f2f; color: white; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 700; font-size: 0.9rem; z-index: 10; box-shadow: 0 2px 10px rgba(0,0,0,0.3);">SOLD OUT</div>` : '';
         
+        // Check if user is admin
+        const ADMIN_EMAIL = 'preston.mwendwa@riarauniversity.ac.ke';
+        let isAdmin = false;
+        if (typeof userAuth !== 'undefined' && userAuth) {
+            const currentUser = userAuth.getCurrentUser();
+            isAdmin = currentUser && currentUser.email && currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+        } else {
+            // Fallback check
+            const currentUserJson = localStorage.getItem('slayStationCurrentUser');
+            if (currentUserJson) {
+                try {
+                    const currentUser = JSON.parse(currentUserJson);
+                    isAdmin = currentUser && currentUser.email && currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+                } catch (e) {
+                    isAdmin = false;
+                }
+            }
+        }
+        const editButtonHTML = isAdmin ? `<button class="edit-product-btn-frontend" onclick="editProductFromFrontend(${product.id}, '${product.category || 'bag'}')" style="width: 100%; margin-top: 0.5rem; padding: 0.6rem; background: linear-gradient(135deg, var(--primary-pink), var(--purple)); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem; transition: all 0.3s;">✏️ Edit Product</button>` : '';
+        
         productCard.innerHTML = `
             ${badgeHTML}
             ${soldOutHTML}
@@ -752,6 +772,7 @@ function renderProducts(filteredProducts = null) {
             <button class="add-to-cart-btn" onclick="addToCart(${product.id})" ${isSoldOut ? 'disabled style="opacity: 0.5; cursor: not-allowed; background: #ccc;"' : ''}>
                 ${isSoldOut ? 'Sold Out ❌' : 'Add to Cart 🛍️'}
             </button>
+            ${editButtonHTML}
         `;
         productsGrid.appendChild(productCard);
     });
@@ -2916,6 +2937,47 @@ function closeQuickView() {
     const modal = document.getElementById('quickViewModal');
     if (modal) {
         modal.classList.remove('active');
+    }
+}
+
+// Edit product from frontend (for admins)
+function editProductFromFrontend(productId, category) {
+    // Check if user is admin
+    const ADMIN_EMAIL = 'preston.mwendwa@riarauniversity.ac.ke';
+    let isAdmin = false;
+    
+    if (typeof userAuth !== 'undefined' && userAuth) {
+        const currentUser = userAuth.getCurrentUser();
+        isAdmin = currentUser && currentUser.email && currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+    } else {
+        const currentUserJson = localStorage.getItem('slayStationCurrentUser');
+        if (currentUserJson) {
+            try {
+                const currentUser = JSON.parse(currentUserJson);
+                isAdmin = currentUser && currentUser.email && currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+            } catch (e) {
+                isAdmin = false;
+            }
+        }
+    }
+    
+    if (!isAdmin) {
+        alert('Only admins can edit products!');
+        return;
+    }
+    
+    // Redirect to admin dashboard with product search
+    const product = products.find(p => p.id === productId) || 
+                   (typeof walletProducts !== 'undefined' ? walletProducts.find(p => p.id === productId) : null) ||
+                   (typeof accessoryProducts !== 'undefined' ? accessoryProducts.find(p => p.id === productId) : null);
+    
+    if (product) {
+        // Store product ID to highlight in admin dashboard
+        sessionStorage.setItem('editProductId', productId);
+        sessionStorage.setItem('editProductName', product.name);
+        window.location.href = 'admin.html';
+    } else {
+        alert('Product not found!');
     }
 }
 

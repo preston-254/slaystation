@@ -940,6 +940,34 @@
                 element.classList.add('active');
             }
             document.getElementById(tab + 'Tab').classList.add('active');
+            
+            // Load all products when Products tab is opened
+            if (tab === 'products') {
+                loadAllProducts();
+            }
+        }
+        
+        // Load all products by default
+        function loadAllProducts() {
+            const allProducts = getAllProducts();
+            displayProductResults(allProducts);
+            
+            // Check if we need to highlight a specific product (from frontend edit button)
+            const editProductId = sessionStorage.getItem('editProductId');
+            if (editProductId) {
+                const editProductName = sessionStorage.getItem('editProductName');
+                if (editProductName) {
+                    // Set search to product name and scroll to it
+                    const searchInput = document.getElementById('productSearchInput');
+                    if (searchInput) {
+                        searchInput.value = editProductName;
+                        searchProductsAdmin();
+                    }
+                }
+                // Clear the session storage
+                sessionStorage.removeItem('editProductId');
+                sessionStorage.removeItem('editProductName');
+            }
         }
 
         // Get all products from all sources
@@ -952,11 +980,16 @@
 
         // Search products
         function searchProductsAdmin() {
-            const searchTerm = document.getElementById('productSearchInput').value.toLowerCase();
+            const searchTerm = document.getElementById('productSearchInput').value.toLowerCase().trim();
             const allProducts = getAllProducts();
-            const results = allProducts.filter(p => p.name.toLowerCase().includes(searchTerm));
             
-            displayProductResults(results);
+            // If search is empty, show all products
+            if (searchTerm === '') {
+                displayProductResults(allProducts);
+            } else {
+                const results = allProducts.filter(p => p.name.toLowerCase().includes(searchTerm));
+                displayProductResults(results);
+            }
         }
 
         // Display product results
