@@ -353,8 +353,16 @@
                 localStorage.setItem('slayStationCurrentUser', JSON.stringify(user));
                 
                 // Check if user is admin and redirect accordingly
-                const ADMIN_EMAIL = 'preston.mwendwa@riarauniversity.ac.ke';
-                if (email === ADMIN_EMAIL.toLowerCase()) {
+                const ADMIN_EMAILS = [
+                    'preston.mwendwa@riarauniversity.ac.ke',
+                    'isabellewambui@gmail.com'
+                ];
+                const isAdminEmail = (email) => {
+                    if (!email) return false;
+                    const normalizedEmail = email.toLowerCase().trim();
+                    return ADMIN_EMAILS.some(adminEmail => adminEmail.toLowerCase() === normalizedEmail);
+                };
+                if (isAdminEmail(email)) {
                     showSuccess(`Welcome Admin ${name}! Redirecting to admin dashboard... 👑✨`);
                     setTimeout(() => {
                         window.location.href = 'admin.html';

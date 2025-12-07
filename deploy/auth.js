@@ -175,12 +175,20 @@ class UserAuth {
             }
             
             // Check if user is admin or rider and redirect
-            const ADMIN_EMAIL = 'preston.mwendwa@riarauniversity.ac.ke';
+            const ADMIN_EMAILS = [
+                'preston.mwendwa@riarauniversity.ac.ke',
+                'isabellewambui@gmail.com'
+            ];
             const RIDER_EMAILS = [
                 'preston.mwendwa@riarauniversity.ac.ke',
                 'kangethekelvin56@gmail.com',
                 'prestonmugo83@gmail.com'
             ];
+            const isAdminEmail = (email) => {
+                if (!email) return false;
+                const normalizedEmail = email.toLowerCase().trim();
+                return ADMIN_EMAILS.some(adminEmail => adminEmail.toLowerCase() === normalizedEmail);
+            };
         
             // Normalize email for comparison
             const normalizedEmail = emailLower;
@@ -194,7 +202,7 @@ class UserAuth {
                     window.location.href = 'rider-dashboard.html';
                 }, 500);
                 return { success: true, message: `Welcome back, ${updatedUser.name}! Redirecting to rider dashboard... ✨`, user: updatedUser, redirect: 'rider' };
-            } else if (normalizedEmail === ADMIN_EMAIL.toLowerCase()) {
+            } else if (isAdminEmail(normalizedEmail)) {
                 // Redirect to admin dashboard (only if not a rider login)
                 setTimeout(() => {
                     window.location.href = 'admin.html';
@@ -477,8 +485,16 @@ function updateAuthUI() {
     let adminDashboardBtn = document.getElementById('adminDashboardBtn');
     
     // Admin email check
-    const ADMIN_EMAIL = 'preston.mwendwa@riarauniversity.ac.ke';
-    const isAdmin = user && user.email && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+    const ADMIN_EMAILS = [
+        'preston.mwendwa@riarauniversity.ac.ke',
+        'isabellewambui@gmail.com'
+    ];
+    const isAdminEmail = (email) => {
+        if (!email) return false;
+        const normalizedEmail = email.toLowerCase().trim();
+        return ADMIN_EMAILS.some(adminEmail => adminEmail.toLowerCase() === normalizedEmail);
+    };
+    const isAdmin = user && user.email && isAdminEmail(user.email);
     
     if (user) {
         if (loginBtn) loginBtn.style.display = 'none';

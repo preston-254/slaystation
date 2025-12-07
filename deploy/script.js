@@ -775,10 +775,19 @@ function renderProducts(filteredProducts = null) {
         
         // Check if user is admin (function to check dynamically)
         function checkIfAdmin() {
-            const ADMIN_EMAIL = 'preston.mwendwa@riarauniversity.ac.ke';
+            const ADMIN_EMAILS = [
+                'preston.mwendwa@riarauniversity.ac.ke',
+                'isabellewambui@gmail.com'
+            ];
+            const isAdminEmail = (email) => {
+                if (!email) return false;
+                const normalizedEmail = email.toLowerCase().trim();
+                return ADMIN_EMAILS.some(adminEmail => adminEmail.toLowerCase() === normalizedEmail);
+            };
+            
             if (typeof userAuth !== 'undefined' && userAuth) {
                 const currentUser = userAuth.getCurrentUser();
-                if (currentUser && currentUser.email && currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+                if (currentUser && currentUser.email && isAdminEmail(currentUser.email)) {
                     return true;
                 }
             }
@@ -787,7 +796,7 @@ function renderProducts(filteredProducts = null) {
             if (currentUserJson) {
                 try {
                     const currentUser = JSON.parse(currentUserJson);
-                    if (currentUser && currentUser.email && currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+                    if (currentUser && currentUser.email && isAdminEmail(currentUser.email)) {
                         return true;
                     }
                 } catch (e) {}
@@ -795,7 +804,7 @@ function renderProducts(filteredProducts = null) {
             // Check admin login flag
             const adminLoggedIn = localStorage.getItem('slayStationAdminLoggedIn');
             const adminEmail = localStorage.getItem('slayStationAdminEmail');
-            if (adminLoggedIn === 'true' && adminEmail && adminEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+            if (adminLoggedIn === 'true' && adminEmail && isAdminEmail(adminEmail)) {
                 return true;
             }
             return false;
@@ -3008,18 +3017,27 @@ function closeQuickView() {
 // Edit product from frontend (for admins)
 function editProductFromFrontend(productId, category) {
     // Check if user is admin
-    const ADMIN_EMAIL = 'preston.mwendwa@riarauniversity.ac.ke';
+    const ADMIN_EMAILS = [
+        'preston.mwendwa@riarauniversity.ac.ke',
+        'isabellewambui@gmail.com'
+    ];
+    const isAdminEmail = (email) => {
+        if (!email) return false;
+        const normalizedEmail = email.toLowerCase().trim();
+        return ADMIN_EMAILS.some(adminEmail => adminEmail.toLowerCase() === normalizedEmail);
+    };
+    
     let isAdmin = false;
     
     if (typeof userAuth !== 'undefined' && userAuth) {
         const currentUser = userAuth.getCurrentUser();
-        isAdmin = currentUser && currentUser.email && currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+        isAdmin = currentUser && currentUser.email && isAdminEmail(currentUser.email);
     } else {
         const currentUserJson = localStorage.getItem('slayStationCurrentUser');
         if (currentUserJson) {
             try {
                 const currentUser = JSON.parse(currentUserJson);
-                isAdmin = currentUser && currentUser.email && currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+                isAdmin = currentUser && currentUser.email && isAdminEmail(currentUser.email);
             } catch (e) {
                 isAdmin = false;
             }
@@ -3030,7 +3048,7 @@ function editProductFromFrontend(productId, category) {
     if (!isAdmin) {
         const adminLoggedIn = localStorage.getItem('slayStationAdminLoggedIn');
         const adminEmail = localStorage.getItem('slayStationAdminEmail');
-        if (adminLoggedIn === 'true' && adminEmail && adminEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+        if (adminLoggedIn === 'true' && adminEmail && isAdminEmail(adminEmail)) {
             isAdmin = true;
         }
     }

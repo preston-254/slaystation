@@ -1,7 +1,15 @@
 // Admin Dashboard Script
 let orders = [];
 let filteredOrders = []; // Initialize filtered orders array
-const ADMIN_EMAIL = 'preston.mwendwa@riarauniversity.ac.ke'; // Admin email
+const ADMIN_EMAILS = [
+    'preston.mwendwa@riarauniversity.ac.ke',
+    'isabellewambui@gmail.com'
+]; // Admin emails
+const isAdminEmail = (email) => {
+    if (!email) return false;
+    const normalizedEmail = email.toLowerCase().trim();
+    return ADMIN_EMAILS.some(adminEmail => adminEmail.toLowerCase() === normalizedEmail);
+};
 // Use DELIVERY_FEE from window or default to 200
 const DELIVERY_FEE = (typeof window !== 'undefined' && window.DELIVERY_FEE) ? window.DELIVERY_FEE : 200;
 
@@ -25,7 +33,7 @@ function authenticateAdmin() {
     if (!emailInput) {
         // Fallback to prompt if input field doesn't exist
         const email = prompt('Enter admin email:');
-        if (email && email.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase()) {
+        if (email && isAdminEmail(email)) {
             const loginSection = document.getElementById('loginSection');
             const adminDashboard = document.getElementById('adminDashboard');
             if (loginSection) loginSection.style.display = 'none';
@@ -49,7 +57,7 @@ function authenticateAdmin() {
         return false;
     }
     
-    if (email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+    if (isAdminEmail(email)) {
         const loginSection = document.getElementById('loginSection');
         const adminDashboard = document.getElementById('adminDashboard');
         if (loginSection) loginSection.style.display = 'none';
