@@ -1,0 +1,8 @@
+# Slay Station - robots.txt
+User-agent: *
+Allow: /
+
+# Optional: disallow staff/admin areas from being indexed
+Disallow: /admin.html
+Disallow: /rider-login.html
+Disallow: /rider-dashboard.html

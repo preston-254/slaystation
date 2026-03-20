@@ -1,0 +1,1585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Slay Station</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Great+Vibes&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Sign-In API loaded only when not in WebView (avoids deprecation/errors when unused) -->
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <style>
+        /* Google Sign-In: Fashionphile-style (white box, no decor) */
+        #g_id_signin {
+            position: relative;
+        }
+        #g_id_signin iframe {
+            border-radius: 6px !important;
+            overflow: hidden !important;
+        }
+        html, body.page-login {
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            height: auto;
+            min-height: 100%;
+        }
+        .page-login .nav-badge {
+            display: none !important;
+        }
+        /* Force header visible on login (promo bar + navbar) */
+        body.page-login .promo-bar {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            z-index: 10002 !important;
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        body.page-login .navbar {
+            position: fixed !important;
+            top: 40px !important;
+            left: 0 !important;
+            right: 0 !important;
+            z-index: 10001 !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        body.page-login .mobile-search-bar {
+            top: 96px !important;
+        }
+        body.page-login .nav-menu-drawer {
+            top: 96px !important;
+        }
+        /* Two-column layout: form left, image right (Fashionphile-style) */
+        .auth-page-wrap {
+            display: flex;
+            flex-direction: row;
+            min-height: calc(100vh - 120px);
+            width: 100%;
+            padding-top: 140px;
+        }
+        .auth-page-form-col {
+            flex: 0 1 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            padding: 3rem 2rem 4rem;
+        }
+        .auth-page-image-col {
+            flex: 0 1 50%;
+            position: relative;
+            background: #ffffff;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .auth-page-side-image {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .auth-page-side-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center;
+            display: block;
+            mix-blend-mode: multiply;
+            max-width: 85%;
+            max-height: 85%;
+        }
+        .auth-page-help-btn {
+            position: absolute;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: #fff;
+            border-radius: 999px;
+            color: #000000;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9375rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: box-shadow 0.2s;
+        }
+        .auth-page-help-btn:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+        /* Pre-footer section (before footer) */
+        .login-pre-footer {
+            background: #f5f5f5;
+            padding: 2.5rem 1.5rem;
+            border-top: 1px solid #e5e5e5;
+        }
+        .login-pre-footer .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+        }
+        .login-pre-footer h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #000;
+            margin: 0 0 0.5rem 0;
+        }
+        .login-pre-footer p {
+            font-size: 0.875rem;
+            color: #6b6b6b;
+            margin: 0;
+        }
+        .login-pre-footer-newsletter {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 0.75rem;
+        }
+        .login-pre-footer-newsletter input {
+            padding: 0.75rem 1rem;
+            border: 1px solid #d4d4d4;
+            border-radius: 4px;
+            font-size: 0.9375rem;
+            min-width: 220px;
+        }
+        .login-pre-footer-newsletter input:focus {
+            outline: none;
+            border-color: #000;
+        }
+        .login-pre-footer-newsletter button {
+            padding: 0.75rem 1.5rem;
+            background: #000;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .login-pre-footer-newsletter button:hover {
+            background: #333;
+        }
+        .login-pre-footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+        .login-pre-footer-links a {
+            color: #000;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            font-size: 0.9375rem;
+            font-weight: 500;
+        }
+        .login-pre-footer-links a:hover {
+            opacity: 0.7;
+        }
+        @media (max-width: 768px) {
+            .login-pre-footer .container {
+                flex-direction: column;
+                text-align: center;
+            }
+            .login-pre-footer-newsletter {
+                width: 100%;
+                justify-content: center;
+            }
+            .login-pre-footer-newsletter input {
+                min-width: 100%;
+            }
+            .login-pre-footer-links {
+                justify-content: center;
+            }
+        }
+        .auth-page-help-btn::before {
+            content: '';
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231a1a1a' stroke-width='2'%3E%3Cpath d='M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z'/%3E%3C/svg%3E") no-repeat center;
+            background-size: contain;
+        }
+        /* Ensure login content is always visible (override any global CSS) */
+        body.page-login .auth-container {
+            min-height: 60vh;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            padding: 0;
+            visibility: visible !important;
+            opacity: 1 !important;
+            position: relative;
+            z-index: 2;
+            width: 100%;
+        }
+        body.page-login .auth-box {
+            visibility: visible !important;
+            opacity: 1 !important;
+            display: block !important;
+        }
+        @media (max-width: 768px) {
+            .auth-page-wrap {
+                flex-direction: column;
+                min-height: auto;
+                padding-top: 96px;
+            }
+            body.page-login .navbar {
+                top: 40px !important;
+            }
+            body.page-login .mobile-search-bar {
+                top: 96px !important;
+            }
+            body.page-login .nav-menu-drawer {
+                top: 96px !important;
+            }
+            .auth-page-form-col {
+                flex: 1 1 auto;
+                padding: 1rem 16px 40px;
+                min-height: 60vh;
+            }
+            .auth-page-image-col {
+                flex: 0 0 auto;
+                min-height: 280px;
+                max-height: 240px;
+                order: -1;
+            }
+            .auth-page-help-btn {
+                bottom: 1rem;
+                right: 1rem;
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+            }
+            body.page-login .auth-container {
+                margin-top: 0;
+                padding: 0;
+                min-height: 60vh;
+                flex-shrink: 0;
+            }
+            body.page-login .auth-box {
+                flex-shrink: 0;
+                max-height: none;
+            }
+            /* On mobile: use native custom button (more reliable than Google iframe) */
+            #g_id_signin {
+                display: none !important;
+            }
+            #customGoogleSignIn {
+                display: block !important;
+                min-height: 48px;
+                -webkit-tap-highlight-color: transparent;
+                touch-action: manipulation;
+            }
+            .auth-social-wrap {
+                flex-direction: column;
+            }
+            .auth-social-wrap .auth-social-btn {
+                min-height: 48px;
+                -webkit-tap-highlight-color: transparent;
+                touch-action: manipulation;
+            }
+            .auth-continue-btn {
+                min-height: 48px;
+                -webkit-tap-highlight-color: transparent;
+                touch-action: manipulation;
+            }
+            .auth-signin-title {
+                font-size: 1.5rem;
+            }
+        }
+        @media (max-width: 480px) {
+            body.page-login .auth-container {
+                margin-top: 52px;
+                padding: 0.75rem 12px 32px;
+            }
+            body.page-login .auth-box {
+                padding: 1.5rem 1.25rem;
+            }
+        }
+        @media (min-width: 769px) {
+            body.page-login .auth-container {
+                margin-top: 0;
+            }
+        }
+        
+        .auth-box {
+            background: transparent;
+            padding: 0;
+            border-radius: 0;
+            box-shadow: none;
+            max-width: 400px;
+            width: 100%;
+            animation: fadeInUp 0.4s ease;
+        }
+        .auth-email-section input {
+            margin-bottom: 0.75rem;
+        }
+        .auth-email-section input:last-of-type {
+            margin-bottom: 0;
+        }
+        
+        .auth-signin-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: #000000;
+            margin-bottom: 0.25rem;
+            text-align: left;
+            letter-spacing: -0.02em;
+            text-transform: none;
+        }
+        .auth-signin-subtitle {
+            color: #6b6b6b;
+            font-size: 0.9375rem;
+            margin-bottom: 1.75rem;
+            text-align: left;
+            font-weight: 400;
+        }
+        .auth-social-wrap {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+        .auth-social-wrap .auth-social-btn {
+            flex: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1rem;
+            background: #fff;
+            border: 1px solid #000000;
+            border-radius: 4px;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: #000000;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .auth-social-wrap .auth-social-btn:hover {
+            background: #fafafa;
+            border-color: #000;
+        }
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        .auth-divider::before,
+        .auth-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #d4d4d4;
+        }
+        .auth-divider span {
+            color: #8c8c8c;
+            font-size: 0.8125rem;
+            text-transform: lowercase;
+        }
+        .auth-social-btn-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 48px;
+            background: #fff;
+            border: 1px solid #000000;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .auth-social-btn-wrap iframe {
+            width: 100% !important;
+            max-width: 100%;
+        }
+        .auth-field-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #000000;
+            margin-bottom: 0.5rem;
+        }
+        .auth-continue-btn {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            background: #000000;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 0.25rem;
+            letter-spacing: 0.02em;
+        }
+        .auth-continue-btn:hover {
+            background: #333333;
+        }
+        .auth-box h1 {
+            font-size: 1.875rem;
+            color: #000000;
+            margin-bottom: 0.25rem;
+            text-align: left;
+            font-weight: 700;
+        }
+        
+        .auth-box p {
+            color: #6b6b6b;
+            margin-bottom: 1.75rem;
+            text-align: left;
+        }
+        
+        .auth-box input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 1px solid #d4d4d4;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 0.9375rem;
+            margin-bottom: 0.75rem;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+            background: #fff;
+        }
+        
+        .auth-box input:focus {
+            outline: none;
+            border-color: #000000;
+        }
+        
+        .auth-btn {
+            width: 100%;
+            padding: 1rem;
+            background: #000000;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.9375rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 1rem;
+        }
+        
+        .auth-btn:hover {
+            background: #333333;
+        }
+        
+        .auth-links {
+            text-align: left;
+            margin-top: 1.75rem;
+        }
+        
+        .auth-links a {
+            color: #000000;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+        
+        .auth-links a:hover {
+            opacity: 0.7;
+        }
+        
+        .auth-links p {
+            color: #3d3d3d;
+            font-size: 0.9375rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 1.25rem;
+            color: #000000;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            font-weight: 500;
+            text-align: left;
+            width: auto;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Forgot Password Modal */
+        .forgot-password-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .forgot-password-content {
+            background: #ffffff;
+            padding: 2rem 2.5rem;
+            border-radius: 4px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+            max-width: 420px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .forgot-password-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .forgot-password-header h2 {
+            font-size: 1.5rem;
+            color: #000000;
+            margin: 0;
+            font-weight: 700;
+        }
+        
+        .close-forgot-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #6b6b6b;
+            cursor: pointer;
+            padding: 0.5rem;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+        
+        .close-forgot-modal:hover {
+            color: #000000;
+        }
+        
+        .back-to-login-btn:hover {
+            background: #333333 !important;
+            color: #fff !important;
+        }
+        
+        a[onclick*="openForgotPasswordModal"] {
+            color: #000000;
+            text-decoration: underline;
+        }
+        
+        a[onclick*="openForgotPasswordModal"]:hover {
+            opacity: 0.7;
+        }
+        
+        /* Password Toggle Button Hover */
+        button[onclick*="togglePasswordVisibility"]:hover,
+        button[onclick*="toggleNewPasswordVisibility"]:hover {
+            color: #000000 !important;
+        }
+    </style>
+</head>
+<body class="page-login">
+    <div class="promo-bar">
+        <div class="promo-bar-left">
+            <a href="index.html#contact">Find a Location</a>
+        </div>
+        <div class="promo-bar-messages">
+            <p class="promo-bar-text promo-bar-message active">Online payments available</p>
+            <p class="promo-bar-text promo-bar-message">Delivery across Kenya and East Africa</p>
+            <p class="promo-bar-text promo-bar-message">Visit us at Westlands Market, Shop B15</p>
+            <p class="promo-bar-text promo-bar-message">Gift wrapping available at checkout</p>
+        </div>
+        <div class="promo-bar-right">
+            <button type="button" class="promo-bar-pause" id="promoBarPause" aria-label="Pause promo" title="Pause">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+            </button>
+        </div>
+    </div>
+    <!-- Navigation: full header like index -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-mobile-left">
+                <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+            <div class="nav-logo-wrap">
+                <div class="logo">
+                    <a href="index.html" class="logo-link">
+                        <span class="logo-text">Slay Station</span>
+                    </a>
+                </div>
+            </div>
+            <div class="nav-menu-drawer" id="navMenuDrawer">
+                <ul class="nav-menu" id="navMenu">
+                    <li class="nav-item-has-mega">
+                        <a href="index.html#home">New Arrivals</a>
+                        <div class="nav-mega-menu">
+                            <div class="nav-mega-inner">
+                                <div class="nav-mega-column">
+                                    <span class="nav-mega-heading">Shop</span>
+                                    <a href="index.html#home">New In</a>
+                                    <a href="index.html#products">Shop All</a>
+                                    <a href="index.html#products">Best Sellers</a>
+                                </div>
+                                <div class="nav-mega-column">
+                                    <span class="nav-mega-heading">Featured</span>
+                                    <a href="index.html#products">Under KSH 10,000</a>
+                                    <a href="index.html#products">Editor's Picks</a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="nav-item-has-mega">
+                        <a href="index.html#products">Bags</a>
+                        <div class="nav-mega-menu">
+                            <div class="nav-mega-inner">
+                                <div class="nav-mega-column">
+                                    <span class="nav-mega-heading">Styles</span>
+                                    <a href="index.html#products">Shop All Bags</a>
+                                    <a href="index.html#products">Crossbody</a>
+                                    <a href="index.html#products">Handbags</a>
+                                    <a href="index.html#products">Totes</a>
+                                    <a href="index.html#products">Shoulder Bags</a>
+                                    <a href="index.html#products">Clutches</a>
+                                </div>
+                                <div class="nav-mega-column">
+                                    <span class="nav-mega-heading">&nbsp;</span>
+                                    <a href="index.html#products">Backpacks</a>
+                                    <a href="index.html#products">Belt Bags</a>
+                                    <a href="index.html#products">Top Handles</a>
+                                    <a href="index.html#products">Travel &amp; Luggage</a>
+                                </div>
+                                <div class="nav-mega-column">
+                                    <span class="nav-mega-heading">Featured</span>
+                                    <a href="index.html#products">Over 50% Off</a>
+                                    <a href="index.html#products">Bags Under KSH 10,000</a>
+                                    <a href="index.html#products">Editor's Picks</a>
+                                    <a href="index.html#products">Mini Bags</a>
+                                    <a href="index.html#products">Vintage</a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="nav-item-has-mega">
+                        <a href="wallets.html">Wallets</a>
+                        <div class="nav-mega-menu">
+                            <div class="nav-mega-inner">
+                                <div class="nav-mega-column">
+                                    <span class="nav-mega-heading">Styles</span>
+                                    <a href="wallets.html">Shop All Wallets</a>
+                                    <a href="wallets.html">Card Holders</a>
+                                    <a href="wallets.html">Bifold</a>
+                                    <a href="wallets.html">Clutches &amp; Wristlets</a>
+                                </div>
+                                <div class="nav-mega-column">
+                                    <span class="nav-mega-heading">Featured</span>
+                                    <a href="wallets.html">Best Sellers</a>
+                                    <a href="wallets.html">Under KSH 5,000</a>
+                                    <a href="wallets.html">New Arrivals</a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="nav-item-has-mega">
+                        <a href="accessories.html">Accessories</a>
+                        <div class="nav-mega-menu">
+                            <div class="nav-mega-inner">
+                                <div class="nav-mega-column">
+                                    <span class="nav-mega-heading">Shop</span>
+                                    <a href="accessories.html">Shop All Accessories</a>
+                                    <a href="accessories.html">Scarves</a>
+                                    <a href="accessories.html">Keychains</a>
+                                    <a href="accessories.html">Bag Charms</a>
+                                </div>
+                                <div class="nav-mega-column">
+                                    <span class="nav-mega-heading">Featured</span>
+                                    <a href="accessories.html">Best Sellers</a>
+                                    <a href="accessories.html">New Arrivals</a>
+                                    <a href="accessories.html">Gift Ideas</a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="nav-item-has-mega">
+                        <a href="lip-care.html">Lip Care</a>
+                        <div class="nav-mega-menu">
+                            <div class="nav-mega-inner">
+                                <div class="nav-mega-column">
+                                    <span class="nav-mega-heading">Shop</span>
+                                    <a href="lip-care.html">Shop All Lip Care</a>
+                                    <a href="lip-care.html">Lipsticks</a>
+                                    <a href="lip-care.html">Lip Gloss</a>
+                                    <a href="lip-care.html">Lip Balms</a>
+                                </div>
+                                <div class="nav-mega-column">
+                                    <span class="nav-mega-heading">Featured</span>
+                                    <a href="lip-care.html">Best Sellers</a>
+                                    <a href="lip-care.html">New Arrivals</a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="index.html#contact">Contact</a></li>
+                    <li><a href="index.html#contact">Location</a></li>
+                </ul>
+                <div class="nav-menu-footer">
+                    <a href="login.html" class="nav-menu-signin" aria-label="Sign in"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M6 21c0-3.314 2.686-6 6-6s6 2.686 6 6"/></svg> Sign in</a>
+                    <a href="signup.html" class="nav-menu-signup" aria-label="Sign up"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Sign up</a>
+                    <a href="index.html#contact" class="nav-menu-find-location"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Find a Location</a>
+                </div>
+            </div>
+            <div class="nav-actions">
+                <button type="button" id="navSearchBtn" class="nav-btn-round nav-btn-search" title="Search" aria-label="Search products" onclick="var b=document.getElementById('navSearchBar');var i=document.getElementById('navSearchInput');if(b&&i){document.body.classList.add('search-open');var n=document.querySelector('.navbar');if(n)n.classList.add('search-open');b.setAttribute('aria-hidden','false');i.focus();}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></button>
+                <div class="nav-btn-round nav-btn-wishlist" onclick="typeof toggleWishlist==='function'&&toggleWishlist()" title="Wishlist">
+                    <svg class="nav-heart-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    <span class="nav-badge" id="wishlistCount">0</span>
+                </div>
+                <a href="login.html" id="loginBtn" class="nav-btn-round nav-btn-user" title="Account">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 21c0-3.314 2.686-6 6-6s6 2.686 6 6"/></svg>
+                </a>
+                <button id="logoutBtn" class="nav-btn-round nav-btn-user" style="display: none;" title="Account" onclick="typeof logout==='function'&&logout()">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 21c0-3.314 2.686-6 6-6s6 2.686 6 6"/></svg>
+                </button>
+                <div class="nav-btn-round nav-btn-cart" onclick="typeof toggleCart==='function'&&toggleCart()" title="Cart">
+                    <svg class="nav-cart-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                    <span class="nav-badge" id="cartCount">0</span>
+                </div>
+            </div>
+            <div class="nav-search-bar" id="navSearchBar" aria-hidden="true">
+                <div class="nav-search-bar-inner">
+                    <input type="text" class="nav-search-input" id="navSearchInput" placeholder="Search products..." aria-label="Search products" autocomplete="off">
+                    <button type="button" class="nav-search-close" id="navSearchClose" aria-label="Close search">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="mobile-search-bar">
+        <div class="mobile-search-wrap">
+            <input type="text" id="mobileProductSearch" placeholder="Search for..." class="mobile-search-input" aria-label="Search products">
+            <button type="button" class="mobile-search-btn" onclick="window.location.href='index.html#products';" aria-label="Search">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Two-column layout: form left, image right (Fashionphile-style) -->
+    <div class="auth-page-wrap">
+        <div class="auth-page-form-col">
+    <div class="auth-container" id="authContainer" style="min-height: 60vh; display: flex !important; visibility: visible !important; opacity: 1 !important;">
+        <div class="auth-box" id="authBox" style="display: block !important; visibility: visible !important; opacity: 1 !important;">
+            <h1 class="auth-signin-title">Sign in to Slay Station</h1>
+            <p class="auth-signin-subtitle">Welcome back! Please sign in to continue.</p>
+            
+            <!-- Google Sign-In via Firebase popup (no origin block) -->
+            <div id="googleSigninWrap" class="auth-social-wrap">
+                <button type="button" id="googleSignInBtn" class="auth-social-btn" onclick="triggerGoogleSignIn()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                    <span>Sign in with Google</span>
+                </button>
+            </div>
+            
+            <div class="auth-divider"><span>or</span></div>
+            
+            <!-- Email verification required (shown when needsVerification) -->
+            <div id="emailVerificationWrap" style="display: none; margin-bottom: 1rem; padding: 1rem; background: #e3f2fd; border: 2px solid #2196f3; border-radius: 10px;">
+                <p id="emailVerificationMessage" style="margin: 0 0 1rem 0; color: #1565c0; font-weight: 600;"></p>
+                <p style="margin: 0 0 0.75rem 0; font-size: 0.9rem; color: #333;">Resend the link: enter your password and click below.</p>
+                <input type="password" id="resendVerificationPassword" placeholder="Your password" style="width: 100%; padding: 0.75rem; border: 2px solid #e0e0e0; border-radius: 8px; margin-bottom: 0.5rem; box-sizing: border-box;">
+                <button type="button" id="resendVerificationBtn" class="auth-continue-btn" style="width: 100%;">Resend verification email</button>
+                <button type="button" onclick="document.getElementById('emailVerificationWrap').style.display='none'; document.getElementById('emailLoginForm').style.display='block';" style="margin-top: 0.5rem; background: none; border: none; color: #666; font-size: 0.9rem; cursor: pointer; text-decoration: underline;">Back to sign in</button>
+            </div>
+            
+            <!-- Email & password form (always visible, Fashionphile-style) -->
+            <div class="auth-email-section" id="emailLoginForm">
+                <label class="auth-field-label" for="loginEmail">Email Address</label>
+                <input type="email" id="loginEmail" placeholder="Enter your email" required autocomplete="email">
+                <label class="auth-field-label" for="loginPassword">Password</label>
+                <input type="password" id="loginPassword" placeholder="Enter your password" autocomplete="current-password">
+                <button type="button" id="authContinueBtn" onclick="handleEmailLogin()" class="auth-continue-btn">Continue</button>
+            </div>
+            <p class="auth-forgot-wrap" style="margin-top: 0.75rem; font-size: 0.9rem;">
+                <a href="#" onclick="event.preventDefault(); openForgotPasswordModal(); return false;" style="color: #000; text-decoration: underline; text-underline-offset: 3px;">Forgot password?</a>
+            </p>
+            
+            <!-- Forgot Password Modal -->
+            <div id="forgotPasswordModal" class="forgot-password-modal" style="display: none;">
+                <div class="forgot-password-content">
+                    <div class="forgot-password-header">
+                        <h2>🔐 Reset Password</h2>
+                        <button class="close-forgot-modal" onclick="closeForgotPasswordModal()">✕</button>
+                    </div>
+                    <form id="forgotPasswordForm" onsubmit="handleForgotPassword(event)">
+                        <p style="color: #666; margin-bottom: 1.5rem; font-size: 0.9rem;">Enter your email address and we'll help you reset your password.</p>
+                        <input type="email" id="forgotEmail" placeholder="Enter your email address" required autocomplete="email">
+                        <button type="submit" class="auth-btn">Reset Password 🔑</button>
+                    </form>
+                    <div id="resetPasswordSection" style="display: none; margin-top: 1.5rem;">
+                        <p style="color: #666; margin-bottom: 1rem; font-size: 0.9rem;">Enter your new password:</p>
+                        <input type="password" id="newPassword" placeholder="New password (min 6 characters)" required minlength="6" style="width: 100%; padding: 1rem; border: 2px solid var(--light-bg); border-radius: 10px; font-family: 'Poppins', sans-serif; font-size: 1rem; margin-bottom: 1rem; box-sizing: border-box;">
+                        <input type="password" id="confirmPassword" placeholder="Confirm new password" required minlength="6" style="width: 100%; padding: 1rem; border: 2px solid var(--light-bg); border-radius: 10px; font-family: 'Poppins', sans-serif; font-size: 1rem; margin-bottom: 1rem; box-sizing: border-box;">
+                        <button type="button" class="auth-btn" onclick="confirmPasswordReset()">Update Password ✨</button>
+                    </div>
+                    <button type="button" class="back-to-login-btn" onclick="closeForgotPasswordModal()" style="width: 100%; padding: 0.75rem; background: transparent; color: #000; border: 1px solid #000; border-radius: 4px; font-weight: 600; font-size: 0.9rem; cursor: pointer; margin-top: 1rem;">Back to Login</button>
+                </div>
+            </div>
+            
+            <div class="auth-links">
+                <p>Don't have an account? <a href="signup.html">Sign Up</a></p>
+                <div class="staff-access-rider" style="display: none !important; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid #e5e5e5;">
+                    <p style="color: #6b6b6b; margin-bottom: 0.5rem; font-size: 0.875rem;">Staff Access:</p>
+                    <a href="rider-login.html" style="display: inline-block; padding: 0.5rem 0; color: #000; text-decoration: underline; text-underline-offset: 3px; font-weight: 500;">🏍️ Login as Rider</a>
+                </div>
+                <a href="index.html" class="back-link">← Back to Home</a>
+            </div>
+        </div>
+    </div>
+        </div>
+        <div class="auth-page-image-col" aria-hidden="true">
+            <div class="auth-page-side-image">
+                <img src="https://tse3.mm.bing.net/th/id/OIP.Fr8qWCkKHR920vldEXuMrwHaFu?rs=1&pid=ImgDetMain&o=7&rm=3" alt="Slay Station bags">
+            </div>
+            <a href="#" class="auth-page-help-btn" id="helpChatToggleLogin" onclick="var b=document.getElementById('helpChatBox');if(b){b.classList.add('is-open');b.setAttribute('aria-hidden','false');}return false;">Need Help?</a>
+        </div>
+    </div>
+
+    <!-- Pre-footer: newsletter + quick links -->
+    <section class="login-pre-footer" aria-label="Newsletter and links">
+        <div class="container">
+            <div>
+                <h3>Join Our Circle</h3>
+                <p>Sign up for new arrivals, offers, and style tips.</p>
+            </div>
+            <div class="login-pre-footer-newsletter">
+                <input type="email" id="loginNewsletterEmail" placeholder="Email address" aria-label="Email for newsletter">
+                <button type="button" onclick="var e=document.getElementById('loginNewsletterEmail');if(e&&e.value){alert('Thanks for signing up!');e.value='';}else{alert('Please enter your email.');}">Join Now</button>
+            </div>
+            <div class="login-pre-footer-links">
+                <a href="index.html#contact">Contact Us</a>
+                <a href="about.html">About</a>
+                <a href="index.html#products">Shop Bags</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer – Fashionphile-style -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-top">
+                <div class="footer-left">
+                    <h3>Join Our Circle</h3>
+                    <div class="footer-newsletter">
+                        <input type="email" id="footerEmailLogin" placeholder="Email" aria-label="Email for newsletter">
+                        <button type="button" onclick="var e=document.getElementById('footerEmailLogin');if(e&&e.value){alert('Thanks for signing up!');e.value='';}else{alert('Please enter your email.');}" aria-label="Subscribe">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </button>
+                    </div>
+                    <h3>Follow Us</h3>
+                    <div class="footer-social-row">
+                        <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://www.instagram.com/slaystation" target="_blank" rel="noopener noreferrer" title="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="https://www.tiktok.com" target="_blank" rel="noopener noreferrer" title="TikTok"><i class="fab fa-tiktok"></i></a>
+                        <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" title="X"><i class="fab fa-x-twitter"></i></a>
+                        <a href="https://wa.me/254719563607" target="_blank" rel="noopener noreferrer" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                    <div class="footer-app-block">
+                        <h3>Download the App</h3>
+                        <div class="footer-app-buttons">
+                            <a href="#" target="_blank" rel="noopener noreferrer" class="footer-app-btn">
+                                <span class="footer-app-btn-icon"><i class="fab fa-apple"></i></span>
+                                <span class="footer-app-btn-text">
+                                    <span>Download on the</span>
+                                    <span>App Store</span>
+                                </span>
+                            </a>
+                            <a href="#" target="_blank" rel="noopener noreferrer" class="footer-app-btn">
+                                <span class="footer-app-btn-icon"><i class="fab fa-google-play"></i></span>
+                                <span class="footer-app-btn-text">
+                                    <span>GET IT ON</span>
+                                    <span>Google Play</span>
+                                </span>
+                            </a>
+                        </div>
+                        <p class="footer-app-disclaimer">Android and Google Play are trademarks of Google LLC.</p>
+                    </div>
+                </div>
+                <div class="footer-columns">
+                    <div class="footer-col">
+                        <h3>Customer Service</h3>
+                        <ul>
+                            <li><a href="index.html#contact">Contact Us</a></li>
+                            <li><a href="login.html">My Account</a></li>
+                            <li><a href="index.html#products">Alerts</a></li>
+                            <li><a href="index.html#contact">Shipping</a></li>
+                            <li><a href="index.html#contact">FAQ</a></li>
+                            <li><a href="index.html#contact">Give Us feedback</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-col">
+                        <h3>Shop with Us</h3>
+                        <ul>
+                            <li><a href="index.html#products">Bags</a></li>
+                            <li><a href="wallets.html">Wallets</a></li>
+                            <li><a href="accessories.html">Accessories</a></li>
+                            <li><a href="lip-care.html">Lip Care</a></li>
+                            <li><a href="index.html#contact">Gift Cards</a></li>
+                            <li><a href="index.html#contact">Personal Shopping</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-col">
+                        <h3>About Us</h3>
+                        <ul>
+                            <li><a href="about.html">About</a></li>
+                            <li><a href="index.html#contact">Locations</a></li>
+                            <li><a href="index.html#contact">Careers</a></li>
+                            <li><a href="index.html#contact">Sustainability</a></li>
+                            <li><a href="index.html#contact">Influencer Program</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div class="footer-bottom-left">
+                    <p class="footer-copyright">&copy; 2025 Slay Station. All rights reserved.</p>
+                </div>
+                <div class="footer-legal">
+                    <a href="index.html#contact">Accessibility Statement</a>
+                    <a href="index.html#contact">Privacy Policy</a>
+                    <a href="index.html#contact">Terms of use</a>
+                    <a href="index.html#contact">Your privacy choices</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <button type="button" class="footer-help-widget" id="helpChatToggle" aria-label="Need Help?">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Need Help?
+    </button>
+
+    <div id="helpChatBox" class="help-chat-box" aria-hidden="true">
+        <div class="help-chat-header">
+            <span class="help-chat-header-title"><strong>Slay Station</strong> Offline Chat</span>
+            <button type="button" class="help-chat-close" id="helpChatClose" aria-label="Close chat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg>
+            </button>
+        </div>
+        <div class="help-chat-body">
+            <div class="help-chat-msg-bubble">
+                <div class="help-chat-msg-brand">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    Slay Station
+                </div>
+                <p class="help-chat-msg-text">Welcome to Slay Station! Our live chat agents are either assisting other clients or you've reached us outside of business hours (Every day, 7am–7pm EAT). Please select an option below to find helpful resources or leave us a message, and we'll get back to you as soon as possible.</p>
+                <div class="help-chat-buttons">
+                    <a href="https://help.fashionphile.com/s/" target="_blank" rel="noopener noreferrer">Explore Our FAQs</a>
+                    <a href="index.html#contact">Leave a Message</a>
+                </div>
+            </div>
+        </div>
+        <div class="help-chat-footer">just now</div>
+    </div>
+
+    <script>
+        (function() {
+            var toggle = document.getElementById('helpChatToggle');
+            var box = document.getElementById('helpChatBox');
+            var closeBtn = document.getElementById('helpChatClose');
+            var toggleLogin = document.getElementById('helpChatToggleLogin');
+            if (box) {
+                function openChat() { box.classList.add('is-open'); box.setAttribute('aria-hidden', 'false'); }
+                function closeChat() { box.classList.remove('is-open'); box.setAttribute('aria-hidden', 'true'); }
+                if (toggle) toggle.addEventListener('click', function() { box.classList.toggle('is-open'); box.setAttribute('aria-hidden', box.classList.contains('is-open') ? 'false' : 'true'); });
+                if (toggleLogin) toggleLogin.addEventListener('click', function(e) { e.preventDefault(); openChat(); });
+                if (closeBtn) closeBtn.addEventListener('click', closeChat);
+            }
+        })();
+        // Promo bar: rotate messages
+        (function() {
+            var messages = document.querySelectorAll('.promo-bar-message');
+            var pauseBtn = document.getElementById('promoBarPause');
+            if (messages.length === 0 || !pauseBtn) return;
+            var index = 0;
+            var intervalId = null;
+            var ROTATE_MS = 5000;
+            function showMessage(i) {
+                index = (i + messages.length) % messages.length;
+                messages.forEach(function(msg, j) { msg.classList.toggle('active', j === index); });
+            }
+            function startRotation() {
+                if (intervalId) return;
+                intervalId = setInterval(function() { showMessage(index + 1); }, ROTATE_MS);
+                pauseBtn.setAttribute('aria-label', 'Pause promo');
+                pauseBtn.setAttribute('title', 'Pause');
+            }
+            function stopRotation() {
+                if (intervalId) { clearInterval(intervalId); intervalId = null; }
+                pauseBtn.setAttribute('aria-label', 'Resume promo');
+                pauseBtn.setAttribute('title', 'Resume');
+            }
+            pauseBtn.addEventListener('click', function() {
+                if (intervalId) stopRotation(); else startRotation();
+            });
+            startRotation();
+        })();
+    </script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script defer src="firebase.js"></script>
+    <script defer src="auth.js"></script>
+    <script>
+        // Mobile menu toggle (same behavior as index)
+        (function() {
+            var mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            var navMenu = document.getElementById('navMenu');
+            var navMenuDrawer = document.getElementById('navMenuDrawer');
+            var menuPanel = navMenuDrawer || navMenu;
+            if (mobileMenuToggle && navMenu && menuPanel) {
+                function closeMenu() {
+                    mobileMenuToggle.classList.remove('active');
+                    navMenu.classList.remove('active');
+                    if (navMenuDrawer) navMenuDrawer.classList.remove('active');
+                    document.body.classList.remove('menu-open');
+                }
+                function openMenu() {
+                    mobileMenuToggle.classList.add('active');
+                    navMenu.classList.add('active');
+                    if (navMenuDrawer) navMenuDrawer.classList.add('active');
+                    document.body.classList.add('menu-open');
+                }
+                mobileMenuToggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (menuPanel.classList.contains('active')) closeMenu();
+                    else openMenu();
+                });
+                var links = menuPanel.querySelectorAll('a');
+                for (var i = 0; i < links.length; i++) {
+                    links[i].addEventListener('click', function(e) {
+                        closeMenu();
+                        var href = this.getAttribute('href');
+                        if (href && href !== '#' && href.indexOf('#') !== 0) {
+                            e.preventDefault();
+                            window.location.href = href;
+                        }
+                    });
+                }
+                document.addEventListener('click', function(event) {
+                    if (menuPanel.classList.contains('active') && !mobileMenuToggle.contains(event.target) && !menuPanel.contains(event.target))
+                        closeMenu();
+                });
+            }
+        })();
+    </script>
+    <script>
+        function isLikelyWebView() {
+            var ua = navigator.userAgent || '';
+            return /WebView|wv\)|; wv\)|FBAV|FBAN|Instagram|Line\//i.test(ua);
+        }
+        (function() {
+            function ensureAuthVisible() {
+                var container = document.getElementById('authContainer');
+                var box = document.getElementById('authBox');
+                if (container) {
+                    container.style.setProperty('display', 'flex', 'important');
+                    container.style.setProperty('visibility', 'visible', 'important');
+                    container.style.setProperty('opacity', '1', 'important');
+                    container.style.setProperty('min-height', '60vh', 'important');
+                }
+                if (box) {
+                    box.style.setProperty('display', 'block', 'important');
+                    box.style.setProperty('visibility', 'visible', 'important');
+                    box.style.setProperty('opacity', '1', 'important');
+                }
+            }
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', ensureAuthVisible);
+            } else {
+                ensureAuthVisible();
+            }
+            setTimeout(ensureAuthVisible, 100);
+        })();
+    </script>
+    <script>
+        // Google: use Firebase popup (no OAuth origin block; Firebase uses its own authorized domains)
+        function triggerGoogleSignIn() {
+            if (typeof userAuth === 'undefined' || !userAuth.loginWithGooglePopup) {
+                showError('Sign-in is still loading. Please try again.');
+                return;
+            }
+            var btn = document.getElementById('googleSignInBtn');
+            if (btn) { btn.disabled = true; btn.textContent = 'Opening...'; }
+            userAuth.loginWithGooglePopup().then(function(result) {
+                if (btn) { btn.disabled = false; btn.textContent = 'Sign in with Google'; }
+                if (result && result.success) {
+                    showSuccess(result.message);
+                    if (result.redirect) return;
+                    var urlParams = new URLSearchParams(window.location.search);
+                    var redirectParam = urlParams.get('redirect');
+                    setTimeout(function() { window.location.href = redirectParam === 'checkout' ? 'index.html#checkout' : 'index.html'; }, 1000);
+                } else {
+                    showError(result && result.message ? result.message : 'Sign in failed. Please try again.');
+                }
+            }).catch(function(err) {
+                if (btn) { btn.disabled = false; btn.textContent = 'Sign in with Google'; }
+                showError(err && (err.message || err) || 'Sign in failed. Please try again.');
+            });
+        }
+
+        function handleEmailLogin() {
+            var emailEl = document.getElementById('loginEmail');
+            var passEl = document.getElementById('loginPassword');
+            var email = (emailEl && emailEl.value || '').trim();
+            var password = passEl ? passEl.value : '';
+            if (!email) {
+                showError('Please enter your email.');
+                if (emailEl) emailEl.focus();
+                return;
+            }
+            if (!password) {
+                showError('Please enter your password.');
+                if (passEl) passEl.focus();
+                return;
+            }
+            if (typeof login !== 'function') {
+                showError('Sign-in is still loading. Please try again.');
+                return;
+            }
+            var btn = document.getElementById('authContinueBtn');
+            if (btn) { btn.disabled = true; btn.textContent = 'Signing in...'; }
+            var p = login(email, password);
+            Promise.resolve(p).then(function(result) {
+                if (btn) { btn.disabled = false; btn.textContent = 'Continue'; }
+                if (result && result.success) {
+                    showSuccess(result.message || 'Welcome back! ✨');
+                    var urlParams = new URLSearchParams(window.location.search);
+                    var redirectParam = urlParams.get('redirect');
+                    setTimeout(function() {
+                        window.location.href = redirectParam === 'checkout' ? 'index.html#checkout' : 'index.html';
+                    }, 800);
+                } else if (result && result.needsVerification && result.email) {
+                    var evMsg = document.getElementById('emailVerificationMessage');
+                    var evWrap = document.getElementById('emailVerificationWrap');
+                    var emailForm = document.getElementById('emailLoginForm');
+                    var resendPass = document.getElementById('resendVerificationPassword');
+                    if (evMsg) evMsg.textContent = result.message || ('Verify your email: we sent a link to ' + result.email);
+                    if (evWrap) evWrap.style.display = 'block';
+                    if (emailForm) emailForm.style.display = 'none';
+                    if (resendPass) {
+                        resendPass.value = '';
+                        resendPass.placeholder = 'Password for ' + result.email;
+                    }
+                    window._resendVerificationEmail = result.email;
+                } else {
+                    showError(result && result.message ? result.message : 'Invalid email or password. Please try again.');
+                }
+            }).catch(function(err) {
+                if (btn) { btn.disabled = false; btn.textContent = 'Continue'; }
+                showError(err && (err.message || err) || 'Invalid email or password. Please try again.');
+            });
+        }
+
+        (function() {
+            var resendBtn = document.getElementById('resendVerificationBtn');
+            var resendPass = document.getElementById('resendVerificationPassword');
+            if (resendBtn && resendPass) {
+                resendBtn.addEventListener('click', function() {
+                    var email = window._resendVerificationEmail || (document.getElementById('loginEmail') && document.getElementById('loginEmail').value);
+                    var password = resendPass.value;
+                    if (!email || !password) {
+                        showError('Enter your password to resend the verification email.');
+                        return;
+                    }
+                    resendBtn.disabled = true;
+                    resendBtn.textContent = 'Sending...';
+                    if (typeof userAuth !== 'undefined' && userAuth.resendEmailVerification) {
+                        userAuth.resendEmailVerification(email, password).then(function(r) {
+                            resendBtn.disabled = false;
+                            resendBtn.textContent = 'Resend verification email';
+                            if (r && r.success) showSuccess(r.message);
+                            else showError(r && r.message ? r.message : 'Failed to send.');
+                        }).catch(function() {
+                            resendBtn.disabled = false;
+                            resendBtn.textContent = 'Resend verification email';
+                            showError('Failed to send. Check your password.');
+                        });
+                    } else {
+                        resendBtn.disabled = false;
+                        resendBtn.textContent = 'Resend verification email';
+                        showError('Auth not ready.');
+                    }
+                });
+            }
+        })();
+        
+        function showError(message) {
+            // Remove existing error message
+            const existingError = document.getElementById('errorMessage');
+            if (existingError) {
+                existingError.remove();
+            }
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.id = 'errorMessage';
+            errorDiv.style.cssText = 'background: #ffebee; color: #c62828; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; border: 2px solid #ef5350; text-align: center; font-weight: 600;';
+            errorDiv.textContent = message;
+            
+            const authBox = document.querySelector('.auth-box');
+            if (authBox) {
+                const emailSection = document.querySelector('.auth-email-section');
+                if (emailSection && emailSection.parentNode) {
+                    emailSection.parentNode.insertBefore(errorDiv, emailSection);
+                } else {
+                    authBox.insertBefore(errorDiv, authBox.firstChild);
+                }
+            }
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (errorDiv.parentNode) {
+                    errorDiv.remove();
+                }
+            }, 5000);
+        }
+        
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.style.cssText = 'background: #e8f5e9; color: #2e7d32; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; border: 2px solid #4caf50; text-align: center; font-weight: 600; position: fixed; top: 100px; left: 50%; transform: translateX(-50%); z-index: 10000; min-width: 300px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);';
+            successDiv.textContent = message;
+            document.body.appendChild(successDiv);
+            
+            setTimeout(() => {
+                if (successDiv.parentNode) {
+                    successDiv.remove();
+                }
+            }, 3000);
+        }
+        
+        function createConfetti() {
+            const confettiContainer = document.createElement('div');
+            confettiContainer.className = 'confetti-container';
+            
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.top = '-10px';
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                confettiContainer.appendChild(confetti);
+            }
+            
+            document.body.appendChild(confettiContainer);
+            
+            setTimeout(() => {
+                confettiContainer.remove();
+            }, 3000);
+        }
+        
+        // Forgot Password Functions
+        let resetEmail = '';
+        
+        function openForgotPasswordModal() {
+            const modal = document.getElementById('forgotPasswordModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        function closeForgotPasswordModal() {
+            const modal = document.getElementById('forgotPasswordModal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+                const form = document.getElementById('forgotPasswordForm');
+                const resetSection = document.getElementById('resetPasswordSection');
+                if (form) form.reset();
+                if (resetSection) resetSection.style.display = 'none';
+                resetEmail = '';
+            }
+        }
+        
+        async function handleForgotPassword(e) {
+            e.preventDefault();
+            
+            const emailInput = document.getElementById('forgotEmail');
+            const email = emailInput.value.trim().toLowerCase();
+            
+            if (!email || !email.includes('@')) {
+                showError('Please enter a valid email address');
+                if (emailInput) emailInput.focus();
+                return;
+            }
+            
+            // Check if user exists
+            const users = JSON.parse(localStorage.getItem('slayStationUsers') || '[]');
+            const user = users.find(u => u.email.toLowerCase() === email);
+            
+            if (!user) {
+                showError('Account not found. Please sign up first.');
+                if (emailInput) emailInput.focus();
+                return;
+            }
+            
+            // Generate reset token
+            const resetToken = generateResetToken();
+            const resetExpiry = Date.now() + (24 * 60 * 60 * 1000); // 24 hours from now
+            
+            // Store reset token in localStorage (in production, this would be stored on server)
+            // Use lowercase email as key for consistency
+            const resetTokens = JSON.parse(localStorage.getItem('slayStationResetTokens') || '{}');
+            resetTokens[email.toLowerCase()] = {
+                token: resetToken,
+                expiry: resetExpiry,
+                createdAt: Date.now()
+            };
+            localStorage.setItem('slayStationResetTokens', JSON.stringify(resetTokens));
+            console.log('Reset token stored for:', email.toLowerCase());
+            
+            // Reset link must match where this site is hosted (Vercel, Firebase Hosting, or localhost)
+            var deployedUrl = (typeof window !== 'undefined' && window.location && window.location.protocol !== 'file:' && window.location.hostname)
+                ? window.location.origin.replace(/\/$/, '')
+                : 'https://slaystation-ke.vercel.app';
+            const resetLink = `${deployedUrl}/reset-password.html?token=${encodeURIComponent(resetToken)}&email=${encodeURIComponent(email)}`;
+            console.log('Generated reset link:', resetLink);
+            
+            // Option 1: Send via EmailJS (No backend needed!)
+            const EMAILJS_PUBLIC_KEY = 'S28nx8TWnsKEpl8vV';
+            const EMAILJS_SERVICE_ID = 'service_xc8nrxm';
+            const EMAILJS_TEMPLATE_ID = 'template_gaq4yle';
+            
+            // Option 2: Send via Backend API (if you prefer)
+            const EMAIL_SERVICE_URL = 'https://your-email-service.onrender.com/api/send-reset-email'; // Your backend URL
+            
+            // Try EmailJS first (easier, no backend needed)
+            if (typeof emailjs !== 'undefined') {
+                try {
+                    emailjs.init(EMAILJS_PUBLIC_KEY);
+                    
+                    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+                        to_email: email,
+                        reset_link: resetLink,
+                        user_email: email
+                    });
+                    
+                    showSuccess('Password reset email sent! Please check your inbox.');
+                    
+                    // Hide form and show success
+                    const form = document.getElementById('forgotPasswordForm');
+                    const emailSentSection = document.getElementById('emailSentSection');
+                    if (form) form.style.display = 'none';
+                    if (emailSentSection) {
+                        emailSentSection.style.display = 'block';
+                        document.getElementById('sentEmailAddress').textContent = email;
+                        document.getElementById('resetLink').href = resetLink;
+                        document.getElementById('resetLink').textContent = resetLink;
+                    }
+                    return;
+                } catch (emailjsError) {
+                    console.warn('EmailJS error, trying backend fallback:', emailjsError);
+                }
+            }
+            
+            // Fallback: Try backend API
+            if (EMAIL_SERVICE_URL !== 'https://your-email-service.onrender.com/api/send-reset-email') {
+                try {
+                    const response = await fetch(EMAIL_SERVICE_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            email: email,
+                            resetLink: resetLink
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showSuccess('Password reset email sent! Please check your inbox.');
+                        const form = document.getElementById('forgotPasswordForm');
+                        const emailSentSection = document.getElementById('emailSentSection');
+                        if (form) form.style.display = 'none';
+                        if (emailSentSection) {
+                            emailSentSection.style.display = 'block';
+                            document.getElementById('sentEmailAddress').textContent = email;
+                            document.getElementById('resetLink').href = resetLink;
+                            document.getElementById('resetLink').textContent = resetLink;
+                        }
+                        return;
+                    }
+                } catch (backendError) {
+                    console.warn('Backend email service error:', backendError);
+                }
+            }
+            
+            // Final fallback: Show link on screen
+            showSuccess('Password reset link generated! Check the link below.');
+            const form = document.getElementById('forgotPasswordForm');
+            const emailSentSection = document.getElementById('emailSentSection');
+            if (form) form.style.display = 'none';
+            if (emailSentSection) {
+                emailSentSection.style.display = 'block';
+                document.getElementById('sentEmailAddress').textContent = email;
+                document.getElementById('resetLink').href = resetLink;
+                document.getElementById('resetLink').textContent = resetLink;
+            }
+        }
+        
+        function generateResetToken() {
+            // Generate a secure random token
+            const array = new Uint8Array(32);
+            crypto.getRandomValues(array);
+            return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+        }
+        
+        function confirmPasswordReset() {
+            const newPasswordInput = document.getElementById('newPassword');
+            const confirmPasswordInput = document.getElementById('confirmPassword');
+            
+            if (!newPasswordInput || !confirmPasswordInput) return;
+            
+            const newPassword = newPasswordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+            
+            if (!newPassword || newPassword.length < 6) {
+                showError('Password must be at least 6 characters long');
+                newPasswordInput.focus();
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                showError('Passwords do not match. Please try again.');
+                confirmPasswordInput.focus();
+                return;
+            }
+            
+            // Update password in localStorage
+            const users = JSON.parse(localStorage.getItem('slayStationUsers') || '[]');
+            const userIndex = users.findIndex(u => u.email.toLowerCase() === resetEmail);
+            
+            if (userIndex !== -1) {
+                users[userIndex].password = newPassword;
+                localStorage.setItem('slayStationUsers', JSON.stringify(users));
+                
+                showSuccess('Password reset successfully! You can now login with your new password.');
+                
+                // Close modal after a delay
+                setTimeout(() => {
+                    closeForgotPasswordModal();
+                    // Pre-fill email in login form
+                    const emailInput = document.getElementById('loginEmail');
+                    if (emailInput) {
+                        emailInput.value = resetEmail;
+                        emailInput.focus();
+                    }
+                }, 2000);
+            } else {
+                showError('Error updating password. Please try again.');
+            }
+        }
+        
+        // Close modal when clicking outside
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('forgotPasswordModal');
+            if (modal && e.target === modal) {
+                closeForgotPasswordModal();
+            }
+        });
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('forgotPasswordModal');
+                if (modal && modal.style.display === 'flex') {
+                    closeForgotPasswordModal();
+                }
+            }
+        });
+        
+        // Toggle Password Visibility
+        function togglePasswordVisibility(inputId, buttonId) {
+            const passwordInput = document.getElementById(inputId);
+            const toggleButton = document.getElementById(buttonId);
+            
+            if (passwordInput && toggleButton) {
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    toggleButton.textContent = '🙈';
+                    toggleButton.title = 'Hide Password';
+                } else {
+                    passwordInput.type = 'password';
+                    toggleButton.textContent = '👁️';
+                    toggleButton.title = 'Show Password';
+                }
+            }
+        }
+        
+        // Also toggle for new password fields in forgot password modal
+        function toggleNewPasswordVisibility(inputId, buttonId) {
+            const passwordInput = document.getElementById(inputId);
+            const toggleButton = document.getElementById(buttonId);
+            
+            if (passwordInput && toggleButton) {
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    toggleButton.textContent = '🙈';
+                    toggleButton.title = 'Hide Password';
+                } else {
+                    passwordInput.type = 'password';
+                    toggleButton.textContent = '👁️';
+                    toggleButton.title = 'Show Password';
+                }
+            }
+        }
+    </script>
+</body>
+</html>

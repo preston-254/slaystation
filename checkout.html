@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout | Slay Station</title>
+    <!-- Google Maps API key for location/Places autocomplete. Restrict by HTTP referrer in Google Cloud Console. -->
+    <script>window.SLAYSTATION_GOOGLE_MAPS_KEY = window.SLAYSTATION_GOOGLE_MAPS_KEY || 'AIzaSyD3FItszXml6cqO1BiLTfhNfJNO4BrevE8';</script>
+    <link rel="stylesheet" href="styles.css?v=20250320">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Great+Vibes&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body class="page-checkout">
+    <!-- Site promo bar -->
+    <div class="promo-bar">
+        <div class="promo-bar-messages">
+            <p class="promo-bar-text promo-bar-message">Visit us at Westlands Market, Shop B15</p>
+            <p class="promo-bar-text promo-bar-message">Gift wrapping available at checkout</p>
+        </div>
+    </div>
+
+    <!-- Site header / nav -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-mobile-left">
+                <button class="mobile-menu-toggle" id="checkoutMobileMenuToggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+            </div>
+            <div class="nav-logo-wrap">
+                <div class="logo">
+                    <a href="index.html" class="logo-link"><span class="logo-text">Slay Station</span></a>
+                </div>
+            </div>
+            <div class="nav-menu-drawer" id="checkoutNavMenuDrawer">
+                <ul class="nav-menu" id="checkoutNavMenu">
+                    <li><a href="index.html#home">New Arrivals</a></li>
+                    <li><a href="index.html#products">Bags</a></li>
+                    <li><a href="wallets.html">Wallets</a></li>
+                    <li><a href="accessories.html">Accessories</a></li>
+                    <li><a href="lip-care.html">Lip Products</a></li>
+                    <li><a href="fragrances.html">Fragrances</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="index.html#contact">Contact</a></li>
+                </ul>
+            </div>
+            <div class="nav-actions">
+                <a href="index.html" class="nav-btn-round nav-btn-user" title="Home"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></a>
+                <a href="index.html" class="checkout-back-link">← Cart</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="checkout-page">
+        <header class="checkout-header">
+            <h1 class="checkout-page-title">Checkout</h1>
+            <a href="index.html" class="checkout-back">← Continue shopping</a>
+        </header>
+
+        <div id="checkoutEmpty" class="empty-checkout">
+            <p>Your cart is empty.</p>
+            <p><a href="index.html">Return to shop</a></p>
+        </div>
+
+        <div id="checkoutContent" class="checkout-layout">
+            <div class="checkout-main">
+                <form id="checkoutForm" class="checkout-form" novalidate>
+                    <section class="checkout-form-section">
+                        <h2>Contact &amp; Shipping</h2>
+                        <div class="form-group">
+                            <label for="coName">Full Name *</label>
+                            <input type="text" id="coName" name="name" required placeholder="Your full name">
+                        </div>
+                        <div class="form-group">
+                            <label for="coEmail">Email *</label>
+                            <input type="email" id="coEmail" name="email" required placeholder="you@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="coPhone">Phone *</label>
+                            <input type="tel" id="coPhone" name="phone" required placeholder="e.g. 0712345678">
+                        </div>
+                        <div class="form-group">
+                            <label for="coCountry">Country *</label>
+                            <select id="coCountry" name="country" required aria-label="Select country">
+                                <option value="KE" selected>Kenya</option>
+                                <option value="TZ">Tanzania</option>
+                                <option value="UG">Uganda</option>
+                                <option value="RW">Rwanda</option>
+                                <option value="BI">Burundi</option>
+                                <option value="SS">South Sudan</option>
+                                <option value="ET">Ethiopia</option>
+                                <option value="SO">Somalia</option>
+                                <option value="DJ">Djibouti</option>
+                                <option value="ER">Eritrea</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="coLocation">Location (town, city, area or landmark) *</label>
+                            <div class="location-input-wrap">
+                                <input type="text" id="coLocation" name="location" required placeholder="Type your area, apartment name or address" autocomplete="off">
+                                <div id="coLocationSuggestions" class="location-suggestions" role="listbox" aria-label="Location suggestions"></div>
+                            </div>
+                            <p id="coLocationTip" class="location-tip">Tip: For apartment and business name search, add your Google Maps API key in checkout.html (search for SLAYSTATION_GOOGLE_MAPS_KEY).</p>
+                        </div>
+                        <div class="form-group">
+                            <label for="coAddress">Delivery Address *</label>
+                            <div id="checkoutMapWrap" class="checkout-map-wrap">
+                                <p class="checkout-map-hint">Pin your exact location on the map (Nairobi).</p>
+                                <div id="checkoutMapPicker"></div>
+                            </div>
+                            <textarea id="coAddress" name="address" rows="3" placeholder="Street, area, landmark (or pin on map for Nairobi)"></textarea>
+                            <div id="checkoutDeliveryMsg" class="checkout-delivery-msg nairobi">Pin your exact delivery location on the map. Delivery fee is calculated from Westlands Market.</div>
+                        </div>
+                    </section>
+
+                    <section class="checkout-form-section">
+                        <h2>Payment Method</h2>
+                        <label class="payment-option selected">
+                            <input type="radio" name="payment" value="mpesa" checked> M-Pesa (Till 3193269)
+                        </label>
+                        <p class="checkout-mpesa-note">
+                            Pay to <strong>Till number 3193269</strong>. After you place the order you’ll see your unique reference and can paste your M-Pesa confirmation code there.
+                        </p>
+                        <div id="cardFields" class="card-fields">
+                            <div class="form-group">
+                                <label>Card Number</label>
+                                <div class="input-with-icon">
+                                    <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19" autocomplete="cc-number">
+                                    <span class="icon-right" title="Secure">🔒</span>
+                                </div>
+                                <div class="card-logos">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/American_Express_logo_%282018%29.svg" alt="Amex">
+                                </div>
+                            </div>
+                            <div class="form-row-two">
+                                <div class="form-group">
+                                    <label>Expiration (MM/YY)</label>
+                                    <input type="text" id="cardExpiry" placeholder="MM/YY" maxlength="5" autocomplete="cc-exp">
+                                </div>
+                                <div class="form-group">
+                                    <label>Security Code (CVV)</label>
+                                    <div class="input-with-icon">
+                                        <input type="password" id="cardCvv" placeholder="123" maxlength="4" autocomplete="cc-csc">
+                                        <span class="icon-right" title="3 or 4 digits on back">?</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Name on Card</label>
+                                <input type="text" id="cardName" placeholder="As shown on card" autocomplete="cc-name">
+                            </div>
+                        </div>
+                    </section>
+                </form>
+            </div>
+
+            <aside class="checkout-summary">
+                <h2>Order Summary</h2>
+                <div id="checkoutSummaryItems" class="checkout-summary-items"></div>
+                <div class="checkout-summary-line"><span>Subtotal</span><span id="checkoutSubtotal">KSH 0</span></div>
+                <div class="checkout-summary-line"><span>Delivery</span><span id="checkoutDeliveryFee">—</span></div>
+                <div class="checkout-summary-line checkout-summary-total"><span>Total</span><span id="checkoutTotal">KSH 0</span></div>
+                <button type="button" id="checkoutBtnPlaceOrder" class="btn-place-order">Place Order</button>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Site footer -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-top">
+                <div class="footer-left">
+                    <h3>Join Our Circle</h3>
+                    <div class="footer-newsletter">
+                        <input type="email" id="footerEmailCheckout" placeholder="Email" aria-label="Email">
+                        <button type="button" onclick="var e=document.getElementById('footerEmailCheckout');if(e&&e.value){alert('Thanks for signing up!');e.value='';}else{alert('Please enter your email.');}" aria-label="Subscribe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+                    </div>
+                    <h3>Follow Us</h3>
+                    <div class="footer-social-row">
+                        <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://www.instagram.com/slaystation" target="_blank" rel="noopener noreferrer" title="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="https://www.tiktok.com" target="_blank" rel="noopener noreferrer" title="TikTok"><i class="fab fa-tiktok"></i></a>
+                        <a href="https://wa.me/254719563607" target="_blank" rel="noopener noreferrer" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+                <div class="footer-columns">
+                    <div class="footer-col">
+                        <h3>Customer Service</h3>
+                        <ul>
+                            <li><a href="index.html#contact">Contact Us</a></li>
+                            <li><a href="index.html#contact">Shipping</a></li>
+                            <li><a href="index.html#contact">FAQ</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-col">
+                        <h3>Shop</h3>
+                        <ul>
+                            <li><a href="index.html#products">Bags</a></li>
+                            <li><a href="wallets.html">Wallets</a></li>
+                            <li><a href="accessories.html">Accessories</a></li>
+                            <li><a href="lip-care.html">Lip Products</a></li>
+                    <li><a href="fragrances.html">Fragrances</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-col">
+                        <h3>About</h3>
+                        <ul>
+                            <li><a href="about.html">About</a></li>
+                            <li><a href="index.html#contact">Locations</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div class="footer-bottom-left">
+                    <p class="footer-copyright">&copy; 2025 Slay Station. All rights reserved.</p>
+                </div>
+                <div class="footer-legal">
+                    <a href="index.html#contact">Privacy Policy</a>
+                    <a href="index.html#contact">Terms of use</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Google Places: if Maps fail on Vercel but work locally, your API key is restricted to localhost. Google Cloud → Credentials → key → HTTP referrers: add https://YOUR-PROJECT.vercel.app/* and your custom domain. Also enable Maps JavaScript API + Places API. See VERCEL.md. -->
+    <script>
+    (function(){
+      var key = (window.SLAYSTATION_GOOGLE_MAPS_KEY || '').trim();
+      if (!key) return;
+      window.slayStationMapsCallback = function() {
+        window.slayStationMapsReady = true;
+        if (window.slayStationMapsTimeout) clearTimeout(window.slayStationMapsTimeout);
+        if (window.onSlayStationMapsReady) window.onSlayStationMapsReady();
+      };
+      window.slayStationMapsTimeout = setTimeout(function() {
+        if (window.slayStationMapsReady) return;
+        window.slayStationMapsReady = false;
+        window.slayStationMapsFailed = true;
+        if (window.onSlayStationMapsReady) window.onSlayStationMapsReady();
+      }, 8000);
+      var s = document.createElement('script');
+      s.onerror = function() {
+        if (!window.slayStationMapsReady) {
+          window.slayStationMapsFailed = true;
+          if (window.slayStationMapsTimeout) clearTimeout(window.slayStationMapsTimeout);
+          if (window.onSlayStationMapsReady) window.onSlayStationMapsReady();
+        }
+      };
+      s.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(key) + '&libraries=places&callback=slayStationMapsCallback';
+      s.async = true; s.defer = true;
+      document.head.appendChild(s);
+    })();
+    </script>
+    <script src="delivery-fee-calculator.js"></script>
+    <script src="checkout.js"></script>
+    <script>
+        // Mobile menu toggle (checkout-scoped IDs)
+        (function() {
+            var mobileMenuToggle = document.getElementById('checkoutMobileMenuToggle');
+            var navMenu = document.getElementById('checkoutNavMenu');
+            var navMenuDrawer = document.getElementById('checkoutNavMenuDrawer');
+            var menuPanel = navMenuDrawer || navMenu;
+            if (mobileMenuToggle && navMenu && menuPanel) {
+                function closeMenu() {
+                    mobileMenuToggle.classList.remove('active');
+                    navMenu.classList.remove('active');
+                    if (navMenuDrawer) navMenuDrawer.classList.remove('active');
+                    document.body.classList.remove('menu-open');
+                }
+                function openMenu() {
+                    mobileMenuToggle.classList.add('active');
+                    navMenu.classList.add('active');
+                    if (navMenuDrawer) navMenuDrawer.classList.add('active');
+                    document.body.classList.add('menu-open');
+                }
+                mobileMenuToggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (menuPanel.classList.contains('active')) closeMenu();
+                    else openMenu();
+                });
+                var links = menuPanel.querySelectorAll('a');
+                for (var i = 0; i < links.length; i++) {
+                    links[i].addEventListener('click', function(e) {
+                        closeMenu();
+                        var href = this.getAttribute('href');
+                        if (href && href !== '#' && !href.startsWith('#')) {
+                            e.preventDefault();
+                            window.location.href = href;
+                        }
+                    });
+                }
+                document.addEventListener('click', function(event) {
+                    if (menuPanel.classList.contains('active') && !mobileMenuToggle.contains(event.target) && !menuPanel.contains(event.target)) closeMenu();
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

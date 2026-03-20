@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>(function(){var h=window.location.hostname||'';var p=window.location.pathname||'';if(h.indexOf('github.io')!==-1&&p.indexOf('/slaystation')===0){var b=document.createElement('base');b.href=window.location.origin+'/slaystation/';document.head.insertBefore(b,document.head.firstChild);}})();</script>
+    <title>Slay Station - Wallets | Shop Now</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Great+Vibes&display=swap" rel="stylesheet">
+    <!-- Font Awesome for social media icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="promo-bar">
+        <div class="promo-bar-left">
+            <a href="index.html#contact">Find a Location</a>
+        </div>
+        <div class="promo-bar-messages">
+            <p class="promo-bar-text promo-bar-message active">Online payments available</p>
+            <p class="promo-bar-text promo-bar-message">Delivery across Kenya and East Africa</p>
+            <p class="promo-bar-text promo-bar-message">Visit us at Westlands Market, Shop B15</p>
+            <p class="promo-bar-text promo-bar-message">Gift wrapping available at checkout</p>
+        </div>
+        <div class="promo-bar-right">
+            <button type="button" class="promo-bar-pause" id="promoBarPause" aria-label="Pause promo" title="Pause">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+            </button>
+        </div>
+    </div>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-mobile-left">
+                <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+            <div class="nav-logo-wrap">
+                <div class="logo">
+                    <a href="index.html" class="logo-link">
+                        <span class="logo-text">Slay Station</span>
+                    </a>
+                </div>
+            </div>
+            <div class="nav-menu-drawer" id="navMenuDrawer">
+                <ul class="nav-menu" id="navMenu">
+                <li class="nav-item-has-mega">
+                    <a href="index.html#home">New Arrivals</a>
+                    <div class="nav-mega-menu">
+                        <div class="nav-mega-inner">
+                            <div class="nav-mega-column">
+                                <span class="nav-mega-heading">Shop</span>
+                                <a href="index.html#home">New In</a>
+                                <a href="index.html#products">Shop All</a>
+                                <a href="index.html#products">Best Sellers</a>
+                            </div>
+                            <div class="nav-mega-column">
+                                <span class="nav-mega-heading">Featured</span>
+                                <a href="index.html#products">Under KSH 10,000</a>
+                                <a href="index.html#products">Editor's Picks</a>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li class="nav-item-has-mega">
+                    <a href="index.html#products">Bags</a>
+                    <div class="nav-mega-menu">
+                        <div class="nav-mega-inner">
+                            <div class="nav-mega-column">
+                                <span class="nav-mega-heading">Styles</span>
+                                <a href="index.html#products">Shop All Bags</a>
+                                <a href="index.html#products">Crossbody</a>
+                                <a href="index.html#products">Handbags</a>
+                                <a href="index.html#products">Totes</a>
+                                <a href="index.html#products">Shoulder Bags</a>
+                                <a href="index.html#products">Clutches</a>
+                            </div>
+                            <div class="nav-mega-column">
+                                <span class="nav-mega-heading">&nbsp;</span>
+                                <a href="index.html#products">Backpacks</a>
+                                <a href="index.html#products">Belt Bags</a>
+                                <a href="index.html#products">Top Handles</a>
+                                <a href="index.html#products">Travel &amp; Luggage</a>
+                            </div>
+                            <div class="nav-mega-column">
+                                <span class="nav-mega-heading">Featured</span>
+                                <a href="index.html#products">Over 50% Off</a>
+                                <a href="index.html#products">Bags Under KSH 10,000</a>
+                                <a href="index.html#products">Editor's Picks</a>
+                                <a href="index.html#products">Mini Bags</a>
+                                <a href="index.html#products">Vintage</a>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li class="nav-item-has-mega">
+                    <a href="wallets.html">Wallets</a>
+                    <div class="nav-mega-menu">
+                        <div class="nav-mega-inner">
+                            <div class="nav-mega-column">
+                                <span class="nav-mega-heading">Styles</span>
+                                <a href="wallets.html">Shop All Wallets</a>
+                                <a href="wallets.html">Card Holders</a>
+                                <a href="wallets.html">Bifold</a>
+                                <a href="wallets.html">Clutches &amp; Wristlets</a>
+                            </div>
+                            <div class="nav-mega-column">
+                                <span class="nav-mega-heading">Featured</span>
+                                <a href="wallets.html">Best Sellers</a>
+                                <a href="wallets.html">Under KSH 5,000</a>
+                                <a href="wallets.html">New Arrivals</a>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li class="nav-item-has-mega">
+                    <a href="accessories.html">Accessories</a>
+                    <div class="nav-mega-menu">
+                        <div class="nav-mega-inner">
+                            <div class="nav-mega-column">
+                                <span class="nav-mega-heading">Shop</span>
+                                <a href="accessories.html">Shop All Accessories</a>
+                                <a href="accessories.html">Scarves</a>
+                                <a href="accessories.html">Keychains</a>
+                                <a href="accessories.html">Bag Charms</a>
+                            </div>
+                            <div class="nav-mega-column">
+                                <span class="nav-mega-heading">Featured</span>
+                                <a href="accessories.html">Best Sellers</a>
+                                <a href="accessories.html">New Arrivals</a>
+                                <a href="accessories.html">Gift Ideas</a>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li class="nav-item-has-mega">
+                    <a href="lip-care.html">Lip Products</a>
+                    <div class="nav-mega-menu">
+                        <div class="nav-mega-inner">
+                            <div class="nav-mega-column">
+                                <span class="nav-mega-heading">Shop</span>
+                                <a href="lip-care.html">Shop All Lip Products</a>
+                                <a href="lip-care.html">Lipsticks</a>
+                                <a href="lip-care.html">Lip Gloss</a>
+                                <a href="lip-care.html">Lip Balms</a>
+                            </div>
+                            <div class="nav-mega-column">
+                                <span class="nav-mega-heading">Featured</span>
+                                <a href="lip-care.html">Best Sellers</a>
+                                <a href="lip-care.html">New Arrivals</a>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="index.html#contact">Contact</a></li>
+                <li><a href="index.html#contact">Location</a></li>
+                </ul>
+                <div class="nav-menu-footer">
+                    <a href="login.html" class="nav-menu-signin" aria-label="Sign in"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M6 21c0-3.314 2.686-6 6-6s6 2.686 6 6"/></svg> Sign in</a>
+                    <a href="signup.html" class="nav-menu-signup" aria-label="Sign up"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Sign up</a>
+                    <a href="index.html#contact" class="nav-menu-find-location"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Find a Location</a>
+                </div>
+            </div>
+            <div class="nav-actions">
+                <button type="button" id="navSearchBtn" class="nav-btn-round nav-btn-search" title="Search" aria-label="Search products" onclick="var b=document.getElementById('navSearchBar');var i=document.getElementById('navSearchInput');if(b&&i){document.body.classList.add('search-open');var n=document.querySelector('.navbar');if(n)n.classList.add('search-open');b.setAttribute('aria-hidden','false');i.focus();}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></button>
+                <div class="nav-btn-round nav-btn-wishlist" onclick="typeof toggleWishlist==='function'&&toggleWishlist()" title="Wishlist">
+                    <svg class="nav-heart-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    <span class="nav-badge" id="wishlistCount">0</span>
+                </div>
+                <a href="account.html" id="myAccountBtn" class="nav-btn-round nav-btn-user" title="My Account" style="display: none;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 21c0-3.314 2.686-6 6-6s6 2.686 6 6"/></svg>
+                </a>
+                <a href="login.html" id="loginBtn" class="nav-btn-round nav-btn-user" title="Account">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 21c0-3.314 2.686-6 6-6s6 2.686 6 6"/></svg>
+                </a>
+                <button id="logoutBtn" class="nav-btn-round nav-btn-user" style="display: none;" title="Account" onclick="typeof logout==='function'&&logout()">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 21c0-3.314 2.686-6 6-6s6 2.686 6 6"/></svg>
+                </button>
+                <div class="nav-btn-round nav-btn-cart" onclick="typeof toggleCart==='function'&&toggleCart()" title="Cart">
+                    <svg class="nav-cart-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                    <span class="nav-badge" id="cartCount">0</span>
+                </div>
+            </div>
+            <div class="nav-search-bar" id="navSearchBar" aria-hidden="true">
+                <div class="nav-search-bar-inner">
+                    <input type="text" class="nav-search-input" id="navSearchInput" placeholder="Search products..." aria-label="Search products" autocomplete="off">
+                    <button type="button" class="nav-search-close" id="navSearchClose" aria-label="Close search">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="mobile-search-bar">
+        <div class="mobile-search-wrap">
+            <input type="text" id="mobileProductSearch" placeholder="Search for..." class="mobile-search-input" aria-label="Search products">
+            <button type="button" class="mobile-search-btn" onclick="typeof mobileSearchSubmit==='function'&&mobileSearchSubmit();" aria-label="Search">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero hero--wallets">
+        <div class="hero-content">
+            <h1 class="hero-title">Stylish Wallets 👛</h1>
+            <p class="hero-subtitle">Compact and chic wallets that fit perfectly in your bags!</p>
+        </div>
+        <div class="hero-decoration">
+            <div class="floating-shape shape-1"></div>
+            <div class="floating-shape shape-2"></div>
+        </div>
+    </section>
+
+    <!-- Taper banner between hero and products (video: second banner from images/banner) -->
+    <section class="taper-banner taper-banner--wallets taper-banner--video" aria-label="Wallets feature">
+        <div class="taper-banner__video-wrap">
+            <video class="taper-banner__video" autoplay muted loop playsinline>
+                <source src="images/banner/banner2.mp4" type="video/mp4">
+            </video>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section id="products" class="products-section">
+        <div class="container">
+            <h2 class="section-title">Our Wallet Collection</h2>
+            <p class="section-subtitle">Find your perfect wallet match! ✨</p>
+            <div class="page-filter-layout">
+                <div class="page-filter-backdrop" id="walletFilterBackdrop" aria-hidden="true"></div>
+                <aside class="page-filter-sidebar" id="walletFilterSidebar">
+                    <button type="button" class="page-filter-sidebar-close" id="walletFilterClose" aria-label="Close filters">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                    </button>
+                    <h2 class="page-filter-title">Filter</h2>
+                    <p class="page-filter-count"><span id="walletItemCount">0</span> Items</p>
+                    <div class="page-filter-group">
+                        <div class="page-filter-group-title">Price (KSH)</div>
+                        <div class="page-filter-checkboxes">
+                            <label class="page-filter-check"><input type="checkbox" name="walletPrice" value="under1000"> Under KSH 1,000</label>
+                            <label class="page-filter-check"><input type="checkbox" name="walletPrice" value="1000-2000"> KSH 1,000–2,000</label>
+                            <label class="page-filter-check"><input type="checkbox" name="walletPrice" value="over2000"> Over KSH 2,000</label>
+                        </div>
+                    </div>
+                </aside>
+                <div class="page-filter-main">
+                    <div class="page-filter-mobile-toolbar" id="walletMobileToolbar">
+                        <button type="button" class="page-filter-mobile-filter-btn" id="walletMobileFilterBtn" aria-label="Open filters">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="8" cy="6" r="1.5" fill="currentColor"/><circle cx="16" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="18" r="1.5" fill="currentColor"/></svg>
+                            Filter
+                        </button>
+                        <span class="page-filter-mobile-count"><span id="walletItemCountMobile">0</span> Items</span>
+                    </div>
+                <div class="products-grid" id="productsGrid">
+                    <!-- Products will be dynamically added here -->
+                </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Shopping Cart -->
+    <div class="cart-overlay" id="cartOverlay">
+        <div class="cart-sidebar">
+            <div class="cart-header">
+                <h2>Your Cart 🛍️</h2>
+                <button class="close-cart" onclick="toggleCart()">✕</button>
+            </div>
+            <div class="cart-items" id="cartItems">
+                <p class="empty-cart">Your cart is empty. Start shopping!</p>
+            </div>
+            <section class="you-may-also-like you-may-also-like--cart" id="cartYouMayAlsoLikeSection" aria-label="You may also like">
+                <div class="ymal-header-row">
+                    <h3 class="ymal-title">You May Also Like</h3>
+                    <button type="button" class="ymal-dismiss-btn" onclick="dismissCartRecommendations()" aria-label="Remove recommended section">✕</button>
+                </div>
+                <div class="ymal-carousel-wrap">
+                    <div class="ymal-carousel" id="cartYouMayAlsoLike" aria-label="Recommended products"></div>
+                    <button type="button" class="ymal-nav-btn ymal-nav-btn--right" onclick="typeof scrollYouMayAlsoLike==='function'&&scrollYouMayAlsoLike('cartYouMayAlsoLike', 1)" aria-label="Scroll right">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                    </button>
+                </div>
+            </section>
+            <div class="cart-footer">
+                <div class="cart-total">
+                    <strong>Total: KSH <span id="cartTotal">0</span></strong>
+                </div>
+                <button class="checkout-btn" onclick="checkout()">Checkout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Form Modal -->
+    <div class="modal-overlay" id="orderModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Complete Your Order ✨</h2>
+                <button class="close-modal" onclick="closeOrderModal()">✕</button>
+            </div>
+            <form id="orderForm" class="order-form">
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="address">Delivery Address</label>
+                    <textarea id="address" name="address" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="payment">Payment Method</label>
+                    <select id="payment" name="payment" required>
+                        <option value="mpesa" selected>M-Pesa (Till 3193269)</option>
+                        <option value="card">Credit/Debit Card</option>
+                    </select>
+                </div>
+                <div class="order-summary">
+                    <h3>Order Summary</h3>
+                    <div id="orderSummary"></div>
+                </div>
+                <section class="you-may-also-like you-may-also-like--checkout" aria-label="You may also like">
+                    <h3 class="ymal-title">You May Also Like</h3>
+                    <div class="ymal-carousel-wrap">
+                        <button type="button" class="ymal-nav-btn ymal-nav-btn--left" onclick="typeof scrollYouMayAlsoLike==='function'&&scrollYouMayAlsoLike('checkoutYouMayAlsoLike', -1)" aria-label="Scroll left">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+                        </button>
+                        <div class="ymal-carousel" id="checkoutYouMayAlsoLike" aria-label="Recommended products"></div>
+                        <button type="button" class="ymal-nav-btn ymal-nav-btn--right" onclick="typeof scrollYouMayAlsoLike==='function'&&scrollYouMayAlsoLike('checkoutYouMayAlsoLike', 1)" aria-label="Scroll right">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                        </button>
+                    </div>
+                </section>
+                <button type="submit" class="submit-order-btn">Place Order 🎉</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer – Fashionphile-style -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-top">
+                <div class="footer-left">
+                    <h3>Join Our Circle</h3>
+                    <div class="footer-newsletter">
+                        <input type="email" id="footerEmailWallets" placeholder="Email" aria-label="Email for newsletter">
+                        <button type="button" onclick="var e=document.getElementById('footerEmailWallets');if(e&&e.value){alert('Thanks for signing up!');e.value='';}else{alert('Please enter your email.');}" aria-label="Subscribe">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </button>
+                    </div>
+                    <h3>Follow Us</h3>
+                    <div class="footer-social-row">
+                        <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://www.instagram.com/slaystation" target="_blank" rel="noopener noreferrer" title="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="https://www.tiktok.com" target="_blank" rel="noopener noreferrer" title="TikTok"><i class="fab fa-tiktok"></i></a>
+                        <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" title="X"><i class="fab fa-x-twitter"></i></a>
+                        <a href="https://wa.me/254719563607" target="_blank" rel="noopener noreferrer" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                    <div class="footer-app-block">
+                        <h3>Download the App</h3>
+                        <div class="footer-app-buttons">
+                            <a href="#" target="_blank" rel="noopener noreferrer" class="footer-app-btn">
+                                <span class="footer-app-btn-icon"><i class="fab fa-apple"></i></span>
+                                <span class="footer-app-btn-text">
+                                    <span>Download on the</span>
+                                    <span>App Store</span>
+                                </span>
+                            </a>
+                            <a href="#" target="_blank" rel="noopener noreferrer" class="footer-app-btn">
+                                <span class="footer-app-btn-icon"><i class="fab fa-google-play"></i></span>
+                                <span class="footer-app-btn-text">
+                                    <span>GET IT ON</span>
+                                    <span>Google Play</span>
+                                </span>
+                            </a>
+                        </div>
+                        <p class="footer-app-disclaimer">Android and Google Play are trademarks of Google LLC.</p>
+                    </div>
+                </div>
+                <div class="footer-columns">
+                    <div class="footer-col">
+                        <h3>Customer Service</h3>
+                        <ul>
+                            <li><a href="index.html#contact">Contact Us</a></li>
+                            <li><a href="login.html">My Account</a></li>
+                            <li><a href="index.html#products">Alerts</a></li>
+                            <li><a href="index.html#contact">Shipping</a></li>
+                            <li><a href="https://help.fashionphile.com/s/" target="_blank" rel="noopener noreferrer">FAQ</a></li>
+                            <li><a href="index.html#contact">Give Us feedback</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-col">
+                        <h3>Shop with Us</h3>
+                        <ul>
+                            <li><a href="index.html#products">Bags</a></li>
+                            <li><a href="wallets.html">Wallets</a></li>
+                            <li><a href="accessories.html">Accessories</a></li>
+                            <li><a href="lip-care.html">Lip Products</a></li>
+                            <li><a href="fragrances.html">Fragrances</a></li>
+                            <li><a href="index.html#contact">Gift Cards</a></li>
+                            <li><a href="index.html#contact">Personal Shopping</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-col">
+                        <h3>About Us</h3>
+                        <ul>
+                            <li><a href="about.html">About</a></li>
+                            <li><a href="index.html#contact">Locations</a></li>
+                            <li><a href="index.html#contact">Careers</a></li>
+                            <li><a href="index.html#contact">Sustainability</a></li>
+                            <li><a href="index.html#contact">Influencer Program</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div class="footer-bottom-left">
+                    <p class="footer-copyright">&copy; 2025 Slay Station. All rights reserved.</p>
+                </div>
+                <div class="footer-legal">
+                    <a href="index.html#contact">Accessibility Statement</a>
+                    <a href="index.html#contact">Privacy Policy</a>
+                    <a href="index.html#contact">Terms of use</a>
+                    <a href="index.html#contact">Your privacy choices</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <button type="button" class="footer-help-widget" id="helpChatToggle" aria-label="Need Help?">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Need Help?
+    </button>
+
+    <div id="helpChatBox" class="help-chat-box" aria-hidden="true">
+        <div class="help-chat-header">
+            <span class="help-chat-header-title"><strong>Slay Station</strong> Offline Chat</span>
+            <button type="button" class="help-chat-close" id="helpChatClose" aria-label="Close chat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg>
+            </button>
+        </div>
+        <div class="help-chat-body">
+            <div class="help-chat-msg-bubble">
+                <div class="help-chat-msg-brand">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    Slay Station
+                </div>
+                <p class="help-chat-msg-text">Welcome to Slay Station! Our live chat agents are either assisting other clients or you've reached us outside of business hours (Every day, 7am–7pm EAT). Please select an option below to find helpful resources or leave us a message, and we'll get back to you as soon as possible.</p>
+                <div class="help-chat-buttons">
+                    <a href="https://help.fashionphile.com/s/" target="_blank" rel="noopener noreferrer">Explore Our FAQs</a>
+                    <a href="index.html#contact">Leave a Message</a>
+                </div>
+            </div>
+        </div>
+        <div class="help-chat-footer">just now</div>
+    </div>
+
+    <script>
+        (function(){var t=document.getElementById('helpChatToggle'),b=document.getElementById('helpChatBox'),c=document.getElementById('helpChatClose');if(t&&b){t.addEventListener('click',function(){b.classList.toggle('is-open');b.setAttribute('aria-hidden',b.classList.contains('is-open')?'false':'true');});if(c)c.addEventListener('click',function(){b.classList.remove('is-open');b.setAttribute('aria-hidden','true');});}})();
+    </script>
+    <script src="auth.js"></script>
+    <script src="wallets.js"></script>
+    <script>
+        // Update auth UI on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof updateAuthUI === 'function') {
+                updateAuthUI();
+            }
+
+        });
+
+        // Mobile menu toggle (same as index – uses navMenuDrawer so drawer slides in)
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            const navMenu = document.getElementById('navMenu');
+            const navMenuDrawer = document.getElementById('navMenuDrawer');
+            const menuPanel = navMenuDrawer || navMenu;
+            if (mobileMenuToggle && navMenu && menuPanel) {
+                function closeMenu() {
+                    mobileMenuToggle.classList.remove('active');
+                    navMenu.classList.remove('active');
+                    if (navMenuDrawer) navMenuDrawer.classList.remove('active');
+                    document.body.classList.remove('menu-open');
+                }
+                function openMenu() {
+                    mobileMenuToggle.classList.add('active');
+                    navMenu.classList.add('active');
+                    if (navMenuDrawer) navMenuDrawer.classList.add('active');
+                    document.body.classList.add('menu-open');
+                }
+                mobileMenuToggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (menuPanel.classList.contains('active')) closeMenu();
+                    else openMenu();
+                });
+                const navLinks = menuPanel.querySelectorAll('a');
+                navLinks.forEach(link => {
+                    link.addEventListener('click', function(e) {
+                        closeMenu();
+                        var href = link.getAttribute('href');
+                        if (href && href !== '#' && !href.startsWith('#')) {
+                            e.preventDefault();
+                            window.location.href = href;
+                        }
+                    });
+                });
+                document.addEventListener('click', function(event) {
+                    if (menuPanel.classList.contains('active') && !mobileMenuToggle.contains(event.target) && !menuPanel.contains(event.target)) closeMenu();
+                });
+            }
+        });
+    </script>
+</body>
+</html>

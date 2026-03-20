@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>(function(){var h=window.location.hostname||'';var p=window.location.pathname||'';if(h.indexOf('github.io')!==-1&&p.indexOf('/slaystation')===0){var b=document.createElement('base');b.href=window.location.origin+'/slaystation/';document.head.insertBefore(b,document.head.firstChild);}})();</script>
+    <script>(function(){var path=window.location.pathname||'/';var hasFile=/\.[^/]+$/.test(path);var dir=hasFile?path.replace(/\/[^/]*$/,''):path;dir=(dir===''?'/':dir);var base=window.location.origin+(dir.endsWith('/')?dir:dir+'/');function abs(u){if(!u||u.indexOf('http')===0||u.indexOf('data:')===0)return u;var r=u.charAt(0)==='/'?u.slice(1):u;r=r.split('/').map(function(p){return p.toLowerCase();}).join('/');return base+r;}document.addEventListener('DOMContentLoaded',function(){document.querySelectorAll('img[src^="images/"], img[src^="./images/"], source[src^="images/"], source[src^="./images/"]').forEach(function(el){var s=el.getAttribute('src');if(s)el.src=abs(s);});});})();</script>
+    <title>About Us - Slay Station</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="promo-bar">
+        <div class="promo-bar-left">
+            <a href="index.html#contact">Find a Location</a>
+        </div>
+        <div class="promo-bar-messages">
+            <p class="promo-bar-text promo-bar-message active">Online payments available</p>
+            <p class="promo-bar-text promo-bar-message">Delivery across Kenya and East Africa</p>
+            <p class="promo-bar-text promo-bar-message">Visit us at Westlands Market, Shop B15</p>
+            <p class="promo-bar-text promo-bar-message">Gift wrapping available at checkout</p>
+        </div>
+        <div class="promo-bar-right">
+            <button type="button" class="promo-bar-pause" id="promoBarPause" aria-label="Pause promo" title="Pause">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+            </button>
+        </div>
+    </div>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-mobile-left">
+                <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+            <div class="nav-logo-wrap">
+                <div class="logo">
+                    <a href="index.html" class="logo-link">
+                        <span class="logo-text">Slay Station</span>
+                    </a>
+                </div>
+            </div>
+            <div class="nav-menu-drawer" id="navMenuDrawer">
+                <ul class="nav-menu" id="navMenu">
+                <li class="nav-item-has-mega">
+                    <a href="index.html#home">New Arrivals</a>
+                    <div class="nav-mega-menu">
+                        <div class="nav-mega-inner">
+                            <div class="nav-mega-column">
+                                <span class="nav-mega-heading">Shop</span>
+                                <a href="index.html#home">New In</a>
+                                <a href="index.html#products">Shop All</a>
+                                <a href="index.html#products">Best Sellers</a>
+                            </div>
+                            <div class="nav-mega-column">
+<span class="nav-mega-heading">Featured</span>
+                                    <a href="index.html#products">Under KSH 10,000</a>
+                                <a href="index.html#products">Editor's Picks</a>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li class="nav-item-has-mega">
+                    <a href="index.html#products">Bags</a>
+                    <div class="nav-mega-menu">
+                        <div class="nav-mega-inner">
+                            <div class="nav-mega-column">
+                                <span class="nav-mega-heading">Styles</span>
+                                <a href="index.html#products">Shop All Bags</a>
+                                <a href="index.html#products">Crossbody</a>
+                                <a href="index.html#products">Handbags</a>
+                                <a href="index.html#products">Totes</a>
+                                <a href="index.html#products">Shoulder Bags</a>
+                                <a href="index.html#products">Clutches</a>
+                            </div>
+                            <div class="nav-mega-column">
+                                <span class="nav-mega-heading">&nbsp;</span>
+                                <a href="index.html#products">Backpacks</a>
+                                <a href="index.html#products">Belt Bags</a>
+                                <a href="index.html#products">Top Handles</a>
+                                <a href="index.html#products">Travel &amp; Luggage</a>
+                            </div>
+                            <div class="nav-mega-column">
+                                <span class="nav-mega-heading">Featured</span>
+                                <a href="index.html#products">Over 50% Off</a>
+                                <a href="index.html#products">Bags Under KSH 10,000</a>
+                                <a href="index.html#products">Editor's Picks</a>
+                                <a href="index.html#products">Mini Bags</a>
+                                <a href="index.html#products">Vintage</a>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li class="nav-item-has-mega">
+                    <a href="wallets.html">Wallets</a>
+                    <div class="nav-mega-menu">
+                        <div class="nav-mega-inner">
+                            <div class="nav-mega-column">
+                                <span class="nav-mega-heading">Styles</span>
+                                <a href="wallets.html">Shop All Wallets</a>
+                                <a href="wallets.html">Card Holders</a>
+                                <a href="wallets.html">Bifold</a>
+                                <a href="wallets.html">Clutches &amp; Wristlets</a>
+                            </div>
+                            <div class="nav-mega-column">
+                                <span class="nav-mega-heading">Featured</span>
+                                <a href="wallets.html">Best Sellers</a>
+                                <a href="wallets.html">Under KSH 5,000</a>
+                                <a href="wallets.html">New Arrivals</a>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li class="nav-item-has-mega">
+                    <a href="accessories.html">Accessories</a>
+                    <div class="nav-mega-menu">
+                        <div class="nav-mega-inner">
+                            <div class="nav-mega-column">
+                                <span class="nav-mega-heading">Shop</span>
+                                <a href="accessories.html">Shop All Accessories</a>
+                                <a href="accessories.html">Scarves</a>
+                                <a href="accessories.html">Keychains</a>
+                                <a href="accessories.html">Bag Charms</a>
+                            </div>
+                            <div class="nav-mega-column">
+                                <span class="nav-mega-heading">Featured</span>
+                                <a href="accessories.html">Best Sellers</a>
+                                <a href="accessories.html">New Arrivals</a>
+                                <a href="accessories.html">Gift Ideas</a>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li class="nav-item-has-mega">
+                    <a href="lip-care.html">Lip Products</a>
+                    <div class="nav-mega-menu">
+                        <div class="nav-mega-inner">
+                            <div class="nav-mega-column">
+                                <span class="nav-mega-heading">Shop</span>
+                                <a href="lip-care.html">Shop All Lip Products</a>
+                                <a href="lip-care.html">Lipsticks</a>
+                                <a href="lip-care.html">Lip Gloss</a>
+                                <a href="lip-care.html">Lip Balms</a>
+                            </div>
+                            <div class="nav-mega-column">
+                                <span class="nav-mega-heading">Featured</span>
+                                <a href="lip-care.html">Best Sellers</a>
+                                <a href="lip-care.html">New Arrivals</a>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="index.html#contact">Contact</a></li>
+                <li><a href="index.html#contact">Location</a></li>
+                </ul>
+                <div class="nav-menu-footer">
+                    <a href="login.html" class="nav-menu-signin" aria-label="Sign in"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M6 21c0-3.314 2.686-6 6-6s6 2.686 6 6"/></svg> Sign in</a>
+                    <a href="signup.html" class="nav-menu-signup" aria-label="Sign up"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Sign up</a>
+                    <a href="index.html#contact" class="nav-menu-find-location"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Find a Location</a>
+                </div>
+            </div>
+            <div class="nav-actions">
+                <button type="button" id="navSearchBtn" class="nav-btn-round nav-btn-search" title="Search" aria-label="Search products" onclick="var b=document.getElementById('navSearchBar');var i=document.getElementById('navSearchInput');if(b&&i){document.body.classList.add('search-open');var n=document.querySelector('.navbar');if(n)n.classList.add('search-open');b.setAttribute('aria-hidden','false');i.focus();}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></button>
+                <div class="nav-btn-round nav-btn-wishlist" onclick="typeof toggleWishlist==='function'&&toggleWishlist()" title="Wishlist">
+                    <svg class="nav-heart-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    <span class="nav-badge" id="wishlistCount">0</span>
+                </div>
+                <a href="account.html" id="myAccountBtn" class="nav-btn-round nav-btn-user" title="My Account" style="display: none;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 21c0-3.314 2.686-6 6-6s6 2.686 6 6"/></svg>
+                </a>
+                <a href="login.html" id="loginBtn" class="nav-btn-round nav-btn-user" title="Account">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 21c0-3.314 2.686-6 6-6s6 2.686 6 6"/></svg>
+                </a>
+                <button id="logoutBtn" class="nav-btn-round nav-btn-user" style="display: none;" title="Log out" onclick="typeof logout==='function'&&logout()">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 21c0-3.314 2.686-6 6-6s6 2.686 6 6"/></svg>
+                </button>
+                <div class="nav-btn-round nav-btn-cart" onclick="typeof toggleCart==='function'&&toggleCart()" title="Cart">
+                    <svg class="nav-cart-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                    <span class="nav-badge" id="cartCount">0</span>
+                </div>
+            </div>
+            <div class="nav-search-bar" id="navSearchBar" aria-hidden="true">
+                <div class="nav-search-bar-inner">
+                    <input type="text" class="nav-search-input" id="navSearchInput" placeholder="Search products..." aria-label="Search products" autocomplete="off">
+                    <button type="button" class="nav-search-close" id="navSearchClose" aria-label="Close search">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="mobile-search-bar">
+        <div class="mobile-search-wrap">
+            <input type="text" id="mobileProductSearch" placeholder="Search for..." class="mobile-search-input" aria-label="Search products">
+            <button type="button" class="mobile-search-btn" onclick="window.location.href='index.html#products';" aria-label="Search">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Hero / Motto -->
+    <section class="taupe-editorial-section">
+        <div class="editorial-banner editorial-banner--video editorial-banner-visible" aria-label="Slay Station About">
+            <div class="editorial-banner-video-wrap">
+                <video class="editorial-banner-video" autoplay muted loop playsinline>
+                    <source src="images/ad-videos/ad1.mp4" type="video/mp4">
+                </video>
+                <div class="editorial-banner-video-overlay"></div>
+            </div>
+            <div class="editorial-banner-inner editorial-banner-inner--center">
+                <div class="editorial-banner-content">
+                    <p class="editorial-banner-headline">Our motto</p>
+                    <h2 class="editorial-banner-title">In our bag so you can be in yours.</h2>
+                    <p class="editorial-banner-body">Slay Station — where your style meets ours.</p>
+                    <a href="index.html#products" class="editorial-banner-cta">Shop Now</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About main content -->
+    <main class="about-page-main">
+        <div class="container">
+            <!-- Curated for You -->
+            <section class="about-block about-intro">
+                <h2 class="about-page-title">Curated for You</h2>
+                <p class="about-lead">On the surface, Slay Station is about making quality bags, wallets, and accessories accessible. The piece you’ve been eyeing? We’ve got it. A look that’s unmistakably yours? We’re here for that too.</p>
+                <p>We’re about well-made, thoughtfully chosen pieces in great condition — and a seamless experience from browse to your doorstep. But Slay Station is also more than that. It’s the idea that what you want can (and should) be yours. That great style isn’t about hard-to-get or out-of-reach. That there’s nothing better than the real thing. And that when we keep things practical and personal, we don’t just deliver bags — we help you show up as yourself, every day.</p>
+            </section>
+
+            <!-- Slay Station Legacy -->
+            <section class="about-block about-legacy">
+                <div class="about-legacy-row">
+                    <div class="about-legacy-content">
+                        <h2 class="about-page-title">Slay Station Legacy</h2>
+                        <p class="about-lead">Slay Station was founded in <strong>2025</strong> by <strong>Isabelle Wambui</strong>. Like the best brands, it started with a clear idea: bring together a curated selection of bags and accessories so everyone can find something that fits their life and their look.</p>
+                        <p>From day one, the focus has been on quality, authenticity, and a straightforward, enjoyable shopping experience. Today, Slay Station continues to grow as a trusted name for bags, wallets, lip care, and accessories — built on the belief that when we’re in our bag, you can be in yours.</p>
+                        <p class="about-legacy-disclaimer">Slay Station is not affiliated with any brands. All product names and trademarks are the property of their respective owners.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Vision & Mission -->
+            <section class="about-block about-vision">
+                <h2 class="about-page-title">Our Vision & Mission</h2>
+                <div class="about-vision-grid">
+                    <div class="about-vision-card">
+                        <h3>Vision</h3>
+                        <p>To be the go-to destination for people who want bags and accessories that are both stylish and practical — where “in our bag so you can be in yours” isn’t just a motto, it’s how we show up every day.</p>
+                    </div>
+                    <div class="about-vision-card">
+                        <h3>Mission</h3>
+                        <p>To curate and deliver quality bags, wallets, and accessories with honest service, clear communication, and a seamless experience — so you can focus on looking good and feeling confident.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Our Promise -->
+            <section class="about-block about-promise">
+                <h2 class="about-page-title">Our Promise to You</h2>
+                <p class="about-promise-intro">Our customers don’t take promises lightly, and neither do we. These four commitments are at the heart of everything we do.</p>
+                <ul class="about-promise-list">
+                    <li>
+                        <strong>1. We put quality and authenticity first.</strong>
+                        Every piece we offer is selected with care. We stand behind what we sell and want you to feel confident in your purchase.
+                    </li>
+                    <li>
+                        <strong>2. When we commit, we’re all in.</strong>
+                        From sourcing to packaging to delivery, we aim for clarity and reliability. You can count on us to communicate clearly and follow through.
+                    </li>
+                    <li>
+                        <strong>3. Service that matches the product.</strong>
+                        We offer straightforward shipping, helpful support, and a smooth experience so shopping with us feels easy and enjoyable.
+                    </li>
+                    <li>
+                        <strong>4. We value what makes you unique.</strong>
+                        Style is personal. We celebrate different tastes, backgrounds, and ways of life — and we’re here to help you find pieces that fit yours.
+                    </li>
+                </ul>
+            </section>
+
+            <!-- Values -->
+            <section class="about-block about-values">
+                <h2 class="about-page-title">What We Stand For</h2>
+                <ul class="about-values-list">
+                    <li><strong>Quality</strong> — We choose and deliver products we believe in.</li>
+                    <li><strong>Authenticity</strong> — Real products, real service, no shortcuts.</li>
+                    <li><strong>Accessibility</strong> — Great style and service for everyone.</li>
+                    <li><strong>Community</strong> — We grow with our customers and our team.</li>
+                </ul>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer – same structure as index for consistent styling -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-top">
+                <div class="footer-left">
+                    <h3>Join Our Circle</h3>
+                    <div class="footer-newsletter">
+                        <input type="email" id="footerEmailAbout" placeholder="Email" aria-label="Email for newsletter">
+                        <button type="button" onclick="var e=document.getElementById('footerEmailAbout');if(e&&e.value){alert('Thanks for signing up!');e.value='';}else{alert('Please enter your email.');}" aria-label="Subscribe">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </button>
+                    </div>
+                    <h3>Follow Us</h3>
+                    <div class="footer-social-row">
+                        <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://www.instagram.com/slaystation" target="_blank" rel="noopener noreferrer" title="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="https://www.tiktok.com" target="_blank" rel="noopener noreferrer" title="TikTok"><i class="fab fa-tiktok"></i></a>
+                        <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" title="X"><i class="fab fa-x-twitter"></i></a>
+                        <a href="https://wa.me/254719563607" target="_blank" rel="noopener noreferrer" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                    <div class="footer-app-block">
+                        <h3>Download the App</h3>
+                        <div class="footer-app-buttons">
+                            <a href="#" target="_blank" rel="noopener noreferrer" class="footer-app-btn">
+                                <span class="footer-app-btn-icon"><i class="fab fa-apple"></i></span>
+                                <span class="footer-app-btn-text">
+                                    <span>Download on the</span>
+                                    <span>App Store</span>
+                                </span>
+                            </a>
+                            <a href="#" target="_blank" rel="noopener noreferrer" class="footer-app-btn">
+                                <span class="footer-app-btn-icon"><i class="fab fa-google-play"></i></span>
+                                <span class="footer-app-btn-text">
+                                    <span>GET IT ON</span>
+                                    <span>Google Play</span>
+                                </span>
+                            </a>
+                        </div>
+                        <p class="footer-app-disclaimer">Android and Google Play are trademarks of Google LLC.</p>
+                    </div>
+                </div>
+                <div class="footer-columns">
+                <div class="footer-col">
+                    <h3>Customer Service</h3>
+                    <ul>
+                        <li><a href="index.html#contact">Contact Us</a></li>
+                        <li><a href="login.html">My Account</a></li>
+                        <li><a href="index.html#products">Alerts</a></li>
+                        <li><a href="index.html#contact">Shipping</a></li>
+                        <li><a href="https://help.fashionphile.com/s/" target="_blank" rel="noopener noreferrer">FAQ</a></li>
+                        <li><a href="index.html#contact">Give Us feedback</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h3>Shop with Us</h3>
+                    <ul>
+                        <li><a href="index.html#products">Bags</a></li>
+                        <li><a href="wallets.html">Wallets</a></li>
+                        <li><a href="accessories.html">Accessories</a></li>
+                        <li><a href="lip-care.html">Lip Products</a></li>
+                        <li><a href="fragrances.html">Fragrances</a></li>
+                        <li><a href="index.html#contact">Gift Cards</a></li>
+                        <li><a href="index.html#contact">Personal Shopping</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h3>About Us</h3>
+                    <ul>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="index.html#contact">Locations</a></li>
+                        <li><a href="index.html#contact">Careers</a></li>
+                        <li><a href="index.html#contact">Sustainability</a></li>
+                        <li><a href="index.html#contact">Influencer Program</a></li>
+                    </ul>
+                </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div class="footer-bottom-left">
+                    <p class="footer-copyright">&copy; 2025 Slay Station. All rights reserved.</p>
+                </div>
+                <div class="footer-legal">
+                    <a href="index.html#contact">Accessibility Statement</a>
+                    <a href="index.html#contact">Privacy Policy</a>
+                    <a href="index.html#contact">Terms of use</a>
+                    <a href="index.html#contact">Your privacy choices</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <button type="button" class="footer-help-widget" id="helpChatToggle" aria-label="Need Help?">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Need Help?
+    </button>
+    <div id="helpChatBox" class="help-chat-box" aria-hidden="true">
+        <div class="help-chat-header">
+            <span class="help-chat-header-title"><strong>Slay Station</strong> Offline Chat</span>
+            <button type="button" class="help-chat-close" id="helpChatClose" aria-label="Close chat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg>
+            </button>
+        </div>
+        <div class="help-chat-body">
+            <div class="help-chat-msg-bubble">
+                <div class="help-chat-msg-brand">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    Slay Station
+                </div>
+                <p class="help-chat-msg-text">Welcome to Slay Station! Our live chat agents are either assisting other clients or you've reached us outside of business hours (Every day, 7am–7pm EAT). Please select an option below to find helpful resources or leave us a message, and we'll get back to you as soon as possible.</p>
+                <div class="help-chat-buttons">
+                    <a href="https://help.fashionphile.com/s/" target="_blank" rel="noopener noreferrer">Explore Our FAQs</a>
+                    <a href="index.html#contact">Leave a Message</a>
+                </div>
+            </div>
+        </div>
+        <div class="help-chat-footer">just now</div>
+    </div>
+    <script>
+        (function(){var t=document.getElementById('helpChatToggle'),b=document.getElementById('helpChatBox'),c=document.getElementById('helpChatClose');if(t&&b){t.addEventListener('click',function(){b.classList.toggle('is-open');b.setAttribute('aria-hidden',b.classList.contains('is-open')?'false':'true');});if(c)c.addEventListener('click',function(){b.classList.remove('is-open');b.setAttribute('aria-hidden','true');});}})();
+    </script>
+    <script src="auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof updateAuthUI === 'function') updateAuthUI();
+            if (typeof loadCartFromStorage === 'function') { loadCartFromStorage(); }
+            if (typeof updateCartCount === 'function') updateCartCount();
+            // Mobile menu toggle (same as index – uses navMenuDrawer so drawer slides in)
+            var mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            var navMenu = document.getElementById('navMenu');
+            var navMenuDrawer = document.getElementById('navMenuDrawer');
+            var menuPanel = navMenuDrawer || navMenu;
+            if (mobileMenuToggle && navMenu && menuPanel) {
+                function closeMenu() {
+                    mobileMenuToggle.classList.remove('active');
+                    navMenu.classList.remove('active');
+                    if (navMenuDrawer) navMenuDrawer.classList.remove('active');
+                    document.body.classList.remove('menu-open');
+                }
+                function openMenu() {
+                    mobileMenuToggle.classList.add('active');
+                    navMenu.classList.add('active');
+                    if (navMenuDrawer) navMenuDrawer.classList.add('active');
+                    document.body.classList.add('menu-open');
+                }
+                mobileMenuToggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (menuPanel.classList.contains('active')) closeMenu();
+                    else openMenu();
+                });
+                menuPanel.querySelectorAll('a').forEach(function(link) {
+                    link.addEventListener('click', function(e) {
+                        closeMenu();
+                        var href = link.getAttribute('href');
+                        if (href && href !== '#' && !href.startsWith('#')) {
+                            e.preventDefault();
+                            window.location.href = href;
+                        }
+                    });
+                });
+                document.addEventListener('click', function(event) {
+                    if (menuPanel.classList.contains('active') && !mobileMenuToggle.contains(event.target) && !menuPanel.contains(event.target)) closeMenu();
+                });
+            }
+        });
+    </script>
+</body>
+</html>

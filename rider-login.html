@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rider Login - Slay Station</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Google Sign-In API -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <style>
+        /* Rider login – Google-only, main-page style */
+        body { margin: 0; font-family: 'Poppins', sans-serif; }
+        .rider-login-wrap {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+        }
+        .rider-login-left {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            padding: 2rem;
+        }
+        .rider-login-card {
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+        }
+        .rider-login-card .rider-logo-text {
+            font-size: 1.75rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-pink, #ec4899), var(--purple, #8b5cf6));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.25rem;
+            letter-spacing: -0.02em;
+        }
+        .rider-login-card .rider-subtitle {
+            color: #555;
+            font-size: 1rem;
+            margin-bottom: 1.75rem;
+        }
+        .rider-login-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1rem;
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 12px;
+            color: #0369a1;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+        #riderLoginMessages { margin-bottom: 1rem; }
+        #googleSignInButton {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+        #googleSignInButton > div { width: 100% !important; max-width: 100% !important; }
+        #googleSignInButton iframe {
+            border-radius: 12px !important;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08) !important;
+            transition: box-shadow 0.2s, transform 0.2s !important;
+        }
+        #googleSignInButton iframe:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12) !important;
+            transform: translateY(-2px) !important;
+        }
+        .custom-google-btn {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            background: #fff;
+            color: #1f2937;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+        .custom-google-btn:hover {
+            background: #f9fafb;
+            border-color: #d1d5db;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .custom-google-btn svg { width: 20px; height: 20px; }
+        .rider-login-origin-help {
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            background: #fffbeb;
+            border: 1px solid #fcd34d;
+            border-radius: 12px;
+            text-align: left;
+        }
+        .rider-back-wrap {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #eee;
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            color: #6b7280;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+        .back-link:hover { color: var(--primary-pink, #ec4899); }
+        .rider-login-right {
+            flex: 1;
+            min-height: 50vh;
+            background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 50%, #f5f3ff 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .rider-login-right-inner {
+            text-align: center;
+            max-width: 320px;
+        }
+        .rider-login-right-inner .rider-icon-hero {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 4px 12px rgba(236, 72, 153, 0.2));
+        }
+        .rider-login-right-inner p {
+            color: #6b7280;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+        @media (max-width: 768px) {
+            .rider-login-wrap { flex-direction: column; }
+            .rider-login-right { min-height: 280px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="rider-login-wrap">
+        <div class="rider-login-left">
+            <div class="rider-login-card">
+                <h1 class="rider-logo-text">Slay Station Rider</h1>
+                <p class="rider-subtitle">Sign in with Google to access your deliveries</p>
+                
+                <div class="rider-login-badge">🔒 Authorized riders only</div>
+                
+                <div id="riderLoginMessages"></div>
+                
+                <div id="googleSignInButton"></div>
+                
+                <button type="button" class="custom-google-btn" id="customGoogleBtn" onclick="triggerGoogleSignIn()" style="display: none;">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    <span>Sign in with Google</span>
+                </button>
+                
+                <div class="rider-login-origin-help">
+                    <p style="margin: 0 0 0.5rem 0; font-weight: 600; color: #92400e; font-size: 0.9rem;">⚠️ Can’t log in? “Access blocked” or “origin not allowed”?</p>
+                    <p style="margin: 0; color: #666; font-size: 0.85rem;">This page uses the OAuth client whose <strong>Client ID ends with <code style="background: #fff; padding: 0 0.2rem;">…r1llf24</code></strong>. In Console, edit <em>that</em> client and add the origin below.</p>
+                    <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.85rem;"><strong>Add this exact origin</strong> (no trailing slash):</p>
+                    <div style="margin: 0.5rem 0 0 0; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                        <code id="riderCurrentOrigin" style="background: #f0f0f0; padding: 0.35rem 0.6rem; border-radius: 6px; font-size: 0.85rem; word-break: break-all; flex: 1; min-width: 0;">...</code>
+                        <button type="button" id="riderCopyOriginBtn" style="flex-shrink: 0; padding: 0.35rem 0.75rem; background: #0369a1; color: #fff; border: none; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer;">Copy</button>
+                    </div>
+                    <p style="margin: 0.75rem 0 0 0; color: #555; font-size: 0.8rem;"><strong>Steps:</strong> 1) Click Copy. 2) Open <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener" style="color: #0369a1;">Google Cloud Console → Credentials</a>. 3) Click the <strong>OAuth 2.0 Client ID</strong> whose ID ends with <strong>r1llf24</strong>. 4) Under <strong>Authorized JavaScript origins</strong>, click <strong>+ Add URI</strong>, paste, <strong>Save</strong>. 5) Wait 1–2 minutes, then refresh this page and try again.</p>
+                    <details style="margin-top: 0.75rem;">
+                        <summary style="cursor: pointer; font-weight: 600; color: #92400e; font-size: 0.85rem;">Still not working? Check this</summary>
+                        <ul style="margin: 0.5rem 0 0 0; padding-left: 1.25rem; color: #555; font-size: 0.8rem; line-height: 1.6;">
+                            <li>You must edit the client whose Client ID ends with <strong>r1llf24</strong> (not a different OAuth client).</li>
+                            <li>Origin must match exactly: same scheme (http vs https), same port, <strong>no trailing slash</strong>.</li>
+                            <li>Click <strong>Save</strong> in Console and wait 1–2 minutes.</li>
+                            <li>Try in a <strong>private/incognito</strong> window, or clear cache and hard refresh (Ctrl+Shift+R).</li>
+                            <li>Open DevTools (F12) → Console and look for the exact error; it will say which origin Google received.</li>
+                        </ul>
+                    </details>
+                </div>
+                
+                <div class="rider-back-wrap">
+                    <a href="index.html" class="back-link">← Back to website</a>
+                </div>
+            </div>
+        </div>
+        <div class="rider-login-right">
+            <div class="rider-login-right-inner">
+                <div class="rider-icon-hero" aria-hidden="true">🏍️</div>
+                <p>Deliver with Slay Station. Sign in with your authorized Google account to view and complete orders.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+    (function () {
+        var RIDER_AUTH_EMAILS = ['preston.mwendwa@riarauniversity.ac.ke', 'kangethekelvin56@gmail.com', 'prestonmugo83@gmail.com'];
+        window.authenticateRider = function (email) {
+            var e = (email || '').toLowerCase().trim();
+            if (RIDER_AUTH_EMAILS.indexOf(e) !== -1) {
+                try { localStorage.setItem('riderEmail', e); } catch (err) {}
+                return true;
+            }
+            return false;
+        };
+    })();
+    </script>
+    <script>
+        // Allowed rider emails - only these can login via Google
+        const ALLOWED_RIDER_EMAILS = [
+            'preston.mwendwa@riarauniversity.ac.ke',
+            'kangethekelvin56@gmail.com',
+            'prestonmugo83@gmail.com'
+        ];
+        
+        // Fallback function to trigger Google Sign-In (global scope)
+        function triggerGoogleSignIn() {
+            if (typeof google !== 'undefined' && google.accounts) {
+                showError('Please set up Google OAuth Client ID in the code. See GOOGLE_OAUTH_SETUP.md for instructions.');
+            } else {
+                showError('Google Sign-In is not available. Please check your internet connection and try again.');
+            }
+        }
+        
+        // Make function globally available
+        window.triggerGoogleSignIn = triggerGoogleSignIn;
+        
+        // Error and success message functions (global scope)
+        function showError(message) {
+            let errorDiv = document.getElementById('errorMessage');
+            if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.id = 'errorMessage';
+                errorDiv.style.cssText = 'background: #fef2f2; color: #b91c1c; padding: 0.75rem 1rem; border-radius: 12px; margin-bottom: 1rem; border: 1px solid #fecaca; text-align: center; font-weight: 600; font-size: 0.9rem;';
+            }
+            errorDiv.textContent = message;
+            const container = document.getElementById('riderLoginMessages');
+            if (container && !container.contains(errorDiv)) {
+                container.innerHTML = '';
+                container.appendChild(errorDiv);
+            }
+            setTimeout(function() {
+                if (errorDiv.parentNode) errorDiv.remove();
+            }, 6000);
+        }
+        
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.style.cssText = 'background: #e8f5e9; color: #2e7d32; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; border: 2px solid #4caf50; text-align: center; font-weight: 600; position: fixed; top: 100px; left: 50%; transform: translateX(-50%); z-index: 10000; min-width: 300px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);';
+            successDiv.textContent = message;
+            document.body.appendChild(successDiv);
+            
+            setTimeout(() => {
+                if (successDiv.parentNode) {
+                    successDiv.remove();
+                }
+            }, 3000);
+        }
+        
+        // Make functions globally available
+        window.showError = showError;
+        window.showSuccess = showSuccess;
+        
+        // Wait for scripts and Google Sign-In to load
+        document.addEventListener('DOMContentLoaded', function() {
+            var originEl = document.getElementById('riderCurrentOrigin');
+            var origin = typeof location !== 'undefined' ? location.origin : '';
+            if (originEl) originEl.textContent = origin || '(unknown)';
+            var copyBtn = document.getElementById('riderCopyOriginBtn');
+            if (copyBtn && origin) {
+                copyBtn.addEventListener('click', function() {
+                    navigator.clipboard.writeText(origin).then(function() {
+                        var t = copyBtn.textContent;
+                        copyBtn.textContent = 'Copied!';
+                        copyBtn.style.background = '#059669';
+                        setTimeout(function() { copyBtn.textContent = t; copyBtn.style.background = '#0369a1'; }, 1500);
+                    });
+                });
+            }
+            function initRiderGoogleSignIn() {
+                if (typeof google === 'undefined' || !google.accounts) {
+                    console.warn('Google Sign-In API not loaded. Showing fallback button.');
+                    var cgb = document.getElementById('customGoogleBtn');
+                    if (cgb) cgb.style.display = 'flex';
+                    return;
+                }
+                
+                try {
+                    // Google OAuth Client ID
+                    const GOOGLE_CLIENT_ID = '386064572538-6p7o1k0j2s2emg1gud08626e3r1llf24.apps.googleusercontent.com';
+                    
+                    // Check if Client ID is still placeholder
+                    if (GOOGLE_CLIENT_ID.includes('YOUR_GOOGLE_CLIENT_ID')) {
+                        console.warn('Google Client ID not configured. Please set up OAuth credentials.');
+                        var cgbPh = document.getElementById('customGoogleBtn');
+                        var gBtnPh = document.getElementById('googleSignInButton');
+                        if (cgbPh) cgbPh.style.display = 'flex';
+                        if (gBtnPh) gBtnPh.innerHTML = `
+                            <div style="background: #fff3cd; border: 2px solid #ffc107; border-radius: 10px; padding: 1rem; text-align: center;">
+                                <p style="margin: 0; color: #856404; font-weight: 600;">⚠️ Google Sign-In Not Configured</p>
+                                <p style="margin: 0.5rem 0 0 0; color: #856404; font-size: 0.9rem;">Please set up Google OAuth Client ID. See GOOGLE_OAUTH_SETUP.md for instructions.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    var gBtnMount = document.getElementById('googleSignInButton');
+                    if (!gBtnMount) return;
+                    google.accounts.id.initialize({
+                        client_id: GOOGLE_CLIENT_ID,
+                        callback: handleGoogleSignIn,
+                        auto_select: false,
+                        cancel_on_tap_outside: true
+                    });
+                    
+                    // Render Google Sign-In button with custom styling
+                    google.accounts.id.renderButton(
+                        gBtnMount,
+                        {
+                            theme: 'outline',
+                            size: 'large',
+                            width: 320,
+                            text: 'signin_with',
+                            locale: 'en',
+                            shape: 'rectangular'
+                        }
+                    );
+                    
+                    // Style the rendered button after it's created
+                    setTimeout(() => {
+                        const googleButton = document.querySelector('#googleSignInButton iframe');
+                        if (googleButton) {
+                            googleButton.style.borderRadius = '10px';
+                            googleButton.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
+                            googleButton.style.transition = 'all 0.3s ease';
+                            
+                            // Add hover effect
+                            googleButton.addEventListener('mouseenter', function() {
+                                this.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.15)';
+                                this.style.transform = 'translateY(-2px)';
+                            });
+                            
+                            googleButton.addEventListener('mouseleave', function() {
+                                this.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
+                                this.style.transform = 'translateY(0)';
+                            });
+                        }
+                    }, 200);
+                    
+                    // Also show One Tap prompt (optional)
+                    google.accounts.id.prompt((notification) => {
+                        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                            // One Tap not available or skipped
+                        }
+                    });
+                } catch (error) {
+                    console.error('Google Sign-In initialization error:', error);
+                    var cgb2 = document.getElementById('customGoogleBtn');
+                    if (cgb2) cgb2.style.display = 'flex';
+                }
+            }
+            if (document.readyState === 'complete') initRiderGoogleSignIn();
+            else window.addEventListener('load', initRiderGoogleSignIn);
+            
+            // Also add event listener as backup
+            const customGoogleBtn = document.getElementById('customGoogleBtn');
+            if (customGoogleBtn) {
+                customGoogleBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    triggerGoogleSignIn();
+                });
+            }
+        });
+        
+        // Handle Google Sign-In callback
+        function handleGoogleSignIn(response) {
+            try {
+                // Decode the JWT token
+                const payload = JSON.parse(atob(response.credential.split('.')[1]));
+                const email = payload.email.toLowerCase();
+                const name = payload.name || payload.given_name || 'Rider';
+                
+                // Check if email is in allowed list
+                if (!ALLOWED_RIDER_EMAILS.includes(email)) {
+                    showError('Access Denied: This email is not authorized for rider access. Please contact admin. 🔒');
+                    google.accounts.id.disableAutoSelect();
+                    return;
+                }
+                
+                // Check if user exists in our system
+                const users = JSON.parse(localStorage.getItem('slayStationUsers') || '[]');
+                let user = users.find(u => u.email.toLowerCase() === email);
+                
+                if (!user) {
+                    // Create new rider account automatically
+                    const newUser = {
+                        id: Date.now(),
+                        email: email,
+                        password: null, // No password for Google login
+                        name: name,
+                        phone: '',
+                        points: 0,
+                        orders: [],
+                        createdAt: new Date().toISOString(),
+                        level: 'Bronze',
+                        loginMethod: 'google',
+                        googleId: payload.sub
+                    };
+                    
+                    users.push(newUser);
+                    localStorage.setItem('slayStationUsers', JSON.stringify(users));
+                    user = newUser;
+                } else {
+                    // Update user with Google info if needed
+                    if (!user.loginMethod) {
+                        user.loginMethod = 'google';
+                        user.googleId = payload.sub;
+                        const userIndex = users.findIndex(u => u.id === user.id);
+                        if (userIndex !== -1) {
+                            users[userIndex] = user;
+                            localStorage.setItem('slayStationUsers', JSON.stringify(users));
+                        }
+                    }
+                }
+                
+                // Set current user session
+                localStorage.setItem('slayStationCurrentUser', JSON.stringify(user));
+                localStorage.setItem('riderEmail', email);
+                
+                showSuccess('Welcome back! Redirecting to rider dashboard...');
+                
+                // Redirect to rider dashboard
+                setTimeout(() => {
+                    window.location.href = 'rider-dashboard.html';
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Google Sign-In error:', error);
+                showError('An error occurred during Google Sign-In. Please try again.');
+            }
+        }
+        
+        function handleRiderLogin(e) {
+            e.preventDefault();
+            
+            const emailInput = document.getElementById('riderEmail');
+            const passwordInput = document.getElementById('riderPassword');
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            
+            const email = emailInput.value.trim().toLowerCase();
+            const password = passwordInput.value;
+            
+            // Validation
+            if (!email || !email.includes('@')) {
+                showError('Please enter a valid email address');
+                emailInput.focus();
+                return;
+            }
+            
+            if (!password || password.length < 6) {
+                showError('Password must be at least 6 characters long');
+                passwordInput.focus();
+                return;
+            }
+            
+            // Check if email is in allowed rider list
+            const RIDER_EMAILS = [
+                'preston.mwendwa@riarauniversity.ac.ke',
+                'kangethekelvin56@gmail.com',
+                'prestonmugo83@gmail.com'
+            ];
+            
+            if (!RIDER_EMAILS.includes(email)) {
+                showError('Access Denied: This email is not authorized for rider access. Please contact admin. 🔒');
+                emailInput.focus();
+                return;
+            }
+            
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Logging in...';
+            
+            // Check if auth.js is loaded
+            if (typeof window.login === 'undefined') {
+                showError('Authentication system not loaded. Please refresh the page and try again.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Login as Rider 🏍️';
+                return;
+            }
+            
+            Promise.resolve(window.login(email, password, true)).then(function (loginResult) {
+                if (loginResult && loginResult.success) {
+                    if (typeof window.authenticateRider === 'function') {
+                        window.authenticateRider(email);
+                    } else {
+                        try { localStorage.setItem('riderEmail', email); } catch (e) {}
+                    }
+                    showSuccess('Welcome back! Redirecting to rider dashboard...');
+                    setTimeout(function () {
+                        window.location.href = 'rider-dashboard.html';
+                    }, 1000);
+                } else {
+                    var users = JSON.parse(localStorage.getItem('slayStationUsers') || '[]');
+                    var userExists = users.find(function (u) { return (u.email || '').toLowerCase() === email; });
+                    if (userExists) {
+                        showError('Invalid password. Please try again.');
+                        passwordInput.value = '';
+                        passwordInput.focus();
+                    } else {
+                        showError('Account not found. Please sign up first or contact admin for access.');
+                        emailInput.focus();
+                    }
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Login as Rider 🏍️';
+                }
+            }).catch(function (error) {
+                console.error('Rider login error:', error);
+                showError('An error occurred. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Login as Rider 🏍️';
+            });
+        }
+        
+        // Forgot Password Functions
+        let resetEmail = '';
+        
+        function openForgotPasswordModal() {
+            const modal = document.getElementById('forgotPasswordModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        function closeForgotPasswordModal() {
+            const modal = document.getElementById('forgotPasswordModal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+                // Reset form
+                const form = document.getElementById('forgotPasswordForm');
+                const resetSection = document.getElementById('resetPasswordSection');
+                const emailSentSection = document.getElementById('emailSentSection');
+                if (form) {
+                    form.reset();
+                    form.style.display = 'block';
+                }
+                if (resetSection) resetSection.style.display = 'none';
+                if (emailSentSection) emailSentSection.style.display = 'none';
+                resetEmail = '';
+            }
+        }
+        
+        async function handleForgotPassword(e) {
+            e.preventDefault();
+            
+            const emailInput = document.getElementById('forgotEmail');
+            const email = emailInput.value.trim().toLowerCase();
+            
+            if (!email || !email.includes('@')) {
+                showError('Please enter a valid email address');
+                if (emailInput) emailInput.focus();
+                return;
+            }
+            
+            // Check if email is in allowed rider list
+            if (!ALLOWED_RIDER_EMAILS.includes(email)) {
+                showError('This email is not authorized for rider access. Please contact admin.');
+                if (emailInput) emailInput.focus();
+                return;
+            }
+            
+            // Check if user exists
+            const users = JSON.parse(localStorage.getItem('slayStationUsers') || '[]');
+            const user = users.find(u => u.email.toLowerCase() === email);
+            
+            if (!user) {
+                showError('Account not found. Please sign up first or contact admin.');
+                if (emailInput) emailInput.focus();
+                return;
+            }
+            
+            // Generate reset token
+            const resetToken = generateResetToken();
+            const resetExpiry = Date.now() + (24 * 60 * 60 * 1000); // 24 hours from now
+            
+            // Store reset token in localStorage (in production, this would be stored on server)
+            // Use lowercase email as key for consistency
+            const resetTokens = JSON.parse(localStorage.getItem('slayStationResetTokens') || '{}');
+            resetTokens[email.toLowerCase()] = {
+                token: resetToken,
+                expiry: resetExpiry,
+                createdAt: Date.now()
+            };
+            localStorage.setItem('slayStationResetTokens', JSON.stringify(resetTokens));
+            console.log('Reset token stored for:', email.toLowerCase());
+            
+            // Reset link must match where this site is hosted (Vercel, Firebase Hosting, or localhost)
+            var deployedUrl = (typeof window !== 'undefined' && window.location && window.location.protocol !== 'file:' && window.location.hostname)
+                ? window.location.origin.replace(/\/$/, '')
+                : 'https://slaystation-ke.vercel.app';
+            const resetLink = `${deployedUrl}/reset-password.html?token=${encodeURIComponent(resetToken)}&email=${encodeURIComponent(email)}`;
+            console.log('Generated reset link:', resetLink);
+            
+            // Option 1: Send via EmailJS (No backend needed!)
+            const EMAILJS_PUBLIC_KEY = 'S28nx8TWnsKEpl8vV';
+            const EMAILJS_SERVICE_ID = 'service_xc8nrxm';
+            const EMAILJS_TEMPLATE_ID = 'template_gaq4yle';
+            
+            // Option 2: Send via Backend API (if you prefer)
+            const EMAIL_SERVICE_URL = 'https://your-email-service.onrender.com/api/send-reset-email'; // Your backend URL
+            
+            // Try EmailJS first (easier, no backend needed)
+            if (typeof emailjs !== 'undefined') {
+                try {
+                    emailjs.init(EMAILJS_PUBLIC_KEY);
+                    
+                    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+                        to_email: email,
+                        reset_link: resetLink,
+                        user_email: email
+                    });
+                    
+                    showSuccess('Password reset email sent! Please check your inbox.');
+                    
+                    // Hide form and show success
+                    const form = document.getElementById('forgotPasswordForm');
+                    const emailSentSection = document.getElementById('emailSentSection');
+                    if (form) form.style.display = 'none';
+                    if (emailSentSection) {
+                        emailSentSection.style.display = 'block';
+                        document.getElementById('sentEmailAddress').textContent = email;
+                        document.getElementById('resetLink').href = resetLink;
+                        document.getElementById('resetLink').textContent = resetLink;
+                    }
+                    return;
+                } catch (emailjsError) {
+                    console.warn('EmailJS error, trying backend fallback:', emailjsError);
+                }
+            }
+            
+            // Fallback: Try backend API
+            if (EMAIL_SERVICE_URL !== 'https://your-email-service.onrender.com/api/send-reset-email') {
+                try {
+                    const response = await fetch(EMAIL_SERVICE_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            email: email,
+                            resetLink: resetLink
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showSuccess('Password reset email sent! Please check your inbox.');
+                        const form = document.getElementById('forgotPasswordForm');
+                        const emailSentSection = document.getElementById('emailSentSection');
+                        if (form) form.style.display = 'none';
+                        if (emailSentSection) {
+                            emailSentSection.style.display = 'block';
+                            document.getElementById('sentEmailAddress').textContent = email;
+                            document.getElementById('resetLink').href = resetLink;
+                            document.getElementById('resetLink').textContent = resetLink;
+                        }
+                        return;
+                    }
+                } catch (backendError) {
+                    console.warn('Backend email service error:', backendError);
+                }
+            }
+            
+            // Final fallback: Show link on screen
+            showSuccess('Password reset link generated! Check the link below.');
+            const form = document.getElementById('forgotPasswordForm');
+            const emailSentSection = document.getElementById('emailSentSection');
+            if (form) form.style.display = 'none';
+            if (emailSentSection) {
+                emailSentSection.style.display = 'block';
+                document.getElementById('sentEmailAddress').textContent = email;
+                document.getElementById('resetLink').href = resetLink;
+                document.getElementById('resetLink').textContent = resetLink;
+            }
+        }
+        
+        function generateResetToken() {
+            // Generate a secure random token
+            const array = new Uint8Array(32);
+            crypto.getRandomValues(array);
+            return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+        }
+        
+        function confirmPasswordReset() {
+            const newPasswordInput = document.getElementById('newPassword');
+            const confirmPasswordInput = document.getElementById('confirmPassword');
+            
+            if (!newPasswordInput || !confirmPasswordInput) return;
+            
+            const newPassword = newPasswordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+            
+            if (!newPassword || newPassword.length < 6) {
+                showError('Password must be at least 6 characters long');
+                newPasswordInput.focus();
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                showError('Passwords do not match. Please try again.');
+                confirmPasswordInput.focus();
+                return;
+            }
+            
+            // Update password in localStorage
+            const users = JSON.parse(localStorage.getItem('slayStationUsers') || '[]');
+            const userIndex = users.findIndex(u => u.email.toLowerCase() === resetEmail);
+            
+            if (userIndex !== -1) {
+                users[userIndex].password = newPassword;
+                localStorage.setItem('slayStationUsers', JSON.stringify(users));
+                
+                showSuccess('Password reset successfully! You can now login with your new password.');
+                
+                // Close modal after a delay
+                setTimeout(() => {
+                    closeForgotPasswordModal();
+                    // Pre-fill email in login form
+                    const emailInput = document.getElementById('riderEmail');
+                    if (emailInput) {
+                        emailInput.value = resetEmail;
+                        emailInput.focus();
+                    }
+                }, 2000);
+            } else {
+                showError('Error updating password. Please try again.');
+            }
+        }
+        
+        // Close modal when clicking outside
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('forgotPasswordModal');
+            if (modal && e.target === modal) {
+                closeForgotPasswordModal();
+            }
+        });
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('forgotPasswordModal');
+                if (modal && modal.style.display === 'flex') {
+                    closeForgotPasswordModal();
+                }
+            }
+        });
+        
+        // Toggle Password Visibility
+        function togglePasswordVisibility(inputId, buttonId) {
+            const passwordInput = document.getElementById(inputId);
+            const toggleButton = document.getElementById(buttonId);
+            
+            if (passwordInput && toggleButton) {
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    toggleButton.textContent = '🙈';
+                    toggleButton.title = 'Hide Password';
+                } else {
+                    passwordInput.type = 'password';
+                    toggleButton.textContent = '👁️';
+                    toggleButton.title = 'Show Password';
+                }
+            }
+        }
+        
+        // Also toggle for new password fields in forgot password modal
+        function toggleNewPasswordVisibility(inputId, buttonId) {
+            const passwordInput = document.getElementById(inputId);
+            const toggleButton = document.getElementById(buttonId);
+            
+            if (passwordInput && toggleButton) {
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    toggleButton.textContent = '🙈';
+                    toggleButton.title = 'Hide Password';
+                } else {
+                    passwordInput.type = 'password';
+                    toggleButton.textContent = '👁️';
+                    toggleButton.title = 'Show Password';
+                }
+            }
+        }
+    </script>
+</body>
+</html>

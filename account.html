@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account - Slay Station</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="page-account">
+    <div class="promo-bar">
+        <div class="promo-bar-left"><a href="index.html#contact">Find a Location</a></div>
+        <div class="promo-bar-messages">
+            <p class="promo-bar-text promo-bar-message active">Online payments available</p>
+            <p class="promo-bar-text promo-bar-message">Delivery across Kenya and East Africa</p>
+            <p class="promo-bar-text promo-bar-message">Visit us at Westlands Market, Shop B15</p>
+        </div>
+        <div class="promo-bar-right">
+            <button type="button" class="promo-bar-pause" id="promoBarPause" aria-label="Pause promo"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg></button>
+        </div>
+    </div>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-mobile-left">
+                <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+            </div>
+            <div class="nav-logo-wrap">
+                <div class="logo"><a href="index.html" class="logo-link"><span class="logo-text">Slay Station</span></a></div>
+            </div>
+            <div class="nav-menu-drawer" id="navMenuDrawer">
+                <ul class="nav-menu" id="navMenu">
+                    <li><a href="index.html#home">New Arrivals</a></li>
+                    <li><a href="index.html#products">Bags</a></li>
+                    <li><a href="wallets.html">Wallets</a></li>
+                    <li><a href="accessories.html">Accessories</a></li>
+                    <li><a href="lip-care.html">Lip Care</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="index.html#contact">Contact</a></li>
+                </ul>
+                <div class="nav-menu-footer">
+                    <a href="login.html" class="nav-menu-signin">Sign in</a>
+                    <a href="signup.html" class="nav-menu-signup">Sign up</a>
+                    <a href="index.html#contact" class="nav-menu-find-location">Find a Location</a>
+                </div>
+            </div>
+            <div class="nav-actions">
+                <button type="button" id="navSearchBtn" class="nav-btn-round nav-btn-search" title="Search" aria-label="Search products" onclick="var b=document.getElementById('navSearchBar');var i=document.getElementById('navSearchInput');if(b&&i){document.body.classList.add('search-open');var n=document.querySelector('.navbar');if(n)n.classList.add('search-open');b.setAttribute('aria-hidden','false');i.focus();}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></button>
+                <div class="nav-btn-round nav-btn-wishlist" onclick="typeof toggleWishlist==='function'&&toggleWishlist()" title="Wishlist">
+                    <svg class="nav-heart-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    <span class="nav-badge" id="wishlistCount">0</span>
+                </div>
+                <a href="account.html" id="myAccountBtn" class="nav-btn-round nav-btn-user" title="My Account" style="display: none;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M6 21c0-3.314 2.686-6 6-6s6 2.686 6 6"/></svg>
+                </a>
+                <a href="login.html" id="loginBtn" class="nav-btn-round nav-btn-user" title="Account">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M6 21c0-3.314 2.686-6 6-6s6 2.686 6 6"/></svg>
+                </a>
+                <div class="nav-btn-round nav-btn-cart" onclick="typeof toggleCart==='function'&&toggleCart()" title="Cart">
+                    <svg class="nav-cart-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                    <span class="nav-badge" id="cartCount">0</span>
+                </div>
+            </div>
+            <div class="nav-search-bar" id="navSearchBar" aria-hidden="true">
+                <div class="nav-search-bar-inner">
+                    <input type="text" class="nav-search-input" id="navSearchInput" placeholder="Search products..." aria-label="Search products" autocomplete="off">
+                    <button type="button" class="nav-search-close" id="navSearchClose" aria-label="Close search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="mobile-search-bar">
+        <div class="mobile-search-wrap">
+            <input type="text" id="mobileProductSearch" placeholder="Search for..." class="mobile-search-input" aria-label="Search products">
+            <button type="button" class="mobile-search-btn" onclick="window.location.href='index.html#products';" aria-label="Search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></button>
+        </div>
+    </div>
+
+    <main class="account-page">
+        <div class="account-page-inner">
+            <h1 class="account-page-title">My Account</h1>
+            <p class="account-page-subtitle">Manage your profile and view your rewards.</p>
+
+            <div id="accountContent" class="account-content">
+                <!-- Tier & Points (Fashionphile-style) -->
+                <section class="account-section account-tier-points">
+                    <div class="account-tier-badge" id="accountTierBadge">Bronze</div>
+                    <div class="account-points-block">
+                        <span class="account-points-label">Points earned</span>
+                        <span class="account-points-value" id="accountPointsValue">0</span>
+                    </div>
+                </section>
+
+                <!-- Profile details -->
+                <section class="account-section account-profile">
+                    <h2 class="account-section-title">Profile details</h2>
+                    <div class="account-form">
+                        <label class="account-label">Full name</label>
+                        <input type="text" id="accountName" class="account-input" placeholder="Your name" autocomplete="name">
+                        <label class="account-label">Email</label>
+                        <input type="email" id="accountEmail" class="account-input account-input-readonly" readonly placeholder="your@email.com">
+                        <label class="account-label">Phone</label>
+                        <input type="tel" id="accountPhone" class="account-input" placeholder="Phone (optional)" autocomplete="tel">
+                    </div>
+                </section>
+
+                <!-- Points history -->
+                <section class="account-section account-history">
+                    <h2 class="account-section-title">Points history</h2>
+                    <div id="accountPointsHistoryList" class="account-points-history-list"></div>
+                </section>
+
+                <!-- Actions -->
+                <section class="account-section account-actions">
+                    <a href="order-history.html" class="account-link account-link-order-history">Order History</a>
+                    <div class="account-buttons">
+                        <button type="button" class="account-btn account-btn-save" id="accountSaveBtn">Save changes</button>
+                        <button type="button" class="account-btn account-btn-outline" id="accountLogoutBtn">Log out</button>
+                    </div>
+                </section>
+            </div>
+
+            <div id="accountLoginPrompt" class="account-login-prompt" style="display: none;">
+                <p>You need to be signed in to view your account.</p>
+                <a href="login.html?redirect=account" class="account-btn account-btn-primary">Sign in</a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-top">
+                <div class="footer-left">
+                    <h3>Join Our Circle</h3>
+                    <p style="color:#666;font-size:0.9rem;margin-top:0.5rem;">Slay Station — where your style meets ours.</p>
+                </div>
+            </div>
+            <p class="footer-copy" style="text-align:center;color:#666;font-size:0.85rem;margin-top:1.5rem;">&copy; Slay Station</p>
+        </div>
+    </footer>
+
+    <script src="auth.js"></script>
+    <script>
+        (function() {
+            function showContent(user) {
+                document.getElementById('accountContent').style.display = 'block';
+                document.getElementById('accountLoginPrompt').style.display = 'none';
+                var tier = (user.level || 'Bronze').trim();
+                var tierEl = document.getElementById('accountTierBadge');
+                tierEl.textContent = tier;
+                tierEl.className = 'account-tier-badge account-tier-' + tier.toLowerCase();
+                document.getElementById('accountPointsValue').textContent = user.points != null ? user.points : 0;
+                document.getElementById('accountName').value = user.name || '';
+                document.getElementById('accountEmail').value = user.email || '';
+                document.getElementById('accountPhone').value = user.phone || '';
+                var list = document.getElementById('accountPointsHistoryList');
+                var history = user.pointsHistory || [];
+                if (history.length === 0) {
+                    list.innerHTML = '<p class="account-history-empty">No points history yet. Shop to earn points.</p>';
+                } else {
+                    var sorted = history.slice().sort(function(a, b) { return new Date(b.date) - new Date(a.date); });
+                    list.innerHTML = sorted.slice(0, 15).map(function(entry) {
+                        var d = new Date(entry.date);
+                        var dateStr = d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                        return '<div class="account-history-item"><span class="account-history-reason">' + (entry.reason || '') + '</span><span class="account-history-date">' + dateStr + '</span><span class="account-history-pts">+' + (entry.amount || 0) + ' pts</span></div>';
+                    }).join('');
+                }
+            }
+            function showLoginPrompt() {
+                document.getElementById('accountContent').style.display = 'none';
+                document.getElementById('accountLoginPrompt').style.display = 'block';
+            }
+            document.addEventListener('DOMContentLoaded', function() {
+                if (typeof updateAuthUI === 'function') updateAuthUI();
+                if (typeof loadCartFromStorage === 'function') loadCartFromStorage();
+                if (typeof updateCartCount === 'function') updateCartCount();
+                var user = typeof userAuth !== 'undefined' && userAuth ? userAuth.getCurrentUser() : null;
+                if (user) {
+                    showContent(user);
+                } else {
+                    showLoginPrompt();
+                }
+                document.getElementById('accountSaveBtn').addEventListener('click', function() {
+                    var u = userAuth.getCurrentUser();
+                    if (!u) return;
+                    var name = document.getElementById('accountName').value.trim();
+                    var phone = document.getElementById('accountPhone').value.trim();
+                    if (!name || name.length < 2) {
+                        alert('Please enter a valid name (at least 2 characters).');
+                        return;
+                    }
+                    try {
+                        var users = JSON.parse(localStorage.getItem('slayStationUsers') || '[]');
+                        var i = users.findIndex(function(x) { return x.id === u.id || (x.email && x.email === u.email); });
+                        if (i !== -1) {
+                            users[i].name = name;
+                            users[i].phone = phone;
+                            localStorage.setItem('slayStationUsers', JSON.stringify(users));
+                            u.name = name;
+                            u.phone = phone;
+                            if (userAuth) userAuth.currentUser = u;
+                            localStorage.setItem('slayStationCurrentUser', JSON.stringify(u));
+                        }
+                        alert('Profile updated.');
+                    } catch (e) { alert('Could not save.'); }
+                });
+                document.getElementById('accountLogoutBtn').addEventListener('click', function() {
+                    if (typeof logout === 'function') logout();
+                    window.location.href = 'index.html';
+                });
+                var mobileMenuToggle = document.getElementById('mobileMenuToggle');
+                var navMenu = document.getElementById('navMenu');
+                var navMenuDrawer = document.getElementById('navMenuDrawer');
+                var menuPanel = navMenuDrawer || navMenu;
+                if (mobileMenuToggle && menuPanel) {
+                    mobileMenuToggle.addEventListener('click', function() {
+                        mobileMenuToggle.classList.toggle('active');
+                        if (navMenu) navMenu.classList.toggle('active');
+                        if (navMenuDrawer) navMenuDrawer.classList.toggle('active');
+                        document.body.classList.toggle('menu-open');
+                    });
+                }
+                var navSearchClose = document.getElementById('navSearchClose');
+                var navSearchBar = document.getElementById('navSearchBar');
+                var navSearchInput = document.getElementById('navSearchInput');
+                if (navSearchClose && navSearchBar && navSearchInput) {
+                    navSearchClose.addEventListener('click', function() {
+                        document.body.classList.remove('search-open');
+                        var n = document.querySelector('.navbar'); if (n) n.classList.remove('search-open');
+                        navSearchBar.setAttribute('aria-hidden', 'true');
+                        navSearchInput.value = '';
+                    });
+                    navSearchInput.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            var q = navSearchInput.value.trim();
+                            window.location.href = q ? 'index.html#products?q=' + encodeURIComponent(q) : 'index.html#products';
+                        }
+                    });
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

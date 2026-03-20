@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Slay Station</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Great+Vibes&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Sign-In API loaded only when not in WebView -->
+    <style>
+        /* Google Sign-In Button Styling */
+        #g_id_signin {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        
+        #g_id_signin::before {
+            content: '✨';
+            position: absolute;
+            top: -15px;
+            left: 10px;
+            font-size: 1.5rem;
+            z-index: 10;
+            animation: sparkle 2s infinite;
+            pointer-events: none;
+        }
+        
+        #g_id_signin::after {
+            content: '💖';
+            position: absolute;
+            top: -15px;
+            right: 10px;
+            font-size: 1.5rem;
+            z-index: 10;
+            animation: sparkle 2s infinite 0.5s;
+            pointer-events: none;
+        }
+        
+        @keyframes sparkle {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+        
+        #g_id_signin iframe {
+            border-radius: 15px !important;
+            box-shadow: 0 5px 20px rgba(255, 107, 157, 0.3) !important;
+            overflow: hidden !important;
+        }
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--light-bg) 0%, #FFF0F5 100%);
+            padding: 100px 20px 50px;
+        }
+        
+        .auth-box {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            max-width: 450px;
+            width: 100%;
+            animation: fadeInUp 0.5s ease;
+        }
+        
+        .auth-box h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--primary-pink), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+        
+        .auth-box p {
+            color: #666;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .points-banner {
+            background: linear-gradient(135deg, var(--primary-pink), var(--purple));
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .auth-box input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--light-bg);
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .auth-box input:focus {
+            outline: none;
+            border-color: var(--primary-pink);
+        }
+        
+        .auth-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--primary-pink), var(--purple));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1rem;
+        }
+        
+        .auth-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255, 107, 157, 0.4);
+        }
+        
+        .auth-links {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+        
+        .auth-links a {
+            color: var(--primary-pink);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+        
+        .auth-links a:hover {
+            color: var(--purple);
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 1rem;
+            color: var(--primary-pink);
+            text-decoration: none;
+            font-weight: 600;
+            text-align: center;
+            width: 100%;
+        }
+        /* Signup page: elements that had inline styles */
+        #logoutBtn.nav-btn-user {
+            display: none;
+        }
+        #logoutBtn.nav-btn-user[style*="display: block"] {
+            display: flex !important;
+        }
+        #g_id_signin {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        #customGoogleSignIn {
+            display: none;
+            width: 100%;
+            padding: 1.2rem;
+            background: linear-gradient(135deg, #FF6B9D, #C77DFF);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 1rem;
+            box-shadow: 0 5px 20px rgba(255, 107, 157, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        #customGoogleSignIn .custom-google-emoji {
+            display: inline-block;
+            font-size: 1.2rem;
+        }
+        #customGoogleSignIn .custom-google-emoji:first-child {
+            margin-right: 0.5rem;
+        }
+        #customGoogleSignIn .custom-google-emoji:last-child {
+            margin-left: 0.5rem;
+        }
+        .auth-google-hint {
+            text-align: center;
+            margin: 1.5rem 0;
+            color: #999;
+            font-size: 0.9rem;
+        }
+        .auth-rider-section {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 2px solid var(--light-bg);
+        }
+        .auth-rider-section p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        .auth-rider-link {
+            color: var(--primary-pink);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top bar: left link | center promo text | right pause (same as other pages) -->
+    <div class="promo-bar">
+        <div class="promo-bar-left">
+            <a href="index.html#contact">Find a Location</a>
+        </div>
+        <div class="promo-bar-messages">
+            <p class="promo-bar-text promo-bar-message active">online payments available</p>
+            <p class="promo-bar-text promo-bar-message">delivery across kenya and east africa</p>
+            <p class="promo-bar-text promo-bar-message">Visit us at Westlands Market, Shop B15</p>
+            <p class="promo-bar-text promo-bar-message">Gift wrapping available at checkout</p>
+        </div>
+        <div class="promo-bar-right">
+            <button type="button" class="promo-bar-pause" id="promoBarPause" aria-label="Pause promo" title="Pause">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+            </button>
+        </div>
+    </div>
+    <!-- Navigation: Desktop = full nav; Mobile = Hamburger | Logo | Wishlist | Account | Cart (same as other pages) -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-mobile-left">
+                <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+            <div class="nav-logo-wrap">
+                <div class="logo">
+                    <a href="index.html" class="logo-link">
+                        <span class="logo-text">Slay Station</span>
+                    </a>
+                </div>
+            </div>
+            <div class="nav-menu-drawer" id="navMenuDrawer">
+                <ul class="nav-menu" id="navMenu">
+                    <li class="nav-item-has-mega">
+                        <a href="index.html#home">New Arrivals</a>
+                        <div class="nav-mega-menu">
+                            <div class="nav-mega-inner">
+                                <div class="nav-mega-column">
+                                    <span class="nav-mega-heading">Shop</span>
+                                    <a href="index.html#home">New In</a>
+                                    <a href="index.html#products">Shop All</a>
+                                    <a href="index.html#products">Best Sellers</a>
+                                </div>
+                                <div class="nav-mega-column">
+                                    <span class="nav-mega-heading">Featured</span>
+                                    <a href="index.html#products">Under KSH 10,000</a>
+                                    <a href="index.html#products">Editor's Picks</a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="nav-item-has-mega">
+                        <a href="index.html#products">Bags</a>
+                        <div class="nav-mega-menu">
+                            <div class="nav-mega-inner">
+                                <div class="nav-mega-column">
+                                    <span class="nav-mega-heading">Styles</span>
+                                    <a href="index.html#products">Shop All Bags</a>
+                                    <a href="index.html#products">Crossbody</a>
+                                    <a href="index.html#products">Handbags</a>
+                                    <a href="index.html#products">Totes</a>
+                                    <a href="index.html#products">Shoulder Bags</a>
+                                    <a href="index.html#products">Clutches</a>
+                                </div>
+                                <div class="nav-mega-column">
+                                    <span class="nav-mega-heading">&nbsp;</span>
+                                    <a href="index.html#products">Backpacks</a>
+                                    <a href="index.html#products">Belt Bags</a>
+                                    <a href="index.html#products">Top Handles</a>
+                                    <a href="index.html#products">Travel &amp; Luggage</a>
+                                </div>
+                                <div class="nav-mega-column">
+                                    <span class="nav-mega-heading">Featured</span>
+                                    <a href="index.html#products">Over 50% Off</a>
+                                    <a href="index.html#products">Bags Under KSH 10,000</a>
+                                    <a href="index.html#products">Editor's Picks</a>
+                                    <a href="index.html#products">Mini Bags</a>
+                                    <a href="index.html#products">Vintage</a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="nav-item-has-mega">
+                        <a href="wallets.html">Wallets</a>
+                        <div class="nav-mega-menu">
+                            <div class="nav-mega-inner">
+                                <div class="nav-mega-column">
+                                    <span class="nav-mega-heading">Styles</span>
+                                    <a href="wallets.html">Shop All Wallets</a>
+                                    <a href="wallets.html">Card Holders</a>
+                                    <a href="wallets.html">Bifold</a>
+                                    <a href="wallets.html">Clutches &amp; Wristlets</a>
+                                </div>
+                                <div class="nav-mega-column">
+                                    <span class="nav-mega-heading">Featured</span>
+                                    <a href="wallets.html">Best Sellers</a>
+                                    <a href="wallets.html">Under KSH 5,000</a>
+                                    <a href="wallets.html">New Arrivals</a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="nav-item-has-mega">
+                        <a href="accessories.html">Accessories</a>
+                        <div class="nav-mega-menu">
+                            <div class="nav-mega-inner">
+                                <div class="nav-mega-column">
+                                    <span class="nav-mega-heading">Shop</span>
+                                    <a href="accessories.html">Shop All Accessories</a>
+                                    <a href="accessories.html">Scarves</a>
+                                    <a href="accessories.html">Keychains</a>
+                                    <a href="accessories.html">Bag Charms</a>
+                                </div>
+                                <div class="nav-mega-column">
+                                    <span class="nav-mega-heading">Featured</span>
+                                    <a href="accessories.html">Best Sellers</a>
+                                    <a href="accessories.html">New Arrivals</a>
+                                    <a href="accessories.html">Gift Ideas</a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="nav-item-has-mega">
+                        <a href="lip-care.html">Lip Care</a>
+                        <div class="nav-mega-menu">
+                            <div class="nav-mega-inner">
+                                <div class="nav-mega-column">
+                                    <span class="nav-mega-heading">Shop</span>
+                                    <a href="lip-care.html">Shop All Lip Care</a>
+                                    <a href="lip-care.html">Lipsticks</a>
+                                    <a href="lip-care.html">Lip Gloss</a>
+                                    <a href="lip-care.html">Lip Balms</a>
+                                </div>
+                                <div class="nav-mega-column">
+                                    <span class="nav-mega-heading">Featured</span>
+                                    <a href="lip-care.html">Best Sellers</a>
+                                    <a href="lip-care.html">New Arrivals</a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="index.html#contact">Contact</a></li>
+                    <li><a href="index.html#contact">Location</a></li>
+                </ul>
+                <div class="nav-menu-footer">
+                    <a href="login.html" class="nav-menu-signin" aria-label="Sign in"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M6 21c0-3.314 2.686-6 6-6s6 2.686 6 6"/></svg> Sign in</a>
+                    <a href="signup.html" class="nav-menu-signup" aria-label="Sign up"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Sign up</a>
+                    <a href="index.html#contact" class="nav-menu-find-location"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Find a Location</a>
+                </div>
+            </div>
+            <div class="nav-actions">
+                <button type="button" id="navSearchBtn" class="nav-btn-round nav-btn-search" title="Search" aria-label="Search products" onclick="var b=document.getElementById('navSearchBar');var i=document.getElementById('navSearchInput');if(b&&i){document.body.classList.add('search-open');var n=document.querySelector('.navbar');if(n)n.classList.add('search-open');b.setAttribute('aria-hidden','false');i.focus();}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></button>
+                <div class="nav-btn-round nav-btn-wishlist" onclick="typeof toggleWishlist==='function'&&toggleWishlist()" title="Wishlist">
+                    <svg class="nav-heart-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    <span class="nav-badge" id="wishlistCount">0</span>
+                </div>
+                <a href="login.html" id="loginBtn" class="nav-btn-round nav-btn-user" title="Account">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 21c0-3.314 2.686-6 6-6s6 2.686 6 6"/></svg>
+                </a>
+                <button id="logoutBtn" class="nav-btn-round nav-btn-user" style="display: none;" title="Account" onclick="typeof logout==='function'&&logout()">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 21c0-3.314 2.686-6 6-6s6 2.686 6 6"/></svg>
+                </button>
+                <div class="nav-btn-round nav-btn-cart" onclick="typeof toggleCart==='function'&&toggleCart()" title="Cart">
+                    <svg class="nav-cart-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                    <span class="nav-badge" id="cartCount">0</span>
+                </div>
+            </div>
+            <div class="nav-search-bar" id="navSearchBar" aria-hidden="true">
+                <div class="nav-search-bar-inner">
+                    <input type="text" class="nav-search-input" id="navSearchInput" placeholder="Search products..." aria-label="Search products" autocomplete="off">
+                    <button type="button" class="nav-search-close" id="navSearchClose" aria-label="Close search">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="mobile-search-bar">
+        <div class="mobile-search-wrap">
+            <input type="text" id="mobileProductSearch" placeholder="Search for..." class="mobile-search-input" aria-label="Search products">
+            <button type="button" class="mobile-search-btn" onclick="window.location.href='index.html#products';" aria-label="Search">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Signup: two-column layout (Fashionphile-style) -->
+    <div class="signup-page-wrap">
+        <div class="signup-form-col">
+            <div class="signup-form-inner">
+                <h1 class="signup-title">Create Your Account</h1>
+                <p class="signup-subtitle">Welcome! Please fill in the details to get started.</p>
+
+                <div class="signup-social-btns">
+                    <button type="button" class="signup-social-btn signup-social-apple" aria-label="Sign up with Apple">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 6.98.48 10.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+                        <span>Apple</span>
+                    </button>
+                    <button type="button" class="signup-social-btn signup-social-fb" aria-label="Sign up with Facebook">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                        <span>Facebook</span>
+                    </button>
+                </div>
+
+                <div class="signup-divider"><span>or</span></div>
+
+                <form id="signupForm" class="signup-form" novalidate>
+                    <div class="signup-form-row">
+                        <label class="signup-label">
+                            First Name
+                            <input type="text" name="firstName" id="signupFirstName" required placeholder=" " autocomplete="given-name">
+                        </label>
+                        <label class="signup-label">
+                            Last Name
+                            <input type="text" name="lastName" id="signupLastName" required placeholder=" " autocomplete="family-name">
+                        </label>
+                    </div>
+                    <label class="signup-label">
+                        Email Address
+                        <input type="email" name="email" id="signupEmail" required placeholder=" " autocomplete="email">
+                    </label>
+                    <label class="signup-label signup-label-password">
+                        Password
+                        <span class="signup-password-wrap">
+                            <input type="password" name="password" id="signupPassword" required placeholder=" " autocomplete="new-password" minlength="6">
+                            <button type="button" class="signup-password-toggle" id="signupPasswordToggle" aria-label="Show password" tabindex="-1">
+                                <svg class="signup-eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                <svg class="signup-eye-closed" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="display:none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                            </button>
+                        </span>
+                    </label>
+                    <button type="submit" class="signup-continue-btn">Continue</button>
+                </form>
+
+                <div class="signup-auth-links">
+                    <p>Already have an account? <a href="login.html">Login</a></p>
+                    <a href="index.html" class="signup-back-link">← Back to Home</a>
+                </div>
+
+                <!-- Google Sign-In via Firebase popup -->
+                <div id="googleSigninWrap" class="signup-google-wrap" style="display: block; margin-top: 1rem;">
+                    <p style="margin-bottom: 0.5rem; font-size: 0.9rem; color: #666;">Or sign up with</p>
+                    <button type="button" id="googleSignUpBtn" class="signup-social-btn" onclick="triggerGoogleSignIn()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                        <span>Sign up with Google</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="signup-image-col">
+            <div class="signup-image-bg" style="background-image: url('https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800&q=80');"></div>
+            <a href="index.html#contact" class="signup-help-widget" id="signupHelpBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <span>Need Help?</span>
+            </a>
+        </div>
+    </div>
+
+    <script defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script defer src="firebase.js"></script>
+    <script defer src="auth.js"></script>
+    <script>
+        // Google: use Firebase popup (no OAuth origin block)
+        function triggerGoogleSignIn() {
+            if (typeof userAuth === 'undefined' || !userAuth.loginWithGooglePopup) {
+                showError('Sign-up is still loading. Please try again.');
+                return;
+            }
+            var btn = document.getElementById('googleSignUpBtn');
+            if (btn) { btn.disabled = true; btn.textContent = 'Opening...'; }
+            userAuth.loginWithGooglePopup().then(function(result) {
+                if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg><span>Sign up with Google</span>'; }
+                if (result && result.success) {
+                    showSuccess(result.message);
+                    if (result.redirect) return;
+                    setTimeout(function() { window.location.href = 'index.html'; }, 1500);
+                } else {
+                    showError(result && result.message ? result.message : 'Sign up failed. Please try again.');
+                }
+            }).catch(function(err) {
+                if (btn) { btn.disabled = false; btn.textContent = 'Sign up with Google'; }
+                showError(err && (err.message || err) || 'Sign up failed. Please try again.');
+            });
+        }
+        (function() {
+            var btn = document.getElementById('googleSignUpBtn');
+            if (btn) btn.addEventListener('click', function() { if (btn.disabled) return; triggerGoogleSignIn(); });
+        })();
+
+        (function() {
+            // Signup form submit
+            var signupForm = document.getElementById('signupForm');
+            if (signupForm) {
+                signupForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    var firstName = (document.getElementById('signupFirstName') || {}).value || '';
+                    var lastName = (document.getElementById('signupLastName') || {}).value || '';
+                    var email = (document.getElementById('signupEmail') || {}).value || '';
+                    var password = (document.getElementById('signupPassword') || {}).value || '';
+                    var name = (firstName + ' ' + lastName).trim() || email.split('@')[0];
+                    if (!email || !password) {
+                        showError('Please enter email and password.');
+                        return;
+                    }
+                    if (password.length < 6) {
+                        showError('Password must be at least 6 characters.');
+                        return;
+                    }
+                    var submitBtn = signupForm.querySelector('.signup-continue-btn');
+                    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Creating account...'; }
+                    var p = typeof signup === 'function' ? signup(email, password, name, '') : Promise.resolve({ success: false, message: 'Auth not loaded.' });
+                    Promise.resolve(p).then(function(result) {
+                        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Continue'; }
+                        if (result && result.success) {
+                            showSuccess(result.message || 'Account created! Check your email for the verification link.');
+                            setTimeout(function() { window.location.href = 'index.html'; }, 1500);
+                        } else {
+                            showError(result && result.message ? result.message : 'Sign up failed. Please try again.');
+                        }
+                    }).catch(function(err) {
+                        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Continue'; }
+                        showError(err && (err.message || err) || 'Sign up failed. Please try again.');
+                    });
+                });
+            }
+            // Password visibility toggle
+            var signupPasswordToggle = document.getElementById('signupPasswordToggle');
+            var signupPasswordInput = document.getElementById('signupPassword');
+            if (signupPasswordToggle && signupPasswordInput) {
+                signupPasswordToggle.addEventListener('click', function() {
+                    var isPassword = signupPasswordInput.type === 'password';
+                    signupPasswordInput.type = isPassword ? 'text' : 'password';
+                    signupPasswordToggle.setAttribute('aria-pressed', isPassword ? 'true' : 'false');
+                    signupPasswordToggle.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+                });
+            }
+        })();
+        
+        function showError(message) {
+            // Remove existing error message
+            const existingError = document.getElementById('errorMessage');
+            if (existingError) {
+                existingError.remove();
+            }
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.id = 'errorMessage';
+            errorDiv.style.cssText = 'background: #ffebee; color: #c62828; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; border: 2px solid #ef5350; text-align: center; font-weight: 600;';
+            errorDiv.textContent = message;
+            
+            const authBox = document.querySelector('.auth-box');
+            const signupInner = document.querySelector('.signup-form-inner');
+            const container = authBox || signupInner;
+            if (container) {
+                const googleButton = document.getElementById('g_id_signin');
+                const form = document.getElementById('signupForm');
+                const insertBefore = (googleButton && googleButton.parentNode) ? googleButton : (form || container.firstElementChild);
+                if (insertBefore && insertBefore.parentNode) {
+                    insertBefore.parentNode.insertBefore(errorDiv, insertBefore);
+                } else {
+                    container.insertBefore(errorDiv, container.firstChild);
+                }
+            }
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (errorDiv.parentNode) {
+                    errorDiv.remove();
+                }
+            }, 5000);
+        }
+        
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.style.cssText = 'background: #e8f5e9; color: #2e7d32; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; border: 2px solid #4caf50; text-align: center; font-weight: 600; position: fixed; top: 100px; left: 50%; transform: translateX(-50%); z-index: 10000; min-width: 300px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);';
+            successDiv.textContent = message;
+            document.body.appendChild(successDiv);
+            
+            setTimeout(() => {
+                if (successDiv.parentNode) {
+                    successDiv.remove();
+                }
+            }, 3000);
+        }
+        
+        function createConfetti() {
+            const confettiContainer = document.createElement('div');
+            confettiContainer.className = 'confetti-container';
+            
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.top = '-10px';
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                confettiContainer.appendChild(confetti);
+            }
+            
+            document.body.appendChild(confettiContainer);
+            
+            setTimeout(() => {
+                confettiContainer.remove();
+            }, 3000);
+        }
+        
+        // Promo bar: rotate messages (same as other pages)
+        (function() {
+            var messages = document.querySelectorAll('.promo-bar-message');
+            var pauseBtn = document.getElementById('promoBarPause');
+            if (messages.length === 0 || !pauseBtn) return;
+            var index = 0;
+            var intervalId = null;
+            var ROTATE_MS = 5000;
+            function showMessage(i) {
+                index = (i + messages.length) % messages.length;
+                messages.forEach(function(msg, j) { msg.classList.toggle('active', j === index); });
+            }
+            function startRotation() {
+                if (intervalId) return;
+                intervalId = setInterval(function() { showMessage(index + 1); }, ROTATE_MS);
+                pauseBtn.setAttribute('aria-label', 'Pause promo');
+                pauseBtn.setAttribute('title', 'Pause');
+            }
+            function stopRotation() {
+                if (intervalId) { clearInterval(intervalId); intervalId = null; }
+                pauseBtn.setAttribute('aria-label', 'Resume promo');
+                pauseBtn.setAttribute('title', 'Resume');
+            }
+            pauseBtn.addEventListener('click', function() {
+                if (intervalId) stopRotation(); else startRotation();
+            });
+            startRotation();
+        })();
+    </script>
+    <script>
+        // Mobile menu toggle (same as other pages)
+        (function() {
+            var mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            var navMenu = document.getElementById('navMenu');
+            var navMenuDrawer = document.getElementById('navMenuDrawer');
+            var menuPanel = navMenuDrawer || navMenu;
+            if (mobileMenuToggle && navMenu && menuPanel) {
+                function closeMenu() {
+                    mobileMenuToggle.classList.remove('active');
+                    navMenu.classList.remove('active');
+                    if (navMenuDrawer) navMenuDrawer.classList.remove('active');
+                    document.body.classList.remove('menu-open');
+                }
+                function openMenu() {
+                    mobileMenuToggle.classList.add('active');
+                    navMenu.classList.add('active');
+                    if (navMenuDrawer) navMenuDrawer.classList.add('active');
+                    document.body.classList.add('menu-open');
+                }
+                mobileMenuToggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (menuPanel.classList.contains('active')) closeMenu();
+                    else openMenu();
+                });
+                var links = menuPanel.querySelectorAll('a');
+                for (var i = 0; i < links.length; i++) {
+                    links[i].addEventListener('click', function(e) {
+                        closeMenu();
+                        var href = this.getAttribute('href');
+                        if (href && href !== '#' && href.indexOf('#') !== 0) {
+                            e.preventDefault();
+                            window.location.href = href;
+                        }
+                    });
+                }
+                document.addEventListener('click', function(event) {
+                    if (menuPanel.classList.contains('active') && !mobileMenuToggle.contains(event.target) && !menuPanel.contains(event.target))
+                        closeMenu();
+                });
+            }
+        })();
+    </script>
+
+    <!-- Footer – Fashionphile-style -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-top">
+                <div class="footer-left">
+                    <h3>Join Our Circle</h3>
+                    <div class="footer-newsletter">
+                        <input type="email" id="footerEmailSignup" placeholder="Email" aria-label="Email for newsletter">
+                        <button type="button" onclick="var e=document.getElementById('footerEmailSignup');if(e&&e.value){alert('Thanks for signing up!');e.value='';}else{alert('Please enter your email.');}" aria-label="Subscribe">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </button>
+                    </div>
+                    <h3>Follow Us</h3>
+                    <div class="footer-social-row">
+                        <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://www.instagram.com/slaystation" target="_blank" rel="noopener noreferrer" title="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="https://www.tiktok.com" target="_blank" rel="noopener noreferrer" title="TikTok"><i class="fab fa-tiktok"></i></a>
+                        <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" title="X"><i class="fab fa-x-twitter"></i></a>
+                        <a href="https://wa.me/254719563607" target="_blank" rel="noopener noreferrer" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                    <div class="footer-app-block">
+                        <h3>Download the App</h3>
+                        <div class="footer-app-buttons">
+                            <a href="#" target="_blank" rel="noopener noreferrer" class="footer-app-btn">
+                                <span class="footer-app-btn-icon"><i class="fab fa-apple"></i></span>
+                                <span class="footer-app-btn-text">
+                                    <span>Download on the</span>
+                                    <span>App Store</span>
+                                </span>
+                            </a>
+                            <a href="#" target="_blank" rel="noopener noreferrer" class="footer-app-btn">
+                                <span class="footer-app-btn-icon"><i class="fab fa-google-play"></i></span>
+                                <span class="footer-app-btn-text">
+                                    <span>GET IT ON</span>
+                                    <span>Google Play</span>
+                                </span>
+                            </a>
+                        </div>
+                        <p class="footer-app-disclaimer">Android and Google Play are trademarks of Google LLC.</p>
+                    </div>
+                </div>
+                <div class="footer-columns">
+                    <div class="footer-col">
+                        <h3>Customer Service</h3>
+                        <ul>
+                            <li><a href="index.html#contact">Contact Us</a></li>
+                            <li><a href="login.html">My Account</a></li>
+                            <li><a href="index.html#products">Alerts</a></li>
+                            <li><a href="index.html#contact">Shipping</a></li>
+                            <li><a href="index.html#contact">FAQ</a></li>
+                            <li><a href="index.html#contact">Give Us feedback</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-col">
+                        <h3>Shop with Us</h3>
+                        <ul>
+                            <li><a href="index.html#products">Bags</a></li>
+                            <li><a href="wallets.html">Wallets</a></li>
+                            <li><a href="accessories.html">Accessories</a></li>
+                            <li><a href="lip-care.html">Lip Care</a></li>
+                            <li><a href="index.html#contact">Gift Cards</a></li>
+                            <li><a href="index.html#contact">Personal Shopping</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-col">
+                        <h3>About Us</h3>
+                        <ul>
+                            <li><a href="about.html">About</a></li>
+                            <li><a href="index.html#contact">Locations</a></li>
+                            <li><a href="index.html#contact">Careers</a></li>
+                            <li><a href="index.html#contact">Sustainability</a></li>
+                            <li><a href="index.html#contact">Influencer Program</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div class="footer-bottom-left">
+                    <p class="footer-copyright">&copy; 2025 Slay Station. All rights reserved.</p>
+                </div>
+                <div class="footer-legal">
+                    <a href="index.html#contact">Accessibility Statement</a>
+                    <a href="index.html#contact">Privacy Policy</a>
+                    <a href="index.html#contact">Terms of use</a>
+                    <a href="index.html#contact">Your privacy choices</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <button type="button" class="footer-help-widget" id="helpChatToggle" aria-label="Need Help?">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Need Help?
+    </button>
+
+    <div id="helpChatBox" class="help-chat-box" aria-hidden="true">
+        <div class="help-chat-header">
+            <span class="help-chat-header-title"><strong>Slay Station</strong> Offline Chat</span>
+            <button type="button" class="help-chat-close" id="helpChatClose" aria-label="Close chat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg>
+            </button>
+        </div>
+        <div class="help-chat-body">
+            <div class="help-chat-msg-bubble">
+                <div class="help-chat-msg-brand">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    Slay Station
+                </div>
+                <p class="help-chat-msg-text">Welcome to Slay Station! Our live chat agents are either assisting other clients or you've reached us outside of business hours (Every day, 7am–7pm EAT). Please select an option below to find helpful resources or leave us a message, and we'll get back to you as soon as possible.</p>
+                <div class="help-chat-buttons">
+                    <a href="https://help.fashionphile.com/s/" target="_blank" rel="noopener noreferrer">Explore Our FAQs</a>
+                    <a href="index.html#contact">Leave a Message</a>
+                </div>
+            </div>
+        </div>
+        <div class="help-chat-footer">just now</div>
+    </div>
+
+    <script>
+        (function(){var t=document.getElementById('helpChatToggle'),b=document.getElementById('helpChatBox'),c=document.getElementById('helpChatClose');if(t&&b){t.addEventListener('click',function(){b.classList.toggle('is-open');b.setAttribute('aria-hidden',b.classList.contains('is-open')?'false':'true');});if(c)c.addEventListener('click',function(){b.classList.remove('is-open');b.setAttribute('aria-hidden','true');});}})();
+    </script>
+</body>
+</html>
