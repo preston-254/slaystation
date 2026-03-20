@@ -11,8 +11,41 @@ const isAdminEmail = (email) => {
     return ADMIN_EMAILS.some(adminEmail => adminEmail.toLowerCase() === normalizedEmail);
 };
 
-// Show admin dashboard (called after successful Google sign-in or on auth state restore)
-function showAdminDashboard(email) {
+function getAuthenticatedAdminUser() {
+    var fb = typeof window !== 'undefined' && window.SlayStationFirebase;
+    var user = fb && fb.auth ? fb.auth.currentUser : null;
+    if (!user || !user.email) return null;
+    return isAdminEmail(user.email) ? user : null;
+}
+
+function showAdminLogin(message) {
+    var loginSection = document.getElementById('loginSection');
+    var adminDashboard = document.getElementById('adminDashboard');
+    var loginWrap = document.querySelector('.login-page-wrap');
+    if (loginSection) loginSection.style.display = 'block';
+    if (loginWrap) loginWrap.style.display = '';
+    if (adminDashboard) adminDashboard.style.display = 'none';
+    if (document.body) document.body.classList.add('login-page-active');
+    try {
+        localStorage.removeItem('slayStationAdminLoggedIn');
+        localStorage.removeItem('slayStationAdminEmail');
+    } catch (e) {}
+    if (message) {
+        var errorEl = document.getElementById('loginError');
+        if (errorEl) {
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+        }
+    }
+}
+
+// Show admin dashboard only for authenticated Firebase admin users.
+function showAdminDashboard() {
+    var authedAdmin = getAuthenticatedAdminUser();
+    if (!authedAdmin) {
+        showAdminLogin('Admin access denied. Sign in with an approved Google admin account.');
+        return;
+    }
     var loginSection = document.getElementById('loginSection');
     var adminDashboard = document.getElementById('adminDashboard');
     var loginWrap = document.querySelector('.login-page-wrap');
@@ -24,8 +57,7 @@ function showAdminDashboard(email) {
     }
     if (document.body) document.body.classList.remove('login-page-active');
     try {
-        localStorage.setItem('slayStationAdminLoggedIn', 'true');
-        if (email) localStorage.setItem('slayStationAdminEmail', email);
+        localStorage.setItem('slayStationAdminEmail', authedAdmin.email.toLowerCase().trim());
     } catch (e) {}
     loadOrders();
 }
@@ -75,7 +107,7 @@ function adminGoogleSignIn() {
                 fb.auth.signOut();
                 showError('Signed in as ' + email + '. This account is not in the admin list. Only preston.mwendwa@riarauniversity.ac.ke and isabellewambui@gmail.com can access.');
             } else {
-                showAdminDashboard(email);
+                showAdminDashboard();
             }
         }
     }).catch(function (err) {
@@ -110,25 +142,15 @@ function initAdminAuthState() {
     }
     function applyAuthState(user) {
         if (user && user.email && isAdminEmail(user.email.toLowerCase().trim())) {
-            showAdminDashboard(user.email);
+            showAdminDashboard();
         } else {
-            try {
-                localStorage.removeItem('slayStationAdminLoggedIn');
-                localStorage.removeItem('slayStationAdminEmail');
-            } catch (e) {}
-            var loginSection = document.getElementById('loginSection');
-            var adminDashboard = document.getElementById('adminDashboard');
-            var loginWrap = document.querySelector('.login-page-wrap');
-            if (loginSection) loginSection.style.display = 'block';
-            if (loginWrap) loginWrap.style.display = '';
-            if (adminDashboard) adminDashboard.style.display = 'none';
-            if (document.body) document.body.classList.add('login-page-active');
+            showAdminLogin();
         }
     }
     // Listen for auth state immediately – when returning from Google redirect, Firebase may set user and fire this before getRedirectResult resolves
     fb.auth.onAuthStateChanged(function (user) {
         if (user && user.email && isAdminEmail(user.email.toLowerCase().trim())) {
-            showAdminDashboard(user.email);
+            showAdminDashboard();
         } else {
             applyAuthState(user);
         }
@@ -144,12 +166,12 @@ function initAdminAuthState() {
                 fb.auth.signOut();
                 showError('Signed in as ' + email + '. This account is not in the admin list. Only preston.mwendwa@riarauniversity.ac.ke and isabellewambui@gmail.com can access.');
             } else {
-                showAdminDashboard(email);
+                showAdminDashboard();
             }
         } else {
             var currentUser = fb.auth.currentUser;
             if (currentUser && currentUser.email && isAdminEmail(currentUser.email.toLowerCase().trim())) {
-                showAdminDashboard(currentUser.email);
+                showAdminDashboard();
             }
         }
     }).catch(function (err) {
@@ -254,106 +276,19 @@ function saveOrders() {
 
 // Step 1: Validate email (allowed only) + password, then send code and show code step. Returns true if code was sent (or sending).
 function requestLoginCode() {
-    const emailInput = document.getElementById('adminEmail');
-    const passwordInput = document.getElementById('adminPassword');
     const errorMsg = document.getElementById('loginError');
-    if (!emailInput) return false;
-    const email = emailInput.value.trim();
-    const password = (passwordInput && passwordInput.value) ? passwordInput.value : '';
-    if (!email) {
-        if (errorMsg) { errorMsg.textContent = 'Please enter your email address'; errorMsg.style.display = 'block'; }
-        return false;
+    if (errorMsg) {
+        errorMsg.textContent = 'Admin password/code login is disabled. Use "Continue with Google" only.';
+        errorMsg.style.display = 'block';
     }
-    if (!password) {
-        if (errorMsg) { errorMsg.textContent = 'Please enter the admin password'; errorMsg.style.display = 'block'; }
-        return false;
-    }
-    const api = typeof window !== 'undefined' && window.SlayStationAdminFirebase;
-    if (api && api.available) {
-        errorMsg.style.display = 'none';
-        api.getAdminAllowedEmails().then(function (data) {
-            const allowed = (data && data.allowedEmails) ? data.allowedEmails : [];
-            const normalized = email.toLowerCase().trim();
-            if (!allowed.some(function (e) { return String(e).toLowerCase() === normalized; })) {
-                if (errorMsg) { errorMsg.textContent = 'This email is not allowed to log in as admin. Access denied.'; errorMsg.style.display = 'block'; }
-                return;
-            }
-            api.verifyAdminPassword(email, password).then(function (result) {
-                if (!result || !result.ok) {
-                    if (errorMsg) { errorMsg.textContent = 'Invalid password. Access denied.'; errorMsg.style.display = 'block'; }
-                    return;
-                }
-                const code = generateLoginCode();
-                storeLoginCode(email, code, 'adminLogin');
-                sendCodeToEmail(email, code, 'login');
-                if (errorMsg) errorMsg.style.display = 'none';
-                window._adminPendingEmail = email;
-                const loginSection = document.getElementById('loginSection');
-                const codeStep = document.getElementById('loginCodeStep');
-                const form = loginSection && loginSection.querySelector('form');
-                if (form) form.style.display = 'none';
-                if (codeStep) codeStep.style.display = 'block';
-            }).catch(function (err) {
-                const msg = (err && err.message) ? err.message : 'Invalid password or server error.';
-                if (errorMsg) { errorMsg.textContent = msg; errorMsg.style.display = 'block'; }
-            });
-        }).catch(function (err) {
-            if (errorMsg) { errorMsg.textContent = 'Could not verify admin. Try again.'; errorMsg.style.display = 'block'; }
-        });
-        return true;
-    }
-    if (!isAdminEmail(email)) {
-        if (errorMsg) { errorMsg.textContent = 'This email is not allowed to log in as admin. Access denied.'; errorMsg.style.display = 'block'; }
-        return false;
-    }
-    const storedPassword = getStoredAdminPassword();
-    if (password !== storedPassword) {
-        if (errorMsg) { errorMsg.textContent = 'Invalid password. Access denied.'; errorMsg.style.display = 'block'; }
-        return false;
-    }
-    const code = generateLoginCode();
-    storeLoginCode(email, code, 'adminLogin');
-    sendCodeToEmail(email, code, 'login');
-    if (errorMsg) errorMsg.style.display = 'none';
-    window._adminPendingEmail = email;
-    return true;
+    return false;
 }
 
 // Step 2: Verify code and complete login
 function verifyLoginCodeAndLogin() {
-    const email = window._adminPendingEmail;
-    const codeInput = document.getElementById('adminLoginCode');
-    const code = (codeInput && codeInput.value) ? codeInput.value.trim() : '';
     const errorEl = document.getElementById('loginCodeError');
-    if (!email) {
-        if (errorEl) errorEl.textContent = 'Session expired. Please start over.';
-        return false;
-    }
-    if (!code || code.length !== 6) {
-        if (errorEl) errorEl.textContent = 'Please enter the 6-digit code.';
-        return false;
-    }
-    const stored = getStoredLoginCode(email, 'adminLogin');
-    if (!stored || stored !== code) {
-        if (errorEl) errorEl.textContent = 'Invalid or expired code. Request a new one.';
-        return false;
-    }
-    try { sessionStorage.removeItem('adminLogin_' + email.toLowerCase().trim()); } catch (e) {}
-    window._adminPendingEmail = null;
-    if (errorEl) errorEl.textContent = '';
-    if (codeInput) codeInput.value = '';
-    const loginSection = document.getElementById('loginSection');
-    const adminDashboard = document.getElementById('adminDashboard');
-    const codeStep = document.getElementById('loginCodeStep');
-    if (loginSection) loginSection.querySelector('form').style.display = '';
-    if (codeStep) codeStep.style.display = 'none';
-    localStorage.setItem('slayStationAdminLoggedIn', 'true');
-    localStorage.setItem('slayStationAdminEmail', email);
-    if (loginSection) loginSection.style.display = 'none';
-    if (adminDashboard) adminDashboard.style.display = 'block';
-    if (document.body) document.body.classList.remove('login-page-active');
-    loadOrders();
-    return true;
+    if (errorEl) errorEl.textContent = 'Admin code login is disabled. Use "Continue with Google" only.';
+    return false;
 }
 
 // Forgot password: send code to allowed email only (Firebase sends real email and stores code in Firestore)
@@ -403,52 +338,12 @@ function verifyForgotCodeAndSetPassword(email, code, newPassword, confirmPasswor
 
 // Authenticate admin (legacy: direct login without code; used when code step is skipped or from prompt fallback)
 function authenticateAdmin() {
-    const emailInput = document.getElementById('adminEmail');
-    const passwordInput = document.getElementById('adminPassword');
-    if (!emailInput) {
-        const email = prompt('Enter admin email:');
-        const password = prompt('Enter admin password:');
-        if (email && isAdminEmail(email) && password === getStoredAdminPassword()) {
-            const loginSection = document.getElementById('loginSection');
-            const adminDashboard = document.getElementById('adminDashboard');
-            if (loginSection) loginSection.style.display = 'none';
-            if (adminDashboard) adminDashboard.style.display = 'block';
-            loadOrders();
-            return true;
-        }
-        alert('Invalid email or password! Access denied.');
-        return false;
-    }
-    const email = emailInput.value.trim();
-    const password = (passwordInput && passwordInput.value) ? passwordInput.value : '';
     const errorMsg = document.getElementById('loginError');
-    if (!email) {
-        if (errorMsg) { errorMsg.textContent = 'Please enter your email address'; errorMsg.style.display = 'block'; }
-        return false;
+    if (errorMsg) {
+        errorMsg.textContent = 'Direct admin password login is disabled. Use "Continue with Google" only.';
+        errorMsg.style.display = 'block';
     }
-    if (!password) {
-        if (errorMsg) { errorMsg.textContent = 'Please enter the admin password'; errorMsg.style.display = 'block'; }
-        return false;
-    }
-    if (!isAdminEmail(email)) {
-        if (errorMsg) { errorMsg.textContent = 'This email is not allowed. Access denied.'; errorMsg.style.display = 'block'; }
-        return false;
-    }
-    if (password !== getStoredAdminPassword()) {
-        if (errorMsg) { errorMsg.textContent = 'Invalid password! Access denied.'; errorMsg.style.display = 'block'; }
-        return false;
-    }
-    const loginSection = document.getElementById('loginSection');
-    const adminDashboard = document.getElementById('adminDashboard');
-    if (loginSection) loginSection.style.display = 'none';
-    if (adminDashboard) adminDashboard.style.display = 'block';
-    if (errorMsg) errorMsg.style.display = 'none';
-    if (document.body) document.body.classList.remove('login-page-active');
-    if (passwordInput) passwordInput.value = '';
-    localStorage.setItem('slayStationAdminLoggedIn', 'true');
-    localStorage.setItem('slayStationAdminEmail', email);
-    loadOrders();
-    return true;
+    return false;
 }
 
 // Make functions globally available
