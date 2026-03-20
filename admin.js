@@ -1126,7 +1126,16 @@ if (typeof window !== 'undefined') {
     window.createOrder = function(orderData) {
         const orders = JSON.parse(localStorage.getItem('slayStationOrders') || '[]');
         const orderId = orders.length > 0 ? Math.max(...orders.map(o => o.id)) + 1 : 1;
-        
+
+        function latLngToPercent(lat, lng) {
+            const minLat = -1.35, maxLat = -1.20, minLng = 36.70, maxLng = 36.90;
+            return {
+                x: Math.max(0, Math.min(100, ((lng - minLng) / (maxLng - minLng)) * 100)),
+                y: Math.max(0, Math.min(100, ((maxLat - lat) / (maxLat - minLat)) * 100))
+            };
+        }
+        const shop = (typeof window !== 'undefined' && window.SHOP_LOCATION) ? window.SHOP_LOCATION : { lat: -1.2654, lng: 36.8067 };
+
         const order = {
                 id: orderId,
                 date: new Date().toISOString(),
@@ -1142,7 +1151,16 @@ if (typeof window !== 'undefined') {
                 subtotal: orderData.subtotal || orderData.total,
                 total: orderData.total != null ? orderData.total : ((orderData.subtotal || 0) + (orderData.deliveryFee || 0))
             };
-        
+
+        order.storeLocationLatLng = { lat: shop.lat, lng: shop.lng };
+        order.storeLocation = order.storeLocation || latLngToPercent(shop.lat, shop.lng);
+        if (orderData.pinnedLocation && orderData.pinnedLocation.lat != null && orderData.pinnedLocation.lng != null) {
+            order.customerLocationLatLng = { lat: orderData.pinnedLocation.lat, lng: orderData.pinnedLocation.lng };
+            order.customerLocation = latLngToPercent(orderData.pinnedLocation.lat, orderData.pinnedLocation.lng);
+        } else if (!order.customerLocation) {
+            order.customerLocation = { x: 75, y: 25 };
+        }
+
         orders.push(order);
         localStorage.setItem('slayStationOrders', JSON.stringify(orders));
         return order;

@@ -2772,6 +2772,22 @@ function createOrderWithData(orderData, subtotal, giftWrap, paymentMethod, mpesa
                 notifications: []
             };
             order.mpesaReference = 'SLY' + order.id + '-' + Math.random().toString(36).substr(2, 4).toUpperCase();
+            const shopFb = (typeof window !== 'undefined' && window.SHOP_LOCATION) ? window.SHOP_LOCATION : { lat: -1.2654, lng: 36.8067 };
+            function latLngToPctFb(lat, lng) {
+                const minLat = -1.35, maxLat = -1.20, minLng = 36.70, maxLng = 36.90;
+                return {
+                    x: Math.max(0, Math.min(100, ((lng - minLng) / (maxLng - minLng)) * 100)),
+                    y: Math.max(0, Math.min(100, ((maxLat - lat) / (maxLat - minLat)) * 100))
+                };
+            }
+            order.storeLocationLatLng = { lat: shopFb.lat, lng: shopFb.lng };
+            order.storeLocation = order.storeLocation || latLngToPctFb(shopFb.lat, shopFb.lng);
+            if (orderData.pinnedLocation && orderData.pinnedLocation.lat != null && orderData.pinnedLocation.lng != null) {
+                order.customerLocationLatLng = { lat: orderData.pinnedLocation.lat, lng: orderData.pinnedLocation.lng };
+                order.customerLocation = latLngToPctFb(orderData.pinnedLocation.lat, orderData.pinnedLocation.lng);
+            } else if (!order.customerLocation) {
+                order.customerLocation = { x: 75, y: 25 };
+            }
             orders.push(order);
             localStorage.setItem('slayStationOrders', JSON.stringify(orders));
         }

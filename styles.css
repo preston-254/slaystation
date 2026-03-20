@@ -8699,6 +8699,11 @@ a.checkout-btn {
     color: #fff;
 }
 
+.order-track-btn .order-action-icon,
+.order-track-btn .order-action-icon i {
+    color: #111 !important;
+}
+
 /* Order history page – wider content, visible header */
 .order-history-page .order-history-inner {
     max-width: 680px;
@@ -10336,3 +10341,251 @@ body.page-checkout .checkout-map-hint { font-size: 0.85rem; color: #666; margin-
 body.page-checkout .checkout-mpesa-note { margin: 0.5rem 0 1rem 0; padding: 1rem; background: #E3F2FD; border-radius: 10px; border-left: 4px solid #2196F3; font-size: 0.9rem; color: #1565C0; }
 #cardFields { display: none; }
 body.page-checkout .card-logos img { height: 20px; }
+
+/* ========== Checkout: M-Pesa order success modal ========== */
+.order-success-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    overflow-y: auto;
+    background: rgba(26, 10, 20, 0.55);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    box-sizing: border-box;
+}
+.order-success-modal {
+    width: 100%;
+    max-width: 420px;
+    max-height: min(92vh, 720px);
+    overflow-y: auto;
+    border-radius: 20px;
+    background: linear-gradient(180deg, #fff 0%, #fffaf8 100%);
+    box-shadow: 0 24px 64px rgba(194, 24, 91, 0.18), 0 0 0 1px rgba(233, 30, 99, 0.08);
+}
+.order-success-modal-inner {
+    padding: 1.75rem 1.5rem 1.5rem;
+}
+.order-success-hero {
+    text-align: center;
+    margin-bottom: 1.25rem;
+}
+.order-success-check {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 0.75rem;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #43a047, #2e7d32);
+    color: #fff;
+    font-size: 1.75rem;
+    line-height: 56px;
+    font-weight: 700;
+    box-shadow: 0 8px 24px rgba(46, 125, 50, 0.35);
+}
+.order-success-title {
+    margin: 0;
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    letter-spacing: -0.02em;
+}
+.order-success-sub {
+    margin: 0.4rem 0 0;
+    font-size: 0.92rem;
+    color: #666;
+    line-height: 1.45;
+}
+.order-success-banner {
+    display: flex;
+    gap: 0.65rem;
+    align-items: flex-start;
+    padding: 0.85rem 1rem;
+    border-radius: 12px;
+    background: linear-gradient(120deg, #fce4ec 0%, #f8bbd9 100%);
+    border: 1px solid rgba(233, 30, 99, 0.25);
+    margin-bottom: 1.1rem;
+}
+.order-success-banner p {
+    margin: 0;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #880e4f;
+    line-height: 1.4;
+}
+.order-success-banner-icon {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+.order-success-meta {
+    margin-bottom: 1.1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #f0e6ea;
+}
+.order-success-meta-label {
+    margin: 0 0 0.2rem;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #999;
+    font-weight: 600;
+}
+.order-success-meta-value {
+    margin: 0 0 0.35rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    line-height: 1.35;
+}
+.order-success-meta-note {
+    margin: 0;
+    font-size: 0.82rem;
+    color: #777;
+    line-height: 1.4;
+}
+.order-success-mpesa-card {
+    background: #f7f9fc;
+    border: 1px solid #e3e8ef;
+    border-radius: 14px;
+    padding: 1.1rem 1rem 1rem;
+    margin-bottom: 1.1rem;
+}
+.order-success-mpesa-title {
+    margin: 0 0 0.75rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1565c0;
+}
+.order-success-till-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.85rem;
+    padding: 0.5rem 0.75rem;
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+}
+.order-success-till-label {
+    font-size: 0.8rem;
+    color: #666;
+}
+.order-success-till-num {
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: #0d47a1;
+    font-variant-numeric: tabular-nums;
+}
+.order-success-ref-label {
+    margin: 0 0 0.35rem;
+    font-size: 0.78rem;
+    color: #666;
+}
+.order-success-ref-pill {
+    font-family: ui-monospace, 'Cascadia Code', monospace;
+    font-size: 0.88rem;
+    font-weight: 600;
+    padding: 0.5rem 0.75rem;
+    background: #fff;
+    border: 2px dashed #e91e63;
+    border-radius: 10px;
+    color: #ad1457;
+    word-break: break-all;
+    margin-bottom: 0.85rem;
+}
+.order-success-input-label {
+    display: block;
+    margin: 0 0 0.35rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #444;
+}
+.order-success-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.65rem 0.85rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 1rem;
+    margin-bottom: 0.65rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.order-success-input:focus {
+    outline: none;
+    border-color: #2196f3;
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
+}
+.order-success-btn-primary {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #1976d2, #1565c0);
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(21, 101, 192, 0.3);
+}
+.order-success-btn-primary:hover:not(:disabled) {
+    filter: brightness(1.05);
+}
+.order-success-btn-primary:disabled {
+    opacity: 0.75;
+    cursor: default;
+}
+.order-success-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.order-success-btn-secondary {
+    padding: 0.65rem 1rem;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+    background: #fff;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #333;
+    cursor: pointer;
+}
+.order-success-btn-secondary:hover {
+    background: #fafafa;
+}
+.order-success-btn-outline {
+    padding: 0.65rem 1rem;
+    border-radius: 10px;
+    border: 2px solid #1a1a1a;
+    background: transparent;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #1a1a1a;
+    cursor: pointer;
+}
+.order-success-btn-outline:hover {
+    background: #1a1a1a;
+    color: #fff;
+}
+.order-success-btn-whatsapp {
+    display: block;
+    text-align: center;
+    padding: 0.7rem 1rem;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #25d366, #128c7e);
+    color: #fff !important;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-decoration: none;
+    box-shadow: 0 4px 16px rgba(37, 211, 102, 0.35);
+}
+.order-success-btn-whatsapp:hover {
+    filter: brightness(1.06);
+}
+@media (max-width: 400px) {
+    .order-success-modal-inner { padding: 1.35rem 1.1rem 1.1rem; }
+    .order-success-title { font-size: 1.25rem; }
+}

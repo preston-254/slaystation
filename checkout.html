@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout | Slay Station</title>
     <!-- Google Maps API key for location/Places autocomplete. Restrict by HTTP referrer in Google Cloud Console. -->
-    <script>window.SLAYSTATION_GOOGLE_MAPS_KEY = window.SLAYSTATION_GOOGLE_MAPS_KEY || 'AIzaSyD3FItszXml6cqO1BiLTfhNfJNO4BrevE8';</script>
+    <script>window.SLAYSTATION_GOOGLE_MAPS_KEY = window.SLAYSTATION_GOOGLE_MAPS_KEY || 'AIzaSyDYz6LTWrNoUkcHZUfKjZWJuKMGHGBnLlQ';</script>
     <link rel="stylesheet" href="styles.css?v=20250320">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -231,6 +231,12 @@
     (function(){
       var key = (window.SLAYSTATION_GOOGLE_MAPS_KEY || '').trim();
       if (!key) return;
+      window.gm_authFailure = function() {
+        window.slayStationMapsReady = false;
+        window.slayStationMapsFailed = true;
+        if (window.slayStationMapsTimeout) clearTimeout(window.slayStationMapsTimeout);
+        if (window.onSlayStationMapsReady) window.onSlayStationMapsReady();
+      };
       window.slayStationMapsCallback = function() {
         window.slayStationMapsReady = true;
         if (window.slayStationMapsTimeout) clearTimeout(window.slayStationMapsTimeout);

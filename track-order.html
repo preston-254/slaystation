@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <script>window.SLAYSTATION_GOOGLE_MAPS_KEY = window.SLAYSTATION_GOOGLE_MAPS_KEY || 'AIzaSyD3FItszXml6cqO1BiLTfhNfJNO4BrevE8';</script>
+    <script>window.SLAYSTATION_GOOGLE_MAPS_KEY = window.SLAYSTATION_GOOGLE_MAPS_KEY || 'AIzaSyDYz6LTWrNoUkcHZUfKjZWJuKMGHGBnLlQ';</script>
     <style>
         .track-page { max-width: 900px; margin: 0 auto; padding: 2rem 1rem 4rem; }
         .track-page h1 { margin-bottom: 0.5rem; color: var(--dark); }
@@ -76,6 +76,7 @@
                 <h2>📍 Driver location</h2>
                 <p id="trackMapSubtitle" style="margin: 0 0 0.25rem 0; color: #666; font-size: 0.9rem;">Your driver is on the way to your delivery address.</p>
                 <p id="trackEta" style="margin: 0 0 0.5rem 0; font-size: 1rem; font-weight: 600; color: #1976D2;"></p>
+                <p id="trackWeatherLine" style="display: none; margin: 0 0 0.5rem 0; font-size: 0.9rem; color: #555;"></p>
                 <div class="track-legend">
                     <span>🛍️ Store</span>
                     <span>🏠 Your address</span>
@@ -90,6 +91,7 @@
         </div>
     </main>
 
+    <script src="delivery-fee-calculator.js"></script>
     <script src="auth.js"></script>
     <script>
         (function() {
@@ -191,33 +193,43 @@
                 mapCard.style.display = 'block';
                 var subtitleP = document.getElementById('trackMapSubtitle');
                 var etaP = document.getElementById('trackEta');
+                var tw0 = document.getElementById('trackWeatherLine');
                 if (subtitleP) subtitleP.style.display = 'none';
                 if (etaP) etaP.style.display = 'none';
+                if (tw0) tw0.style.display = 'none';
                 if (document.querySelector('.track-legend')) document.querySelector('.track-legend').style.display = 'none';
                 if (mapDiv) mapDiv.innerHTML = '<p style="padding: 2rem; text-align: center; color: #28a745; font-weight: 600;">✅ Delivered</p>';
             } else if (showMap) {
                 mapCard.style.display = 'block';
-                var storeLoc = order.storeLocation || { x: 20, y: 70 };
+                var shop = window.SHOP_LOCATION || { lat: -1.2654, lng: 36.8067 };
+                var storeLatLng = order.storeLocationLatLng
+                    ? { lat: order.storeLocationLatLng.lat, lng: order.storeLocationLatLng.lng }
+                    : { lat: shop.lat, lng: shop.lng };
                 var customerLoc = order.customerLocation || { x: 75, y: 25 };
-                var riderLoc = order.riderLocation || storeLoc;
-                var storeLatLng = percentageToLatLng(storeLoc.x, storeLoc.y);
+                var riderLoc = order.riderLocation || order.storeLocation || { x: 20, y: 70 };
                 var customerLatLng = order.customerLocationLatLng || percentageToLatLng(customerLoc.x, customerLoc.y);
                 var riderLatLng = order.riderLocationLatLng || percentageToLatLng(riderLoc.x, riderLoc.y);
 
                 var etaEl = document.getElementById('trackEta');
-                if (etaEl) etaEl.textContent = order.estimatedTime ? '⏱️ Estimated arrival: ' + order.estimatedTime : '⏱️ Driver will start soon — ETA will appear when they begin the trip.';
+                if (etaEl) {
+                    etaEl.textContent = order.estimatedTime
+                        ? '⏱️ Estimated arrival: ' + order.estimatedTime
+                        : '⏱️ Calculating route…';
+                }
 
                 function initGoogleTrackMap() {
                     if (!mapDiv || !window.google || !window.google.maps) return;
-                    var center = { lat: (storeLatLng.lat + customerLatLng.lat + riderLatLng.lat) / 3, lng: (storeLatLng.lng + customerLatLng.lng + riderLatLng.lng) / 3 };
+                    var center = {
+                        lat: (storeLatLng.lat + customerLatLng.lat + riderLatLng.lat) / 3,
+                        lng: (storeLatLng.lng + customerLatLng.lng + riderLatLng.lng) / 3
+                    };
                     var map = new google.maps.Map(mapDiv, {
                         center: center,
                         zoom: 12,
                         mapTypeControl: true,
                         streetViewControl: false,
                         fullscreenControl: true,
-                        zoomControl: true,
-                        styles: []
+                        zoomControl: true
                     });
                     var bounds = new google.maps.LatLngBounds();
                     bounds.extend(storeLatLng);
@@ -225,18 +237,107 @@
                     bounds.extend(riderLatLng);
                     map.fitBounds(bounds, { top: 40, right: 40, bottom: 40, left: 40 });
 
-                    new google.maps.Marker({ position: storeLatLng, map: map, title: 'Store' });
-                    new google.maps.Marker({ position: customerLatLng, map: map, title: 'Your address' });
-                    var riderMarker = new google.maps.Marker({ position: riderLatLng, map: map, title: 'Driver' });
-
+                    new google.maps.Marker({
+                        position: storeLatLng,
+                        map: map,
+                        title: 'Shop — Westlands',
+                        icon: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png'
+                    });
+                    new google.maps.Marker({
+                        position: customerLatLng,
+                        map: map,
+                        title: 'Your address',
+                        icon: 'https://maps.google.com/mapfiles/ms/icons/purple-dot.png'
+                    });
+                    var riderMarker = new google.maps.Marker({
+                        position: riderLatLng,
+                        map: map,
+                        title: 'Driver',
+                        icon: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png'
+                    });
                     window.trackOrderRiderMarker = riderMarker;
-                    setInterval(function() {
+
+                    var dirRenderer = new google.maps.DirectionsRenderer({
+                        map: map,
+                        suppressMarkers: true,
+                        polylineOptions: { strokeColor: '#c2185b', strokeWeight: 5, strokeOpacity: 0.9 }
+                    });
+                    var dirService = new google.maps.DirectionsService();
+
+                    function refreshTrackDirections() {
+                        var o = getOrders().find(function (x) { return x.id === orderId; });
+                        if (!o || o.completed) return;
+                        var origin = o.riderLocationLatLng
+                            || (o.riderLocation ? percentageToLatLng(o.riderLocation.x, o.riderLocation.y) : null)
+                            || storeLatLng;
+                        var dest = o.customerLocationLatLng || customerLatLng;
+                        var req = {
+                            origin: origin,
+                            destination: dest,
+                            travelMode: google.maps.TravelMode.DRIVING
+                        };
+                        var triedTraffic = false;
+                        if (google.maps.TrafficModel) {
+                            req.drivingOptions = {
+                                departureTime: new Date(),
+                                trafficModel: google.maps.TrafficModel.BEST_GUESS
+                            };
+                            triedTraffic = true;
+                        }
+                        dirService.route(req, function (res, status) {
+                            if (status !== 'OK' && triedTraffic && req.drivingOptions) {
+                                delete req.drivingOptions;
+                                dirService.route(req, function (res2, st2) {
+                                    if (st2 === 'OK') applyDir(res2);
+                                });
+                                return;
+                            }
+                            if (status === 'OK') applyDir(res);
+                        });
+                    }
+                    function applyDir(res) {
+                        dirRenderer.setDirections(res);
+                        var leg = res.routes[0].legs[0];
+                        var sec = (leg.duration_in_traffic && leg.duration_in_traffic.value)
+                            ? leg.duration_in_traffic.value
+                            : leg.duration.value;
+                        var etaP = document.getElementById('trackEta');
+                        if (etaP) {
+                            etaP.textContent = '⏱️ ETA ~' + Math.round(sec / 60) + ' min (traffic when available)';
+                        }
+                        var list = getOrders();
+                        var ix = list.findIndex(function (x) { return x.id === orderId; });
+                        if (ix !== -1) {
+                            list[ix].estimatedTime = Math.round(sec / 60) + ' min';
+                            try {
+                                localStorage.setItem('slayStationOrders', JSON.stringify(list));
+                            } catch (e) { /* ignore */ }
+                        }
+                    }
+                    refreshTrackDirections();
+                    setInterval(refreshTrackDirections, 45000);
+
+                    setInterval(function () {
                         var orders = getOrders();
-                        var o = orders.find(function(x) { return x.id === orderId; });
-                        if (!o || !o.riderLocation || o.completed || !window.trackOrderRiderMarker) return;
+                        var o = orders.find(function (x) { return x.id === orderId; });
+                        if (!o || o.completed || !window.trackOrderRiderMarker) return;
+                        if (!o.riderLocation && !o.riderLocationLatLng) return;
                         var rLatLng = o.riderLocationLatLng || percentageToLatLng(o.riderLocation.x, o.riderLocation.y);
                         window.trackOrderRiderMarker.setPosition(rLatLng);
                     }, 2000);
+
+                    var wl = document.getElementById('trackWeatherLine');
+                    if (wl && customerLatLng.lat != null) {
+                        fetch('https://api.open-meteo.com/v1/forecast?latitude=' + customerLatLng.lat + '&longitude=' + customerLatLng.lng + '&current_weather=true')
+                            .then(function (r) { return r.json(); })
+                            .then(function (d) {
+                                if (d.current_weather) {
+                                    wl.style.display = 'block';
+                                    wl.textContent = '🌤️ Near your pin: ' + d.current_weather.temperature + '°C (weather may affect travel time)';
+                                }
+                            })
+                            .catch(function () {});
+                    }
                 }
 
                 if (window.google && window.google.maps) {

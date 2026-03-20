@@ -331,6 +331,7 @@ function renderRiderOrders(activeOrders, deliveredOrders = []) {
                         updateRiderMapMarkers(order.id, order, isAssigned && order.deliveryStarted);
                         if (isAssigned && order.deliveryStarted && !order.completed) {
                             startRiderTracking(order.id, order);
+                            loadWeatherForOrder(order.id, order);
                         }
                         return;
                     }
@@ -338,12 +339,13 @@ function renderRiderOrders(activeOrders, deliveredOrders = []) {
                 
                 // Wait for Leaflet to be available
                 const initMap = () => {
-                    if (typeof L !== 'undefined' && L.map) {
+                    if ((window.google && google.maps) || (typeof L !== 'undefined' && L.map)) {
                         renderMap(order.id, order, isAssigned && order.deliveryStarted);
                         
                         // Start tracking if delivery has started
                         if (isAssigned && order.deliveryStarted && !order.completed) {
                             startRiderTracking(order.id, order);
+                            loadWeatherForOrder(order.id, order);
                         }
                     } else {
                         setTimeout(initMap, 100);
@@ -472,16 +474,129 @@ function renderRiderOrders(activeOrders, deliveredOrders = []) {
     }
 }
 
-// Main overview map (Uber-style: always show map; add delivery markers when present)
+// Main overview map (Uber-style: Google when API loaded, else Leaflet)
 let riderMainMapInstance = null;
+let riderMainMapGoogle = null;
+let riderMainDirectionsRenderer = null;
+let riderMainGoogleMarkers = [];
+let directionsServiceSingleton = null;
+const riderGoogleLeafletPolylines = {};
+
 function updateRiderMainMap(activeOrders) {
     window._lastActiveOrders = activeOrders || [];
     const container = document.getElementById('riderMainMap');
     const hint = document.getElementById('riderMapHint');
     if (!container) return;
     if (hint) hint.style.display = activeOrders.length === 0 ? 'block' : 'none';
+
+    if (window.google && google.maps && google.maps.Map) {
+        if (riderMainMapInstance && riderMainMapInstance.remove) {
+            try {
+                riderMainMapInstance.remove();
+            } catch (e) { /* ignore */ }
+            riderMainMapInstance = null;
+        }
+        if (!riderMainMapGoogle) {
+            riderMainMapGoogle = new google.maps.Map(container, {
+                center: { lat: -1.2654, lng: 36.8067 },
+                zoom: 12,
+                mapTypeControl: true,
+                streetViewControl: false,
+                fullscreenControl: true
+            });
+            riderMainDirectionsRenderer = new google.maps.DirectionsRenderer({
+                map: riderMainMapGoogle,
+                suppressMarkers: true,
+                polylineOptions: { strokeColor: '#c2185b', strokeWeight: 5, strokeOpacity: 0.9 }
+            });
+        }
+        riderMainGoogleMarkers.forEach((m) => m.setMap(null));
+        riderMainGoogleMarkers = [];
+        const bounds = new google.maps.LatLngBounds();
+        (activeOrders || []).forEach((order) => {
+            const store = getStoreLatLngFromOrder(order);
+            const cust = getCustomerLatLngFromOrder(order);
+            const rider = getRiderLatLngFromOrder(order);
+            riderMainGoogleMarkers.push(
+                new google.maps.Marker({
+                    position: store,
+                    map: riderMainMapGoogle,
+                    title: 'Shop · Order #' + order.id,
+                    icon: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png'
+                }),
+                new google.maps.Marker({
+                    position: cust,
+                    map: riderMainMapGoogle,
+                    title: (order.name || 'Customer') + ' · Order #' + order.id,
+                    icon: 'https://maps.google.com/mapfiles/ms/icons/purple-dot.png'
+                }),
+                new google.maps.Marker({
+                    position: rider,
+                    map: riderMainMapGoogle,
+                    title: 'Rider · Order #' + order.id,
+                    icon: { path: google.maps.SymbolPath.CIRCLE, scale: 0, labelOrigin: new google.maps.Point(0, -2) },
+                    label: { text: '🚲', fontSize: '24px' }
+                })
+            );
+            bounds.extend(store);
+            bounds.extend(cust);
+            bounds.extend(rider);
+        });
+        const riderEmail = (localStorage.getItem('riderEmail') || '').toLowerCase();
+        const primary = (activeOrders || []).find(
+            (o) =>
+                o.deliveryStarted &&
+                !o.completed &&
+                o.assignedRider &&
+                o.assignedRider.toLowerCase() === riderEmail
+        );
+        if (primary && riderMainDirectionsRenderer) {
+            const ds = directionsServiceSingleton || (directionsServiceSingleton = new google.maps.DirectionsService());
+            const origin = getRiderLatLngFromOrder(primary);
+            const dest = getCustomerLatLngFromOrder(primary);
+            const req = {
+                origin,
+                destination: dest,
+                travelMode: google.maps.TravelMode.DRIVING
+            };
+            let withTraffic = false;
+            if (google.maps.TrafficModel) {
+                req.drivingOptions = {
+                    departureTime: new Date(),
+                    trafficModel: google.maps.TrafficModel.BEST_GUESS
+                };
+                withTraffic = true;
+            }
+            ds.route(req, (result, status) => {
+                if (status !== 'OK' && withTraffic && req.drivingOptions) {
+                    delete req.drivingOptions;
+                    ds.route(req, (r2, s2) => {
+                        if (s2 === 'OK' && riderMainDirectionsRenderer) riderMainDirectionsRenderer.setDirections(r2);
+                    });
+                    return;
+                }
+                if (status === 'OK' && riderMainDirectionsRenderer) riderMainDirectionsRenderer.setDirections(result);
+            });
+        }
+        if (!bounds.isEmpty()) {
+            riderMainMapGoogle.fitBounds(bounds, 48);
+        } else {
+            riderMainMapGoogle.setCenter({ lat: -1.2654, lng: 36.8067 });
+            riderMainMapGoogle.setZoom(12);
+        }
+        setTimeout(function () {
+            if (riderMainMapGoogle) google.maps.event.trigger(riderMainMapGoogle, 'resize');
+        }, 200);
+        return;
+    }
+
+    if (riderMainMapGoogle) {
+        riderMainMapGoogle = null;
+        riderMainDirectionsRenderer = null;
+        riderMainGoogleMarkers = [];
+        container.innerHTML = '';
+    }
     if (typeof L === 'undefined' || !L.map) return;
-    // Always ensure the map exists (so rider always sees a map, not blank area)
     if (!riderMainMapInstance) {
         riderMainMapInstance = L.map(container, {
             center: [-1.267, 36.806],
@@ -491,29 +606,27 @@ function updateRiderMainMap(activeOrders) {
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(riderMainMapInstance);
         riderMainMapInstance._deliveryMarkers = [];
     }
-    // Clear previous delivery markers
-    (riderMainMapInstance._deliveryMarkers || []).forEach(m => { if (m && riderMainMapInstance.removeLayer) riderMainMapInstance.removeLayer(m); });
+    (riderMainMapInstance._deliveryMarkers || []).forEach((m) => {
+        if (m && riderMainMapInstance.removeLayer) riderMainMapInstance.removeLayer(m);
+    });
     riderMainMapInstance._deliveryMarkers = [];
     const bounds = [];
-    (activeOrders || []).forEach(order => {
-        const storeLoc = order.storeLocation || { x: 20, y: 70 };
-        const customerLoc = order.customerLocation || { x: 75, y: 25 };
-        const riderLoc = order.riderLocation || storeLoc;
-        const storeLatLng = percentageToLatLngRider(storeLoc.x, storeLoc.y);
-        const customerLatLng = percentageToLatLngRider(customerLoc.x, customerLoc.y);
-        const riderLatLng = percentageToLatLngRider(riderLoc.x, riderLoc.y);
+    (activeOrders || []).forEach((order) => {
+        const store = getStoreLatLngFromOrder(order);
+        const cust = getCustomerLatLngFromOrder(order);
+        const rider = getRiderLatLngFromOrder(order);
         const storeIcon = L.divIcon({ className: 'rider-main-marker', html: '🛍️', iconSize: [28, 28], iconAnchor: [14, 14] });
         const customerIcon = L.divIcon({ className: 'rider-main-marker', html: '📍', iconSize: [32, 32], iconAnchor: [16, 16] });
         const riderIcon = L.divIcon({ className: 'rider-main-marker', html: '🏍️', iconSize: [36, 36], iconAnchor: [18, 18] });
-        const m1 = L.marker([storeLatLng.lat, storeLatLng.lng], { icon: storeIcon }).addTo(riderMainMapInstance).bindPopup('Order #' + order.id + ' – Store');
-        const m2 = L.marker([customerLatLng.lat, customerLatLng.lng], { icon: customerIcon }).addTo(riderMainMapInstance).bindPopup('Order #' + order.id + ' – ' + (order.name || 'Customer'));
-        const m3 = L.marker([riderLatLng.lat, riderLatLng.lng], { icon: riderIcon }).addTo(riderMainMapInstance).bindPopup('Order #' + order.id + ' – Rider');
+        const m1 = L.marker([store.lat, store.lng], { icon: storeIcon }).addTo(riderMainMapInstance).bindPopup('Order #' + order.id + ' – Store');
+        const m2 = L.marker([cust.lat, cust.lng], { icon: customerIcon }).addTo(riderMainMapInstance).bindPopup('Order #' + order.id + ' – ' + (order.name || 'Customer'));
+        const m3 = L.marker([rider.lat, rider.lng], { icon: riderIcon }).addTo(riderMainMapInstance).bindPopup('Order #' + order.id + ' – Rider');
         riderMainMapInstance._deliveryMarkers.push(m1, m2, m3);
-        bounds.push([storeLatLng.lat, storeLatLng.lng], [customerLatLng.lat, customerLatLng.lng], [riderLatLng.lat, riderLatLng.lng]);
+        bounds.push([store.lat, store.lng], [cust.lat, cust.lng], [rider.lat, rider.lng]);
     });
     if (bounds.length > 0 && riderMainMapInstance.fitBounds) riderMainMapInstance.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
     else riderMainMapInstance.setView([-1.267, 36.806], 12);
-    setTimeout(function() {
+    setTimeout(function () {
         if (riderMainMapInstance && riderMainMapInstance.invalidateSize) riderMainMapInstance.invalidateSize();
     }, 100);
 }
@@ -526,6 +639,9 @@ const riderRoutingControls = {};
 const riderMapInitializationAttempted = {};
 const riderMapErrorShown = {};
 const riderGeocoders = {};
+const riderGoogleOrderMaps = {};
+const riderGoogleOrderMarkers = {};
+const riderGoogleOrderRenderers = {};
 
 // Convert percentage coordinates to Nairobi lat/lng
 function percentageToLatLngRider(x, y) {
@@ -540,6 +656,208 @@ function percentageToLatLngRider(x, y) {
     const lng = minLng + ((x / 100) * (maxLng - minLng));
     
     return { lat, lng };
+}
+
+function latLngToPercentFlat(lat, lng) {
+    const minLat = -1.35;
+    const maxLat = -1.20;
+    const minLng = 36.70;
+    const maxLng = 36.90;
+    return {
+        x: Math.max(0, Math.min(100, ((lng - minLng) / (maxLng - minLng)) * 100)),
+        y: Math.max(0, Math.min(100, ((maxLat - lat) / (maxLat - minLat)) * 100))
+    };
+}
+
+function getStoreLatLngFromOrder(order) {
+    if (order && order.storeLocationLatLng && order.storeLocationLatLng.lat != null) {
+        return { lat: order.storeLocationLatLng.lat, lng: order.storeLocationLatLng.lng };
+    }
+    if (typeof window !== 'undefined' && window.SHOP_LOCATION) {
+        return { lat: window.SHOP_LOCATION.lat, lng: window.SHOP_LOCATION.lng };
+    }
+    const s = (order && order.storeLocation) || { x: 20, y: 70 };
+    return percentageToLatLngRider(s.x, s.y);
+}
+
+function getCustomerLatLngFromOrder(order) {
+    if (order && order.customerLocationLatLng && order.customerLocationLatLng.lat != null) {
+        return { lat: order.customerLocationLatLng.lat, lng: order.customerLocationLatLng.lng };
+    }
+    const c = (order && order.customerLocation) || { x: 75, y: 25 };
+    return percentageToLatLngRider(c.x, c.y);
+}
+
+function getRiderLatLngFromOrder(order) {
+    if (order && order.riderLocationLatLng && order.riderLocationLatLng.lat != null) {
+        return { lat: order.riderLocationLatLng.lat, lng: order.riderLocationLatLng.lng };
+    }
+    const r = (order && order.riderLocation) || (order && order.storeLocation) || { x: 20, y: 70 };
+    return percentageToLatLngRider(r.x, r.y);
+}
+
+function renderGoogleOrderMap(orderId, order, isActive) {
+    if (!window.google || !google.maps) return false;
+    const mapElement = document.getElementById(`googleMap-${orderId}`);
+    if (!mapElement) return false;
+    const storeLatLng = getStoreLatLngFromOrder(order);
+    const customerLatLng = getCustomerLatLngFromOrder(order);
+    const riderLatLng = getRiderLatLngFromOrder(order);
+
+    if (!riderGoogleOrderMaps[orderId]) {
+        riderGoogleOrderMaps[orderId] = new google.maps.Map(mapElement, {
+            center: { lat: (storeLatLng.lat + customerLatLng.lat) / 2, lng: (storeLatLng.lng + customerLatLng.lng) / 2 },
+            zoom: 12,
+            mapTypeControl: true,
+            streetViewControl: false,
+            fullscreenControl: false
+        });
+        riderGoogleOrderRenderers[orderId] = new google.maps.DirectionsRenderer({
+            map: riderGoogleOrderMaps[orderId],
+            suppressMarkers: true,
+            polylineOptions: { strokeColor: '#FF6B9D', strokeWeight: 5, strokeOpacity: 0.9 }
+        });
+    }
+    const map = riderGoogleOrderMaps[orderId];
+    const markers = riderGoogleOrderMarkers[orderId] || {};
+    ['store', 'customer', 'rider'].forEach(function (k) {
+        if (markers[k]) markers[k].setMap(null);
+    });
+    riderGoogleOrderMarkers[orderId] = {
+        store: new google.maps.Marker({
+            position: storeLatLng,
+            map: map,
+            title: 'Shop',
+            icon: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png'
+        }),
+        customer: new google.maps.Marker({
+            position: customerLatLng,
+            map: map,
+            title: 'Customer',
+            icon: 'https://maps.google.com/mapfiles/ms/icons/purple-dot.png'
+        }),
+        rider: new google.maps.Marker({
+            position: riderLatLng,
+            map: map,
+            title: 'Rider',
+            icon: { path: google.maps.SymbolPath.CIRCLE, scale: 0, labelOrigin: new google.maps.Point(0, -2) },
+            label: { text: '🚲', fontSize: '24px' }
+        })
+    };
+
+    const bounds = new google.maps.LatLngBounds();
+    bounds.extend(storeLatLng);
+    bounds.extend(customerLatLng);
+    bounds.extend(riderLatLng);
+    map.fitBounds(bounds, 48);
+
+    if (isActive) {
+        const ds = directionsServiceSingleton || (directionsServiceSingleton = new google.maps.DirectionsService());
+        const req = {
+            origin: riderLatLng,
+            destination: customerLatLng,
+            travelMode: google.maps.TravelMode.DRIVING
+        };
+        let withTraffic = false;
+        if (google.maps.TrafficModel) {
+            req.drivingOptions = { departureTime: new Date(), trafficModel: google.maps.TrafficModel.BEST_GUESS };
+            withTraffic = true;
+        }
+        ds.route(req, function (res, status) {
+            if (status !== 'OK' && withTraffic) {
+                delete req.drivingOptions;
+                ds.route(req, function (r2, s2) {
+                    if (s2 === 'OK' && riderGoogleOrderRenderers[orderId]) riderGoogleOrderRenderers[orderId].setDirections(r2);
+                });
+                return;
+            }
+            if (status === 'OK' && riderGoogleOrderRenderers[orderId]) {
+                riderGoogleOrderRenderers[orderId].setDirections(res);
+                var leg = res.routes[0].legs[0];
+                var sec = (leg.duration_in_traffic && leg.duration_in_traffic.value) ? leg.duration_in_traffic.value : leg.duration.value;
+                var distKm = leg.distance ? (leg.distance.value / 1000).toFixed(2) : null;
+                var mins = Math.round(sec / 60);
+                var etaElement = document.getElementById(`eta-${orderId}`);
+                var distanceElement = document.getElementById(`distance-${orderId}`);
+                if (etaElement) etaElement.textContent = mins + ' min';
+                if (distanceElement && distKm) distanceElement.textContent = distKm + ' km';
+            }
+        });
+    }
+    return true;
+}
+
+/** Google Directions drawn on Leaflet (traffic when supported). */
+function applyGoogleTrafficPolyline(orderId, map, origin, dest, onDone) {
+    if (!window.google || !google.maps || !map || !origin || !dest) {
+        if (onDone) onDone(null, null);
+        return;
+    }
+    if (!directionsServiceSingleton) directionsServiceSingleton = new google.maps.DirectionsService();
+    const run = (useTraffic) => {
+        const req = {
+            origin: { lat: origin.lat, lng: origin.lng },
+            destination: { lat: dest.lat, lng: dest.lng },
+            travelMode: google.maps.TravelMode.DRIVING
+        };
+        if (useTraffic && google.maps.TrafficModel) {
+            req.drivingOptions = {
+                departureTime: new Date(),
+                trafficModel: google.maps.TrafficModel.BEST_GUESS
+            };
+        }
+        directionsServiceSingleton.route(req, (result, status) => {
+            if (status !== 'OK' && useTraffic) {
+                run(false);
+                return;
+            }
+            if (status !== 'OK' || !result.routes || !result.routes[0]) {
+                if (onDone) onDone(null, null);
+                return;
+            }
+            if (riderRoutingControls[orderId]) {
+                try {
+                    map.removeControl(riderRoutingControls[orderId]);
+                } catch (e) { /* ignore */ }
+                riderRoutingControls[orderId] = null;
+            }
+            if (riderPolylines[orderId]) {
+                map.removeLayer(riderPolylines[orderId]);
+                riderPolylines[orderId] = null;
+            }
+            const route = result.routes[0];
+            const path = route.overview_path.map((p) => [p.lat(), p.lng()]);
+            if (riderGoogleLeafletPolylines[orderId]) {
+                map.removeLayer(riderGoogleLeafletPolylines[orderId]);
+            }
+            riderGoogleLeafletPolylines[orderId] = L.polyline(path, {
+                color: '#c2185b',
+                weight: 5,
+                opacity: 0.92
+            }).addTo(map);
+            const leg = route.legs[0];
+            const sec = (leg.duration_in_traffic && leg.duration_in_traffic.value)
+                ? leg.duration_in_traffic.value
+                : leg.duration.value;
+            const distKm = leg.distance ? (leg.distance.value / 1000).toFixed(2) : null;
+            const mins = Math.round(sec / 60);
+            const orders = JSON.parse(localStorage.getItem('slayStationOrders') || '[]');
+            const idx = orders.findIndex((o) => o.id === orderId);
+            if (idx !== -1) {
+                orders[idx].estimatedTime = mins + ' min (traffic-aware)';
+                if (distKm) orders[idx].distance = distKm + ' km';
+                orders[idx].estimatedTimeSeconds = sec;
+                orders[idx].etaTrafficModel = useTraffic ? 'best_guess' : 'default';
+                localStorage.setItem('slayStationOrders', JSON.stringify(orders));
+            }
+            const etaEl = document.getElementById(`eta-${orderId}`);
+            const distEl = document.getElementById(`distance-${orderId}`);
+            if (etaEl) etaEl.textContent = mins + ' min';
+            if (distEl && distKm) distEl.textContent = distKm + ' km';
+            if (onDone) onDone(mins, distKm);
+        });
+    };
+    run(true);
 }
 
 // Initialize Leaflet Map for rider order
@@ -606,14 +924,8 @@ function initRiderGoogleMap(orderId, order, isActive) {
         order.riderLocation = { ...order.storeLocation };
     }
     
-    // Convert to lat/lng - use actual lat/lng if available, otherwise convert from percentage
-    const storeLatLng = percentageToLatLngRider(order.storeLocation.x, order.storeLocation.y);
-    let customerLatLng;
-    if (order.customerLocationLatLng) {
-        customerLatLng = order.customerLocationLatLng;
-    } else {
-        customerLatLng = percentageToLatLngRider(order.customerLocation.x, order.customerLocation.y);
-    }
+    const storeLatLng = getStoreLatLngFromOrder(order);
+    const customerLatLng = getCustomerLatLngFromOrder(order);
     
     // Center map between store and customer
     const centerLat = (storeLatLng.lat + customerLatLng.lat) / 2;
@@ -627,6 +939,7 @@ function initRiderGoogleMap(orderId, order, isActive) {
             const map = riderMapInstances[orderId];
             // Clear existing markers but keep routing control visible
             if (riderMarkers[orderId]) {
+                if (riderMarkers[orderId].store) map.removeLayer(riderMarkers[orderId].store);
                 if (riderMarkers[orderId].customer) map.removeLayer(riderMarkers[orderId].customer);
                 if (riderMarkers[orderId].rider) map.removeLayer(riderMarkers[orderId].rider);
             }
@@ -657,6 +970,7 @@ function initRiderGoogleMap(orderId, order, isActive) {
         
         // Clear existing markers for this order (but keep routing)
         if (riderMarkers[orderId]) {
+            if (riderMarkers[orderId].store) map.removeLayer(riderMarkers[orderId].store);
             if (riderMarkers[orderId].customer) map.removeLayer(riderMarkers[orderId].customer);
             if (riderMarkers[orderId].rider) map.removeLayer(riderMarkers[orderId].rider);
         }
@@ -692,6 +1006,16 @@ function initRiderGoogleMap(orderId, order, isActive) {
             popupAnchor: [0, -58]
         });
         
+        try {
+            riderMarkers[orderId].store = L.marker([storeLatLng.lat, storeLatLng.lng], {
+                icon: storeIcon,
+                title: 'Slay Station shop'
+            }).addTo(map);
+            riderMarkers[orderId].store.bindPopup('🛍️ Shop (Westlands)');
+        } catch (e) {
+            console.warn('Could not create store marker:', e);
+        }
+
         // Customer marker
         try {
             riderMarkers[orderId].customer = L.marker([customerLatLng.lat, customerLatLng.lng], {
@@ -713,15 +1037,9 @@ function initRiderGoogleMap(orderId, order, isActive) {
             // Get rider's actual GPS location
             getRiderLocation(orderId, (riderLatLng) => {
                     if (!riderLatLng) {
-                        // Fallback to stored location if GPS not available
-                        if (order.riderLocation) {
-                            riderLatLng = percentageToLatLngRider(order.riderLocation.x, order.riderLocation.y);
-                        } else {
-                            riderLatLng = storeLatLng; // Use store location as fallback
-                        }
+                        riderLatLng = getRiderLatLngFromOrder(order);
                     }
-                    
-                    // Create or update rider marker
+
                     if (riderMarkers[orderId] && riderMarkers[orderId].rider) {
                         riderMarkers[orderId].rider.setLatLng([riderLatLng.lat, riderLatLng.lng]);
                     } else {
@@ -731,114 +1049,98 @@ function initRiderGoogleMap(orderId, order, isActive) {
                         }).addTo(map);
                         riderMarkers[orderId].rider.bindPopup('🏍️ You');
                     }
-                    
-                    // Add routing from rider to customer - shows actual roads
-                    if (typeof L.Routing !== 'undefined') {
-                        // Update existing routing control instead of removing it
-                        if (riderRoutingControls[orderId]) {
-                            // Update waypoints to keep route visible
-                            riderRoutingControls[orderId].setWaypoints([
-                                L.latLng(riderLatLng.lat, riderLatLng.lng),
-                                L.latLng(customerLatLng.lat, customerLatLng.lng)
-                            ]);
-                        } else {
-                            // Create routing control with actual road routing (only if it doesn't exist)
-                            riderRoutingControls[orderId] = L.Routing.control({
-                                waypoints: [
+
+                    function fitRiderCustomerBounds() {
+                        const b = L.latLngBounds([
+                            [riderLatLng.lat, riderLatLng.lng],
+                            [customerLatLng.lat, customerLatLng.lng],
+                            [storeLatLng.lat, storeLatLng.lng]
+                        ]);
+                        map.fitBounds(b, { padding: [50, 50] });
+                    }
+
+                    if (!isActive) {
+                        fitRiderCustomerBounds();
+                        return;
+                    }
+
+                    applyGoogleTrafficPolyline(orderId, map, riderLatLng, customerLatLng, (mins) => {
+                        if (mins != null) {
+                            fitRiderCustomerBounds();
+                            return;
+                        }
+                        if (typeof L.Routing !== 'undefined') {
+                            if (riderRoutingControls[orderId]) {
+                                riderRoutingControls[orderId].setWaypoints([
                                     L.latLng(riderLatLng.lat, riderLatLng.lng),
                                     L.latLng(customerLatLng.lat, customerLatLng.lng)
-                                ],
-                                routeWhileDragging: false,
-                                router: L.Routing.osrmv1({
-                                    serviceUrl: 'https://router.project-osrm.org/route/v1',
-                                    profile: 'driving'
-                                }),
-                                createMarker: function() { return null; }, // Don't create default markers
-                                lineOptions: {
-                                    styles: [
-                                        {color: '#FF6B9D', opacity: 0.9, weight: 6}
-                                    ]
-                                },
-                                showAlternatives: false,
-                                addWaypoints: false,
-                                fitSelectedRoutes: true
-                            }).addTo(map);
-                            
-                            // Store reference to prevent garbage collection
-                            if (!map._routingControls) map._routingControls = [];
-                            map._routingControls.push(riderRoutingControls[orderId]);
-                        }
-                        
-                        // Calculate distance and time when route is found (only attach once)
-                        if (!riderRoutingControls[orderId]._etaHandlerAttached) {
-                            riderRoutingControls[orderId].on('routesfound', function(e) {
-                                const route = e.routes[0];
-                                if (route && route.summary) {
-                                    const distance = (route.summary.totalDistance / 1000).toFixed(2); // km
-                                    const timeSeconds = route.summary.totalTime;
-                                    const timeMinutes = Math.round(timeSeconds / 60); // minutes
-                                    
-                                    // Update order with estimated time
-                                    const orders = JSON.parse(localStorage.getItem('slayStationOrders') || '[]');
-                                    const orderIndex = orders.findIndex(o => o.id === orderId);
-                                    if (orderIndex !== -1) {
-                                        orders[orderIndex].estimatedTime = timeMinutes + ' minutes';
-                                        orders[orderIndex].distance = distance + ' km';
-                                        orders[orderIndex].estimatedTimeSeconds = timeSeconds;
-                                        localStorage.setItem('slayStationOrders', JSON.stringify(orders));
-                                        
-                                        // Update display
+                                ]);
+                            } else {
+                                riderRoutingControls[orderId] = L.Routing.control({
+                                    waypoints: [
+                                        L.latLng(riderLatLng.lat, riderLatLng.lng),
+                                        L.latLng(customerLatLng.lat, customerLatLng.lng)
+                                    ],
+                                    routeWhileDragging: false,
+                                    router: L.Routing.osrmv1({
+                                        serviceUrl: 'https://router.project-osrm.org/route/v1',
+                                        profile: 'driving'
+                                    }),
+                                    createMarker: function () { return null; },
+                                    lineOptions: {
+                                        styles: [{ color: '#FF6B9D', opacity: 0.9, weight: 6 }]
+                                    },
+                                    showAlternatives: false,
+                                    addWaypoints: false,
+                                    fitSelectedRoutes: true
+                                }).addTo(map);
+                                if (!map._routingControls) map._routingControls = [];
+                                map._routingControls.push(riderRoutingControls[orderId]);
+                            }
+                            if (!riderRoutingControls[orderId]._etaHandlerAttached) {
+                                riderRoutingControls[orderId].on('routesfound', function (e) {
+                                    const route = e.routes[0];
+                                    if (route && route.summary) {
+                                        const distance = (route.summary.totalDistance / 1000).toFixed(2);
+                                        const timeSeconds = route.summary.totalTime;
+                                        const timeMinutes = Math.round(timeSeconds / 60);
+                                        const orders = JSON.parse(localStorage.getItem('slayStationOrders') || '[]');
+                                        const orderIndex = orders.findIndex((o) => o.id === orderId);
+                                        if (orderIndex !== -1) {
+                                            orders[orderIndex].estimatedTime = timeMinutes + ' minutes';
+                                            orders[orderIndex].distance = distance + ' km';
+                                            orders[orderIndex].estimatedTimeSeconds = timeSeconds;
+                                            localStorage.setItem('slayStationOrders', JSON.stringify(orders));
+                                        }
                                         const etaElement = document.getElementById(`eta-${orderId}`);
                                         const distanceElement = document.getElementById(`distance-${orderId}`);
                                         if (etaElement) etaElement.textContent = timeMinutes + ' minutes';
                                         if (distanceElement) distanceElement.textContent = distance + ' km';
-                                        
-                                        // Show ETA section if hidden
-                                        const etaSection = document.querySelector(`#eta-${orderId}`)?.closest('div[style*="background: #E3F2FD"]');
-                                        if (etaSection && etaSection.style.display === 'none') {
-                                            etaSection.style.display = 'block';
-                                        }
                                     }
-                                }
-                            });
-                            riderRoutingControls[orderId]._etaHandlerAttached = true;
-                        }
-                        
-                        // Handle routing errors
-                        riderRoutingControls[orderId].on('routingerror', function(e) {
-                            console.warn('Routing error:', e);
-                            // Fallback to straight line if routing fails
-                            if (riderPolylines[orderId]) {
-                                map.removeLayer(riderPolylines[orderId]);
+                                });
+                                riderRoutingControls[orderId]._etaHandlerAttached = true;
                             }
-                            riderPolylines[orderId] = L.polyline([
-                                [riderLatLng.lat, riderLatLng.lng],
-                                [customerLatLng.lat, customerLatLng.lng]
-                            ], {
-                                color: '#FF6B9D',
-                                weight: 4,
-                                opacity: 0.8,
-                                dashArray: '10, 10'
-                            }).addTo(map);
-                        });
-                    } else {
-                        // Fallback: simple polyline if routing not available
-                        riderPolylines[orderId] = L.polyline([
-                            [riderLatLng.lat, riderLatLng.lng],
-                            [customerLatLng.lat, customerLatLng.lng]
-                        ], {
-                            color: '#FF6B9D',
-                            weight: 4,
-                            opacity: 0.8
-                        }).addTo(map);
-                    }
-                    
-                    // Fit map to show route
-                    const bounds = L.latLngBounds([
-                        [riderLatLng.lat, riderLatLng.lng],
-                        [customerLatLng.lat, customerLatLng.lng]
-                    ]);
-                    map.fitBounds(bounds, { padding: [50, 50] });
+                            riderRoutingControls[orderId].on('routingerror', function () {
+                                if (riderPolylines[orderId]) map.removeLayer(riderPolylines[orderId]);
+                                riderPolylines[orderId] = L.polyline(
+                                    [
+                                        [riderLatLng.lat, riderLatLng.lng],
+                                        [customerLatLng.lat, customerLatLng.lng]
+                                    ],
+                                    { color: '#FF6B9D', weight: 4, opacity: 0.8, dashArray: '10, 10' }
+                                ).addTo(map);
+                            });
+                        } else {
+                            riderPolylines[orderId] = L.polyline(
+                                [
+                                    [riderLatLng.lat, riderLatLng.lng],
+                                    [customerLatLng.lat, customerLatLng.lng]
+                                ],
+                                { color: '#FF6B9D', weight: 4, opacity: 0.8 }
+                            ).addTo(map);
+                        }
+                        fitRiderCustomerBounds();
+                    });
                 });
         } catch (e) {
             console.warn('Could not create rider marker:', e);
@@ -870,13 +1172,17 @@ function initRiderGoogleMap(orderId, order, isActive) {
 
 // Update map markers without re-initializing
 function updateRiderMapMarkers(orderId, order, isActive) {
+    if (riderGoogleOrderMaps[orderId]) {
+        renderGoogleOrderMap(orderId, order, isActive);
+        return;
+    }
     if (!riderMapInstances[orderId]) return;
     
     try {
         // Update rider marker position if it exists
         if (isActive && order.riderLocation) {
-            const riderLatLng = percentageToLatLngRider(order.riderLocation.x, order.riderLocation.y);
-            const customerLatLng = percentageToLatLngRider(order.customerLocation.x, order.customerLocation.y);
+            const riderLatLng = getRiderLatLngFromOrder(order);
+            const customerLatLng = getCustomerLatLngFromOrder(order);
             
             if (riderMarkers[orderId] && riderMarkers[orderId].rider) {
                 riderMarkers[orderId].rider.setLatLng([riderLatLng.lat, riderLatLng.lng]);
@@ -950,49 +1256,58 @@ function searchLocation(orderId) {
         button.disabled = true;
     }
     
-    // Use Nominatim geocoding (OpenStreetMap)
-    const geocoder = L.Control.Geocoder.nominatim();
-    
     // Add "Nairobi, Kenya" to improve search results
-    const searchQuery = address.includes('Nairobi') || address.includes('Kenya') 
-        ? address 
+    const searchQuery = address.includes('Nairobi') || address.includes('Kenya')
+        ? address
         : `${address}, Nairobi, Kenya`;
-    
-    geocoder.geocode(searchQuery, (results) => {
-        // Restore button
-        if (button) {
-            button.innerHTML = '🔍 Search Location';
-            button.disabled = false;
-        }
-        
-        if (results && results.length > 0) {
-            const location = results[0].center;
-            const foundAddress = results[0].name || address;
-            
-            // Show success message
-            if (button) {
-                button.style.background = '#4CAF50';
-                button.innerHTML = '✅ Found!';
-                setTimeout(() => {
-                    button.style.background = '#FF9800';
-                    button.innerHTML = '🔍 Search Location';
-                }, 2000);
-            }
-            
-            updateCustomerLocation(orderId, location.lat, location.lng, foundAddress);
+
+    function finishButton(success) {
+        if (!button) return;
+        button.disabled = false;
+        if (success) {
+            button.style.background = '#4CAF50';
+            button.innerHTML = '✅ Found!';
+            setTimeout(() => {
+                button.style.background = '#FF9800';
+                button.innerHTML = '🔍 Search Location';
+            }, 2000);
         } else {
-            alert('Location not found. Please try:\n- A more specific address\n- Include area name (e.g., "Parklands, Nairobi")\n- Or try a landmark name');
-            input.focus();
-        }
-    }, (error) => {
-        // Restore button on error
-        if (button) {
             button.innerHTML = '🔍 Search Location';
-            button.disabled = false;
         }
-        console.error('Geocoding error:', error);
-        alert('Error searching location. Please check your internet connection and try again.');
-    });
+    }
+
+    if (window.google && google.maps && google.maps.Geocoder) {
+        const geocoder = new google.maps.Geocoder();
+        geocoder.geocode({ address: searchQuery }, (results, status) => {
+            finishButton(status === 'OK' && results && results.length > 0);
+            if (status === 'OK' && results && results.length > 0) {
+                const loc = results[0].geometry.location;
+                updateCustomerLocation(orderId, loc.lat(), loc.lng(), results[0].formatted_address || address);
+                return;
+            }
+            alert('Location not found. Please try a more specific address.');
+            input.focus();
+        });
+        return;
+    }
+
+    fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(searchQuery))
+        .then((res) => res.json())
+        .then((results) => {
+            finishButton(results && results.length > 0);
+            if (results && results.length > 0) {
+                const r = results[0];
+                updateCustomerLocation(orderId, parseFloat(r.lat), parseFloat(r.lon), r.display_name || address);
+            } else {
+                alert('Location not found. Please try a more specific address.');
+                input.focus();
+            }
+        })
+        .catch((error) => {
+            finishButton(false);
+            console.error('Geocoding error:', error);
+            alert('Error searching location. Please check your internet connection and try again.');
+        });
 }
 
 // Update customer location
@@ -1052,6 +1367,10 @@ function renderSimpleRiderMap(orderId, order, isActive) {
 function renderMap(orderId, order, isActive) {
     const mapWrapper = document.getElementById(`mapWrapper-${orderId}`);
     if (!mapWrapper) return;
+    if (window.google && google.maps) {
+        renderGoogleOrderMap(orderId, order, isActive);
+        return;
+    }
     
     // Check if map element exists and already has a map instance
     const mapElement = document.getElementById(`googleMap-${orderId}`);
@@ -1113,21 +1432,22 @@ function startDelivery(orderId) {
     if (order) {
         order.deliveryStarted = true;
         order.deliveryStartTime = new Date().toISOString();
-        
-        // Initialize rider location (starting from store)
-        order.riderLocation = {
-            x: 20,
-            y: 70
-        };
-        
-        // Set customer location if not set
+
+        const shop = (typeof window !== 'undefined' && window.SHOP_LOCATION)
+            ? window.SHOP_LOCATION
+            : { lat: -1.2654, lng: 36.8067 };
+        order.storeLocationLatLng = order.storeLocationLatLng || { lat: shop.lat, lng: shop.lng };
+        order.storeLocation = order.storeLocation || latLngToPercentFlat(shop.lat, shop.lng);
         if (!order.customerLocation) {
-            order.customerLocation = {
-                x: 75,
-                y: 25
-            };
+            order.customerLocation = { x: 75, y: 25 };
         }
-        
+        if (!order.customerLocationLatLng && order.customerLocation) {
+            order.customerLocationLatLng = percentageToLatLngRider(order.customerLocation.x, order.customerLocation.y);
+        }
+
+        order.riderLocation = latLngToPercentFlat(shop.lat, shop.lng);
+        order.riderLocationLatLng = { lat: shop.lat, lng: shop.lng };
+
         updateOrderInStorage(order);
         loadRiderOrders();
         showNotification(`Delivery started for Order #${orderId}! 🚚`);
@@ -1186,39 +1506,43 @@ function sendMessageToCustomer(orderId) {
     showNotification('Message sent! Customer will see it on their track order page.');
 }
 
-// Weather Integration
-async function loadWeatherForOrder(orderId, address) {
+// Weather at drop-off (Open-Meteo — no API key)
+async function loadWeatherForOrder(orderId, orderOrAddress) {
+    const weatherDiv = document.getElementById(`weather-${orderId}`);
+    const weatherText = document.getElementById(`weather-text-${orderId}`);
+    if (!weatherDiv || !weatherText) return;
+
+    let lat;
+    let lng;
+    if (orderOrAddress && typeof orderOrAddress === 'object' && orderOrAddress.customerLocationLatLng) {
+        lat = orderOrAddress.customerLocationLatLng.lat;
+        lng = orderOrAddress.customerLocationLatLng.lng;
+    } else if (typeof window !== 'undefined' && window.SHOP_LOCATION) {
+        lat = window.SHOP_LOCATION.lat;
+        lng = window.SHOP_LOCATION.lng;
+    } else {
+        weatherDiv.style.display = 'none';
+        return;
+    }
+
+    weatherText.textContent = 'Checking weather…';
+    weatherDiv.style.display = 'block';
+
     try {
-        // Use OpenWeatherMap API (free tier) - you'll need to get an API key
-        // For now, we'll use a mock or geocoding to get coordinates
-        const weatherDiv = document.getElementById(`weather-${orderId}`);
-        const weatherText = document.getElementById(`weather-text-${orderId}`);
-        
-        if (!weatherDiv || !weatherText) return;
-        
-        // Try to get coordinates from address (simplified - in production use geocoding API)
-        // For demo, we'll show a placeholder
-        weatherText.textContent = 'Checking weather...';
-        weatherDiv.style.display = 'block';
-        
-        // Mock weather data (replace with real API call)
-        setTimeout(() => {
-            const weatherConditions = ['☀️ Sunny', '⛅ Partly Cloudy', '🌧️ Rainy', '☁️ Cloudy', '🌤️ Mostly Sunny'];
-            const randomWeather = weatherConditions[Math.floor(Math.random() * weatherConditions.length)];
-            const temp = Math.floor(Math.random() * 10) + 20; // 20-30°C
-            weatherText.textContent = `${randomWeather}, ${temp}°C`;
-        }, 1000);
-        
-        // TODO: Integrate with OpenWeatherMap API
-        // const apiKey = 'YOUR_API_KEY';
-        // const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(address)}&appid=${apiKey}&units=metric`);
-        // const data = await response.json();
-        // weatherText.textContent = `${data.weather[0].description}, ${Math.round(data.main.temp)}°C`;
-        
-    } catch (error) {
-        console.error('Weather loading error:', error);
-        const weatherDiv = document.getElementById(`weather-${orderId}`);
-        if (weatherDiv) weatherDiv.style.display = 'none';
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.current_weather) {
+            const t = data.current_weather.temperature;
+            const code = data.current_weather.weathercode;
+            const labels = { 0: 'Clear', 1: 'Mainly clear', 2: 'Partly cloudy', 3: 'Overcast', 45: 'Fog', 51: 'Drizzle', 61: 'Rain', 80: 'Rain showers', 95: 'Thunderstorm' };
+            const label = labels[code] || 'Conditions';
+            weatherText.textContent = `${label}, ${t}°C (at drop-off)`;
+        } else {
+            weatherDiv.style.display = 'none';
+        }
+    } catch (e) {
+        weatherDiv.style.display = 'none';
     }
 }
 
@@ -1583,7 +1907,10 @@ function completeDelivery(orderId) {
         order.status = 'delivered';
         order.completed = true;
         order.deliveredTime = new Date().toISOString();
-        order.riderLocation = order.customerLocation; // Rider reached customer
+        order.riderLocation = order.customerLocation;
+        if (order.customerLocationLatLng) {
+            order.riderLocationLatLng = { lat: order.customerLocationLatLng.lat, lng: order.customerLocationLatLng.lng };
+        }
         
         // Attach delivery proof if available
         const proofs = JSON.parse(localStorage.getItem('deliveryProofs') || '{}');
@@ -1638,6 +1965,9 @@ function startRiderTracking(orderId, order) {
             currentOrder.riderLocation.x = currentOrder.customerLocation.x;
             currentOrder.riderLocation.y = currentOrder.customerLocation.y;
         }
+
+        const rr = currentOrder.riderLocation;
+        currentOrder.riderLocationLatLng = percentageToLatLngRider(rr.x, rr.y);
         
         updateOrderInStorage(currentOrder);
         

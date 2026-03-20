@@ -52,6 +52,24 @@
         return div.innerHTML;
     }
 
+    function buildOrderWhatsappShareLink(order) {
+        var phone = '254794594595';
+        var total = order.total != null ? order.total : 0;
+        var allItems = (order.items || []).map(function (i) {
+            return (i.name || 'Item') + ' x' + (i.quantity || 1);
+        }).join(', ');
+        var status = formatStatus(order.status || 'pending');
+        var lines = [
+            'Hi Slay Station, here are my order details:',
+            'Order #' + order.id,
+            'Status: ' + status,
+            'Total: KSH ' + total.toLocaleString(),
+            allItems ? ('Items: ' + allItems) : '',
+            order.address ? ('Delivery address: ' + order.address) : ''
+        ].filter(Boolean);
+        return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(lines.join('\n'));
+    }
+
     function renderOrders(orders, container) {
         container.innerHTML = '';
         if (!orders.length) {
@@ -69,7 +87,8 @@
                 : '<div class="order-item-row"><span>No items</span><span>—</span></div>';
             var total = order.total != null ? order.total : 0;
             var trackOrderUrl = 'track-order.html?order=' + order.id;
-            var trackBtn = '<a href="' + trackOrderUrl + '" class="order-track-btn"><span>📍</span> Track order</a>';
+            var trackBtn = '<a href="' + trackOrderUrl + '" class="order-track-btn"><span class="order-action-icon"><i class="fa-solid fa-location-dot" aria-hidden="true"></i></span> Track order</a>';
+            var shareBtn = '<a href="' + buildOrderWhatsappShareLink(order) + '" target="_blank" rel="noopener noreferrer" class="order-track-btn"><span class="order-action-icon"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i></span> Share on WhatsApp</a>';
             var address = (order.address || '').trim();
             var mapQuery = address ? encodeURIComponent(address) : '';
             var mapSection = '';
@@ -100,6 +119,7 @@
                 (mapSection ? mapSection : '') +
                 '<div class="order-history-actions">' +
                 trackBtn +
+                shareBtn +
                 '</div>';
             container.appendChild(card);
         });

@@ -8,15 +8,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <!-- Leaflet.js - Free OpenStreetMap -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- Leaflet Routing Machine for directions -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
-    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
-    <!-- Leaflet Control Geocoder for address search -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder@1.13.0/dist/Control.Geocoder.css" />
-    <script src="https://unpkg.com/leaflet-control-geocoder@1.13.0/dist/Control.Geocoder.js"></script>
     <style>
         /* ========== Rider dashboard – polished Uber-style ========== */
         .portal-navbar {
@@ -838,21 +829,22 @@
     </style>
 </head>
 <body>
-    <!-- Google Maps: set GOOGLE_MAPS_API_KEY in rider-dashboard or in console for Uber-style map + traffic ETA -->
+    <!-- Google Maps: traffic-aware directions + Places (enable Directions API in Google Cloud) -->
     <script>
-        window.GOOGLE_MAPS_API_KEY = window.GOOGLE_MAPS_API_KEY || '';
+        window.GOOGLE_MAPS_API_KEY = window.GOOGLE_MAPS_API_KEY || 'AIzaSyDYz6LTWrNoUkcHZUfKjZWJuKMGHGBnLlQ';
     </script>
     <script>
         if (window.GOOGLE_MAPS_API_KEY) {
             window.onGoogleMapsRiderReady = function() {
-                if (window._lastActiveOrders && window.updateRiderMainMap) updateRiderMainMap(window._lastActiveOrders);
+                if (window._lastActiveOrders && window.updateRiderMainMap) window.updateRiderMainMap(window._lastActiveOrders);
             };
             var s = document.createElement('script');
-            s.src = 'https://maps.googleapis.com/maps/api/js?key=' + window.GOOGLE_MAPS_API_KEY + '&libraries=places,geometry&callback=onGoogleMapsRiderReady';
+            s.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(window.GOOGLE_MAPS_API_KEY) + '&libraries=places,geometry&callback=onGoogleMapsRiderReady';
             s.async = true; s.defer = true;
             document.head.appendChild(s);
         }
     </script>
+    <script src="delivery-fee-calculator.js"></script>
     <!-- Portal Navbar - Uber style -->
     <nav class="portal-navbar">
         <div class="portal-nav-container">

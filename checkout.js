@@ -311,7 +311,7 @@
     function initCheckoutMap() {
         var mapEl = document.getElementById('checkoutMapPicker');
         if (!mapEl) return;
-        if (window.SLAYSTATION_GOOGLE_MAPS_KEY && !window.google && !mapInitialized) {
+        if (window.SLAYSTATION_GOOGLE_MAPS_KEY && !window.google && !mapInitialized && !window.slayStationMapsFailed) {
             setTimeout(function() { if (!mapInitialized) initCheckoutMap(); }, 1500);
             return;
         }
@@ -355,35 +355,42 @@
             }
         }
 
-        if (window.google && window.google.maps) {
-            checkoutMapIsGoogle = true;
-            checkoutMap = new google.maps.Map(mapEl, {
-                center: { lat: centerLat, lng: centerLng },
-                zoom: 13,
-                mapTypeControl: true,
-                streetViewControl: false,
-                fullscreenControl: true,
-                zoomControl: true
-            });
-            new google.maps.Marker({
-                position: { lat: centerLat, lng: centerLng },
-                map: checkoutMap,
-                title: 'Slay Station – Westlands Market, Shop B15, Nairobi',
-                icon: { path: google.maps.SymbolPath.CIRCLE, scale: 0, labelOrigin: new google.maps.Point(0, -10) },
-                label: { text: '🏪', fontSize: '24px' }
-            });
-            checkoutMarker = new google.maps.Marker({
-                position: { lat: centerLat, lng: centerLng },
-                map: checkoutMap,
-                draggable: true,
-                title: 'Your delivery location – drag or click map'
-            });
-            google.maps.event.addListener(checkoutMap, 'click', function(e) {
-                checkoutMarker.setPosition(e.latLng);
+        if (window.google && window.google.maps && !window.slayStationMapsFailed) {
+            try {
+                checkoutMapIsGoogle = true;
+                checkoutMap = new google.maps.Map(mapEl, {
+                    center: { lat: centerLat, lng: centerLng },
+                    zoom: 13,
+                    mapTypeControl: true,
+                    streetViewControl: false,
+                    fullscreenControl: true,
+                    zoomControl: true
+                });
+                new google.maps.Marker({
+                    position: { lat: centerLat, lng: centerLng },
+                    map: checkoutMap,
+                    title: 'Slay Station – Westlands Market, Shop B15, Nairobi',
+                    icon: { path: google.maps.SymbolPath.CIRCLE, scale: 0, labelOrigin: new google.maps.Point(0, -10) },
+                    label: { text: '🏪', fontSize: '24px' }
+                });
+                checkoutMarker = new google.maps.Marker({
+                    position: { lat: centerLat, lng: centerLng },
+                    map: checkoutMap,
+                    draggable: true,
+                    title: 'Your delivery location – drag or click map'
+                });
+                google.maps.event.addListener(checkoutMap, 'click', function(e) {
+                    checkoutMarker.setPosition(e.latLng);
+                    updateFromMarker();
+                });
+                google.maps.event.addListener(checkoutMarker, 'dragend', updateFromMarker);
                 updateFromMarker();
-            });
-            google.maps.event.addListener(checkoutMarker, 'dragend', updateFromMarker);
-            updateFromMarker();
+            } catch (e) {
+                // If Google API auth/referrer fails, keep checkout usable with Leaflet fallback.
+                window.slayStationMapsFailed = true;
+                checkoutMap = null;
+                checkoutMarker = null;
+            }
         } else if (window.L) {
             checkoutMapIsGoogle = false;
             var center = [centerLat, centerLng];
@@ -516,6 +523,22 @@
             };
             for (var k in orderData) order[k] = orderData[k];
             order.mpesaReference = 'SLY' + order.id + '-' + Math.random().toString(36).substr(2, 4).toUpperCase();
+            var shopCo = (typeof window !== 'undefined' && window.SHOP_LOCATION) ? window.SHOP_LOCATION : { lat: -1.2654, lng: 36.8067 };
+            function latLngToPct(lat, lng) {
+                var minLat = -1.35, maxLat = -1.20, minLng = 36.70, maxLng = 36.90;
+                return {
+                    x: Math.max(0, Math.min(100, ((lng - minLng) / (maxLng - minLng)) * 100)),
+                    y: Math.max(0, Math.min(100, ((maxLat - lat) / (maxLat - minLat)) * 100))
+                };
+            }
+            order.storeLocationLatLng = { lat: shopCo.lat, lng: shopCo.lng };
+            order.storeLocation = order.storeLocation || latLngToPct(shopCo.lat, shopCo.lng);
+            if (pinnedLocation && pinnedLocation.lat != null && pinnedLocation.lng != null) {
+                order.customerLocationLatLng = { lat: pinnedLocation.lat, lng: pinnedLocation.lng };
+                order.customerLocation = latLngToPct(pinnedLocation.lat, pinnedLocation.lng);
+            } else if (!order.customerLocation) {
+                order.customerLocation = { x: 75, y: 25 };
+            }
             orders.push(order);
             localStorage.setItem('slayStationOrders', JSON.stringify(orders));
         }
@@ -682,6 +705,13 @@
     }
 
     var MPESA_TILL = '3193269';
+    function orderSuccessEsc(s) {
+        return String(s == null ? '' : s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
     function showOrderSuccessWithMpesa(order) {
         var ref = order.mpesaReference || ('SLY' + order.id + '-' + Math.random().toString(36).substr(2, 4).toUpperCase());
         if (!order.mpesaReference) {
@@ -692,42 +722,51 @@
         }
         var total = order.total || (order.subtotal + (order.deliveryFee || 0));
         var orderMessage = 'Order #' + order.id + ' | ' + (order.name || '') + ' | KSH ' + (total || 0).toLocaleString() + ' | Ref: ' + ref;
+        var nameEsc = orderSuccessEsc(order.name || '');
+        var addrEsc = orderSuccessEsc(order.address || order.location || '');
         var modal = document.createElement('div');
         modal.id = 'orderSuccessMpesaModal';
-        modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;';
+        modal.className = 'order-success-modal-overlay';
         modal.innerHTML =
-            '<div style="background:#fff;border-radius:16px;max-width:440px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2);">' +
-            '<div style="padding:1.5rem;">' +
-            '<h2 style="margin:0 0 0.5rem 0;font-size:1.5rem;">Order Successful</h2>' +
-            '<div style="background:linear-gradient(135deg,#ffebee,#fce4ec);border:2px solid #e91e63;border-radius:10px;padding:0.75rem 1rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">' +
-            '<span style="color:#c2185b;font-weight:600;font-size:0.9rem;">Your order is currently unpaid. Please pay via M-Pesa or contact us.</span>' +
+            '<div class="order-success-modal" role="dialog" aria-labelledby="orderSuccessTitle">' +
+            '<div class="order-success-modal-inner">' +
+            '<div class="order-success-hero">' +
+            '<div class="order-success-check" aria-hidden="true">✓</div>' +
+            '<h2 id="orderSuccessTitle" class="order-success-title">Order placed</h2>' +
+            '<p class="order-success-sub">Thank you! Complete M-Pesa payment below so we can process your order.</p>' +
             '</div>' +
-            '<div style="text-align:center;margin:1rem 0;">' +
-            '<div style="width:64px;height:64px;margin:0 auto 0.5rem;background:#4caf50;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:2rem;">✓</div>' +
-            '<p style="margin:0;font-weight:600;">Thank you for your order!</p>' +
-            '<p style="margin:0.25rem 0 0;color:#666;font-size:0.9rem;">Your order has been received. We\'ll process it shortly.</p>' +
+            '<div class="order-success-banner">' +
+            '<span class="order-success-banner-icon" aria-hidden="true">💳</span>' +
+            '<p>Payment pending — pay via M-Pesa Till, then paste your confirmation code.</p>' +
             '</div>' +
-            '<div style="background:#e8f5e9;padding:0.75rem;border-radius:10px;margin-bottom:1rem;font-size:0.9rem;">It typically takes about 2 hours to process. We\'ll notify you when it\'s ready.</div>' +
-            '<p style="margin:0 0 0.25rem 0;font-size:0.85rem;color:#666;">Delivery to:</p>' +
-            '<p style="margin:0 0 1rem 0;font-weight:600;">' + (order.name || '') + ' · ' + (order.address || order.location || '') + '</p>' +
-            '<div style="background:#f5f5f5;padding:1rem;border-radius:10px;margin-bottom:1rem;">' +
-            '<p style="margin:0 0 0.5rem 0;font-weight:600;font-size:0.9rem;">Pay via M-Pesa</p>' +
-            '<p style="margin:0 0 0.25rem 0;font-size:0.85rem;">Till number: <strong>' + MPESA_TILL + '</strong></p>' +
-            '<p style="margin:0 0 0.5rem 0;font-size:0.85rem;">Use this unique reference when paying: <strong style="font-family:monospace;background:#fff;padding:0.2rem 0.4rem;border-radius:4px;">' + ref + '</strong></p>' +
-            '<label style="display:block;margin:0.5rem 0 0.25rem 0;font-size:0.85rem;">Paste M-Pesa message / code</label>' +
-            '<input type="text" id="orderSuccessMpesaCode" placeholder="e.g. ABC123XY or code from M-Pesa message" style="width:100%;padding:0.6rem;border:2px solid #ddd;border-radius:8px;box-sizing:border-box;margin-top:0.25rem;">' +
-            '<button type="button" id="orderSuccessSubmitCode" style="margin-top:0.5rem;width:100%;padding:0.6rem;background:#2196f3;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Submit M-Pesa code</button>' +
+            '<div class="order-success-meta">' +
+            '<p class="order-success-meta-label">Deliver to</p>' +
+            '<p class="order-success-meta-value">' + nameEsc + ' · ' + addrEsc + '</p>' +
+            '<p class="order-success-meta-note">We usually process within ~2 hours and will update your order status.</p>' +
             '</div>' +
-            '<div style="display:flex;flex-direction:column;gap:0.5rem;">' +
-            '<button type="button" class="order-success-copy" style="padding:0.6rem;background:#f5f5f5;border:1px solid #ddd;border-radius:8px;cursor:pointer;font-weight:600;">Copy order message</button>' +
-            '<button type="button" class="order-success-close" style="padding:0.6rem;background:#fff;border:2px solid #333;border-radius:8px;cursor:pointer;font-weight:600;">Close</button>' +
-            '<a href="#" class="order-success-whatsapp" style="display:block;text-align:center;padding:0.6rem;background:#25d366;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">Send to WhatsApp</a>' +
+            '<div class="order-success-mpesa-card">' +
+            '<h3 class="order-success-mpesa-title">M-Pesa payment</h3>' +
+            '<div class="order-success-till-row"><span class="order-success-till-label">Till number</span><span class="order-success-till-num">' + MPESA_TILL + '</span></div>' +
+            '<label class="order-success-input-label" for="orderSuccessMpesaCode">M-Pesa confirmation code or SMS text</label>' +
+            '<input type="text" id="orderSuccessMpesaCode" class="order-success-input" placeholder="e.g. ABC123XY" autocomplete="one-time-code" maxlength="32">' +
+            '<button type="button" id="orderSuccessSubmitCode" class="order-success-btn-primary">Submit code</button>' +
+            '</div>' +
+            '<div class="order-success-actions">' +
+            '<button type="button" class="order-success-btn-secondary order-success-copy">Copy order summary</button>' +
+            '<button type="button" class="order-success-btn-outline order-success-close">Close &amp; track order</button>' +
+            '<a href="#" class="order-success-btn-whatsapp order-success-whatsapp" target="_blank" rel="noopener">WhatsApp us</a>' +
             '</div>' +
             '</div></div>';
         document.body.appendChild(modal);
         var codeInput = document.getElementById('orderSuccessMpesaCode');
         var submitBtn = document.getElementById('orderSuccessSubmitCode');
+        var mpesaCodeSubmitted = !!(order && order.payment === 'mpesa' && order.mpesaCode);
         function closeModal() {
+            if (order && order.payment === 'mpesa' && !mpesaCodeSubmitted) {
+                alert('Please paste and submit your M-Pesa confirmation code before completing your order.');
+                if (codeInput && !codeInput.disabled) codeInput.focus();
+                return;
+            }
             if (modal.parentNode) modal.parentNode.removeChild(modal);
             if (typeof window.location !== 'undefined') window.location.href = 'track-order.html?order=' + order.id;
         }
@@ -755,6 +794,7 @@
                 if (i !== -1) orders[i] = o;
                 localStorage.setItem('slayStationOrders', JSON.stringify(orders));
             }
+            mpesaCodeSubmitted = true;
             submitBtn.textContent = 'Code submitted!';
             submitBtn.disabled = true;
             if (codeInput) codeInput.disabled = true;

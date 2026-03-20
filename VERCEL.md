@@ -69,6 +69,8 @@ The Maps key is set in `checkout.html` and `track-order.html` as `SLAYSTATION_GO
 
 If referrers only list `localhost`, Maps will work locally but **fail on Vercel**.
 
+For **traffic-aware routes** (checkout map, track order, rider dashboard), enable **Directions API** in the same Google Cloud project as your Maps JavaScript API key.
+
 ---
 
 ## 4. Password reset links
