@@ -10240,11 +10240,9 @@ body.page-checkout .navbar {
     z-index: 1002;
     box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
 }
-body.page-checkout .checkout-page { padding-top: calc(38px + 68px + 1.5rem); }
+body.page-checkout .checkout-page { padding-top: calc(68px + 1.5rem); }
 /* Keep top header stack fixed on auth + checkout pages */
-body.page-login .promo-bar,
-body.page-signup .promo-bar,
-body.page-checkout .promo-bar {
+body.page-login .promo-bar {
     display: flex !important;
     position: fixed;
     top: 0;
@@ -10252,23 +10250,24 @@ body.page-checkout .promo-bar {
     right: 0;
     z-index: 1003;
 }
+body.page-signup .promo-bar,
+body.page-checkout .promo-bar {
+    display: none !important;
+}
 body.page-login .navbar,
 body.page-signup .navbar {
     position: fixed;
-    top: 40px;
+    top: 0;
     left: 0;
     right: 0;
     z-index: 1002;
 }
-body.page-checkout .navbar {
-    top: 38px;
-}
 body.page-signup .auth-container {
-    padding-top: 140px;
+    padding-top: 100px;
 }
 body.page-checkout .checkout-header {
     position: sticky;
-    top: 106px;
+    top: 68px;
     z-index: 990;
     background: #fff;
     margin-top: -0.5rem;
@@ -10291,8 +10290,8 @@ body.page-checkout .checkout-back-link:hover { background: #f5f5f5; text-decorat
     body.page-checkout .nav-menu { justify-content: center; }
 }
 @media (max-width: 768px) {
-    body.page-checkout .checkout-page { padding-top: calc(38px + 56px + 1.25rem); }
-    body.page-checkout .checkout-header { top: 94px; }
+    body.page-checkout .checkout-page { padding-top: calc(56px + 1.25rem); }
+    body.page-checkout .checkout-header { top: 56px; }
     /* Override absolute dropdown: full-height sliding drawer so entire menu is visible + scrollable */
     body.page-checkout .nav-container .nav-menu-drawer {
         position: fixed !important;

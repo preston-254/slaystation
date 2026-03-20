@@ -14,7 +14,12 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
         /* Rider login – Google-only, main-page style */
-        body { margin: 0; font-family: 'Poppins', sans-serif; }
+        body.page-rider-login {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #fff7fb 0%, #fdf4ff 45%, #f9fafb 100%);
+            color: #111827;
+        }
         .rider-login-wrap {
             min-height: 100vh;
             display: flex;
@@ -33,6 +38,11 @@
             width: 100%;
             max-width: 420px;
             text-align: center;
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid #f3e8ff;
+            border-radius: 20px;
+            box-shadow: 0 14px 35px rgba(17, 24, 39, 0.08);
+            padding: 2rem 1.5rem;
         }
         .rider-login-card .rider-logo-text {
             font-size: 1.75rem;
@@ -130,7 +140,7 @@
         .rider-login-right {
             flex: 1;
             min-height: 50vh;
-            background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 50%, #f5f3ff 100%);
+            background: radial-gradient(circle at 20% 20%, #fde7f3 0%, #f5f3ff 45%, #eef2ff 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -153,10 +163,12 @@
         @media (max-width: 768px) {
             .rider-login-wrap { flex-direction: column; }
             .rider-login-right { min-height: 280px; }
+            .rider-login-left { padding: 1rem; }
+            .rider-login-card { padding: 1.5rem 1rem; border-radius: 16px; }
         }
     </style>
 </head>
-<body>
+<body class="page-rider-login">
     <div class="rider-login-wrap">
         <div class="rider-login-left">
             <div class="rider-login-card">
